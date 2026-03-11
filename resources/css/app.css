@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+[x-cloak] { display: none !important; }
+
 * {
     scrollbar-width: thin;
     scrollbar-color: #101756 #f1f1f1;
