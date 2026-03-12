@@ -6,26 +6,26 @@
     <title>INSEP PRO - تسجيل الدخول</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 </head>
 <body class="font-tajawal bg-gray-50">
 
 <div x-data="loginPage()" class="min-h-screen flex">
 
-    {{-- Left Side - Form --}}
+    
     <div class="flex-1 flex items-center justify-center p-8 bg-white">
         <div class="w-full max-w-md">
 
-            {{-- Back button --}}
-            <a href="{{ url('/') }}" class="flex items-center gap-2 text-gray-500 hover:text-navy mb-8 transition-colors">
+            
+            <a href="<?php echo e(url('/')); ?>" class="flex items-center gap-2 text-gray-500 hover:text-navy mb-8 transition-colors">
                 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
                 <span>العودة للرئيسية</span>
             </a>
 
-            {{-- Logo --}}
+            
             <div class="flex items-center gap-3 mb-8">
                 <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                    <img src="{{ asset('insep-logo.png') }}" alt="INSEP" class="w-full h-full object-contain">
+                    <img src="<?php echo e(asset('insep-logo.png')); ?>" alt="INSEP" class="w-full h-full object-contain">
                 </div>
                 <div>
                     <h1 class="font-black text-navy text-xl" style="font-family: 'Roboto', sans-serif">INSEP PRO</h1>
@@ -33,33 +33,33 @@
                 </div>
             </div>
 
-            {{-- Title --}}
+            
             <h2 class="text-3xl font-black text-navy mb-2" x-text="isRegister ? 'إنشاء حساب جديد' : 'تسجيل الدخول'"></h2>
             <p class="text-gray-500 mb-8" x-text="isRegister ? 'أنشئ حسابك للوصول إلى جميع الدورات والخدمات' : 'أدخل بياناتك للوصول إلى حسابك'"></p>
 
-            {{-- Error Message --}}
-            @if ($errors->any())
+            
+            <?php if($errors->any()): ?>
             <div class="mb-5 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-slideDown">
                 <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <p class="text-red-700 text-sm font-medium">{{ $errors->first() }}</p>
+                <p class="text-red-700 text-sm font-medium"><?php echo e($errors->first()); ?></p>
             </div>
-            @endif
-            @if (session('error'))
+            <?php endif; ?>
+            <?php if(session('error')): ?>
             <div class="mb-5 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-slideDown">
                 <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <p class="text-red-700 text-sm font-medium">{{ session('error') }}</p>
+                <p class="text-red-700 text-sm font-medium"><?php echo e(session('error')); ?></p>
             </div>
-            @endif
+            <?php endif; ?>
 
-            {{-- Success Message --}}
-            @if (session('success'))
+            
+            <?php if(session('success')): ?>
             <div class="mb-5 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3 animate-slideDown">
                 <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                <p class="text-green-700 text-sm font-medium">{{ session('success') }}</p>
+                <p class="text-green-700 text-sm font-medium"><?php echo e(session('success')); ?></p>
             </div>
-            @endif
+            <?php endif; ?>
 
-            {{-- Role Selection (Login only) --}}
+            
             <div x-show="!isRegister" class="mb-6">
                 <label class="text-sm font-bold text-navy mb-3 block">نوع الحساب</label>
                 <div class="grid grid-cols-3 gap-3">
@@ -78,9 +78,9 @@
                 </div>
             </div>
 
-            {{-- Login Form --}}
-            <form x-show="!isRegister" method="POST" action="{{ url('/login') }}" class="space-y-5">
-                @csrf
+            
+            <form x-show="!isRegister" method="POST" action="<?php echo e(url('/login')); ?>" class="space-y-5">
+                <?php echo csrf_field(); ?>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">البريد الإلكتروني</label>
                     <div class="relative">
@@ -113,9 +113,9 @@
                 </button>
             </form>
 
-            {{-- Register Form --}}
-            <form x-show="isRegister" x-cloak method="POST" action="{{ url('/register') }}" class="space-y-5">
-                @csrf
+            
+            <form x-show="isRegister" x-cloak method="POST" action="<?php echo e(url('/register')); ?>" class="space-y-5">
+                <?php echo csrf_field(); ?>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">الاسم الكامل</label>
                     <div class="relative">
@@ -157,20 +157,20 @@
                 </button>
             </form>
 
-            {{-- Toggle Login/Register --}}
+            
             <div class="mt-6 text-center">
                 <span class="text-gray-500" x-text="isRegister ? 'لديك حساب بالفعل؟' : 'ليس لديك حساب؟'"></span>
                 <button @click="isRegister = !isRegister" class="text-red-brand font-bold hover:underline mr-1" x-text="isRegister ? 'تسجيل الدخول' : 'سجل الآن'"></button>
             </div>
 
-            {{-- Demo Credentials --}}
+            
             <div x-show="!isRegister" class="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
                 <div class="flex items-center gap-2 mb-3">
                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <p class="text-sm text-blue-800 font-bold">بيانات الدخول التجريبية</p>
                 </div>
                 <div class="space-y-2">
-                    {{-- Admin --}}
+                    
                     <button type="button" @click="fillCredentials('admin')"
                         class="w-full flex items-center justify-between bg-white/80 hover:bg-white rounded-xl px-4 py-2.5 text-sm transition-all border border-blue-100 hover:border-blue-300 group">
                         <div class="flex items-center gap-2">
@@ -184,7 +184,7 @@
                         </div>
                         <span class="text-blue-600 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">تعبئة ←</span>
                     </button>
-                    {{-- Instructor --}}
+                    
                     <button type="button" @click="fillCredentials('instructor')"
                         class="w-full flex items-center justify-between bg-white/80 hover:bg-white rounded-xl px-4 py-2.5 text-sm transition-all border border-blue-100 hover:border-blue-300 group">
                         <div class="flex items-center gap-2">
@@ -198,7 +198,7 @@
                         </div>
                         <span class="text-blue-600 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">تعبئة ←</span>
                     </button>
-                    {{-- Student --}}
+                    
                     <button type="button" @click="fillCredentials('student')"
                         class="w-full flex items-center justify-between bg-white/80 hover:bg-white rounded-xl px-4 py-2.5 text-sm transition-all border border-blue-100 hover:border-blue-300 group">
                         <div class="flex items-center gap-2">
@@ -217,7 +217,7 @@
         </div>
     </div>
 
-    {{-- Right Side - Visual --}}
+    
     <div class="hidden lg:flex flex-1 relative bg-gradient-to-br from-navy via-navy-light to-navy-dark items-center justify-center overflow-hidden">
         <div class="absolute inset-0 hero-pattern opacity-30"></div>
         <div class="absolute top-20 left-20 w-60 h-60 bg-red-brand/20 rounded-full blur-3xl"></div>
@@ -225,22 +225,22 @@
 
         <div class="relative z-10 text-center p-12 max-w-lg">
             <div class="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/20 animate-float overflow-hidden">
-                <img src="{{ asset('insep-logo.png') }}" alt="INSEP" class="w-20 h-20 object-contain">
+                <img src="<?php echo e(asset('insep-logo.png')); ?>" alt="INSEP" class="w-20 h-20 object-contain">
             </div>
             <h2 class="text-4xl font-black text-white mb-4">INSEP PRO</h2>
             <p class="text-white/70 text-lg leading-relaxed mb-8">
                 المنصة التعليمية والإدارية المتكاملة لعلوم الرياضة في الشرق الأوسط
             </p>
             <div class="grid grid-cols-3 gap-4">
-                @foreach([['num' => '+20K', 'label' => 'متدرب'], ['num' => '+5K', 'label' => 'دورة'], ['num' => '+150', 'label' => 'مدرب']] as $stat)
+                <?php $__currentLoopData = [['num' => '+20K', 'label' => 'متدرب'], ['num' => '+5K', 'label' => 'دورة'], ['num' => '+150', 'label' => 'مدرب']]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $stat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <div class="text-2xl font-black text-white" style="font-family: 'Roboto', sans-serif">{{ $stat['num'] }}</div>
-                    <div class="text-white/60 text-sm">{{ $stat['label'] }}</div>
+                    <div class="text-2xl font-black text-white" style="font-family: 'Roboto', sans-serif"><?php echo e($stat['num']); ?></div>
+                    <div class="text-white/60 text-sm"><?php echo e($stat['label']); ?></div>
                 </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
 
-            {{-- Security Badge --}}
+            
             <div class="mt-10 inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-5 py-3 border border-white/15">
                 <svg class="w-[18px] h-[18px] text-green-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 <div class="text-right">
@@ -255,7 +255,7 @@
 <script>
 function loginPage() {
     return {
-        isRegister: {{ isset($startRegister) && $startRegister ? 'true' : 'false' }},
+        isRegister: false,
         showPassword: false,
         selectedRole: 'admin',
         email: '',
@@ -285,3 +285,4 @@ function loginPage() {
 
 </body>
 </html>
+<?php /**PATH H:\insep\insep\resources\views/auth/login.blade.php ENDPATH**/ ?>

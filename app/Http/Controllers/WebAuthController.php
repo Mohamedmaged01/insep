@@ -39,7 +39,7 @@ class WebAuthController extends Controller
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
-        return view('auth.register', ['hideLayout' => true]);
+        return view('auth.login', ['hideLayout' => true, 'startRegister' => true]);
     }
 
     public function register(Request $request)
@@ -61,6 +61,7 @@ class WebAuthController extends Controller
         ]);
 
         Auth::login($user);
+        $request->session()->regenerate();
         return redirect()->route('dashboard');
     }
 
