@@ -255,7 +255,7 @@
 <script>
 function loginPage() {
     return {
-        isRegister: false,
+        isRegister: <?php echo e(isset($startRegister) && $startRegister ? 'true' : 'false'); ?>,
         showPassword: false,
         selectedRole: 'admin',
         email: '',

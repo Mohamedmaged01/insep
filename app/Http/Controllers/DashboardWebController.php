@@ -33,7 +33,7 @@ class DashboardWebController extends Controller
         } elseif ($user->role === 'student') {
             $stats = [
                 ['label' => 'دوراتي المسجلة', 'value' => Enrollment::where('student_id', $user->id)->count(), 'color' => 'from-blue-500 to-blue-600', 'icon' => 'book'],
-                ['label' => 'الشهادات المحصلة', 'value' => Certificate::where('user_id', $user->id)->count(), 'color' => 'from-green-500 to-green-600', 'icon' => 'award'],
+                ['label' => 'الشهادات المحصلة', 'value' => Certificate::where('student_id', $user->id)->count(), 'color' => 'from-green-500 to-green-600', 'icon' => 'award'],
                 ['label' => 'نسبة الحضور', 'value' => '0%', 'color' => 'from-purple-500 to-purple-600', 'icon' => 'check'],
                 ['label' => 'المعدل العام', 'value' => '0%', 'color' => 'from-orange-500 to-orange-600', 'icon' => 'star'],
             ];
@@ -107,9 +107,9 @@ class DashboardWebController extends Controller
     {
         $user = auth()->user();
         if ($user->role === 'student') {
-            $certificates = Certificate::where('user_id', $user->id)->with('course')->get();
+            $certificates = Certificate::where('student_id', $user->id)->with('course')->get();
         } else {
-            $certificates = Certificate::with(['user', 'course'])->orderBy('created_at', 'desc')->get();
+            $certificates = Certificate::with(['student', 'course'])->orderBy('created_at', 'desc')->get();
         }
         return view('dashboard.certificates', compact('certificates'));
     }
