@@ -263,7 +263,7 @@
                     <div class="absolute top-4 right-4 bg-red-brand text-white px-3 py-1 rounded-lg text-xs font-bold">{{ $item->tag ?? 'أخبار' }}</div>
                     <div class="absolute bottom-4 right-4 text-white/60 text-sm flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        {{ $item->created_at ? $item->created_at->format('Y-m-d') : '' }}
+                        {{ $item->date ?? ($item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') : '') }}
                     </div>
                 </div>
                 <div class="p-6">
