@@ -16,7 +16,7 @@
             </div>
         </div>
         <div class="p-4 space-y-2">
-            @if($cert->user)<p class="text-sm"><span class="text-gray-400">المتدرب:</span> <span class="font-bold text-navy">{{ $cert->user->name }}</span></p>@endif
+            @if($cert->student)<p class="text-sm"><span class="text-gray-400">المتدرب:</span> <span class="font-bold text-navy">{{ $cert->student->name }}</span></p>@endif
             <p class="text-sm"><span class="text-gray-400">تاريخ الإصدار:</span> <span class="text-navy">{{ $cert->created_at?->format('Y-m-d') }}</span></p>
             <span class="inline-block px-3 py-1 rounded-lg text-xs font-bold {{ ($cert->status ?? 'active') === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">{{ ($cert->status ?? 'active') === 'active' ? 'سارية' : 'منتهية' }}</span>
         </div>

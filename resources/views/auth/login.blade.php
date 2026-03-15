@@ -184,34 +184,6 @@
                         </div>
                         <span class="text-blue-600 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">تعبئة ←</span>
                     </button>
-                    {{-- Instructor --}}
-                    <button type="button" @click="fillCredentials('instructor')"
-                        class="w-full flex items-center justify-between bg-white/80 hover:bg-white rounded-xl px-4 py-2.5 text-sm transition-all border border-blue-100 hover:border-blue-300 group">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-bold text-navy block text-xs">المدرب</span>
-                                <span class="text-gray-400 text-[11px]" style="font-family: 'Roboto', sans-serif">instructor@insep.net</span>
-                            </div>
-                        </div>
-                        <span class="text-blue-600 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">تعبئة ←</span>
-                    </button>
-                    {{-- Student --}}
-                    <button type="button" @click="fillCredentials('student')"
-                        class="w-full flex items-center justify-between bg-white/80 hover:bg-white rounded-xl px-4 py-2.5 text-sm transition-all border border-blue-100 hover:border-blue-300 group">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 3a4 4 0 100 8 4 4 0 000-8z"/></svg>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-bold text-navy block text-xs">الطالب</span>
-                                <span class="text-gray-400 text-[11px]" style="font-family: 'Roboto', sans-serif">student@insep.net</span>
-                            </div>
-                        </div>
-                        <span class="text-blue-600 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">تعبئة ←</span>
-                    </button>
                 </div>
             </div>
         </div>
@@ -267,8 +239,6 @@ function loginPage() {
         ],
         accounts: {
             admin: { email: 'admin@insep.net', password: '654321@' },
-            instructor: { email: 'instructor@insep.net', password: 'instructor123' },
-            student: { email: 'student@insep.net', password: 'student123' },
         },
         selectRole(key) {
             this.selectedRole = key;
