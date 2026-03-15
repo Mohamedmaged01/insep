@@ -15,6 +15,9 @@ use App\Models\Resource;
 use App\Models\LiveSession;
 use App\Models\Notification;
 use App\Models\Department;
+use App\Models\Point;
+use App\Models\Badge;
+use App\Models\Installment;
 
 class DashboardWebController extends Controller
 {
@@ -31,11 +34,12 @@ class DashboardWebController extends Controller
                 ['label' => 'الشهادات الصادرة', 'value' => Certificate::count(), 'color' => 'from-orange-500 to-orange-600', 'icon' => 'award'],
             ];
         } elseif ($user->role === 'student') {
+            $totalPoints = Point::where('student_id', $user->id)->sum('amount');
             $stats = [
                 ['label' => 'دوراتي المسجلة', 'value' => Enrollment::where('student_id', $user->id)->count(), 'color' => 'from-blue-500 to-blue-600', 'icon' => 'book'],
                 ['label' => 'الشهادات المحصلة', 'value' => Certificate::where('student_id', $user->id)->count(), 'color' => 'from-green-500 to-green-600', 'icon' => 'award'],
-                ['label' => 'نسبة الحضور', 'value' => '0%', 'color' => 'from-purple-500 to-purple-600', 'icon' => 'check'],
-                ['label' => 'المعدل العام', 'value' => '0%', 'color' => 'from-orange-500 to-orange-600', 'icon' => 'star'],
+                ['label' => 'نقاطي', 'value' => $totalPoints, 'color' => 'from-purple-500 to-purple-600', 'icon' => 'star'],
+                ['label' => 'المعدل العام', 'value' => '0%', 'color' => 'from-orange-500 to-orange-600', 'icon' => 'check'],
             ];
         } else {
             $stats = [
@@ -179,15 +183,19 @@ class DashboardWebController extends Controller
         $user = auth()->user();
         if ($user->role === 'admin') {
             $transactions = Transaction::with('user')->orderBy('created_at', 'desc')->get();
+            $installments  = Installment::with(['student', 'course', 'batch'])->orderBy('created_at', 'desc')->get();
         } else {
             $transactions = Transaction::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+            $installments  = Installment::where('student_id', $user->id)->with(['course', 'batch'])->orderBy('created_at', 'desc')->get();
         }
         $summary = [
             'income'  => $transactions->where('type', 'income')->sum('amount'),
             'expense' => $transactions->where('type', 'expense')->sum('amount'),
         ];
         $students = User::where('role', 'student')->get();
-        return view('dashboard.finance', compact('transactions', 'summary', 'students'));
+        $courses  = Course::all();
+        $batches  = Batch::with('course')->get();
+        return view('dashboard.finance', compact('transactions', 'summary', 'students', 'installments', 'courses', 'batches'));
     }
 
     public function notifications()
@@ -220,15 +228,173 @@ class DashboardWebController extends Controller
             'income'       => Transaction::where('type', 'income')->sum('amount'),
             'expense'      => Transaction::where('type', 'expense')->sum('amount'),
         ];
-        $recentStudents    = User::where('role', 'student')->orderBy('created_at', 'desc')->limit(10)->get();
-        $recentCourses     = Course::withCount('enrollments')->orderBy('created_at', 'desc')->limit(10)->get();
+        $recentStudents     = User::where('role', 'student')->orderBy('created_at', 'desc')->limit(10)->get();
+        $recentCourses      = Course::withCount('enrollments')->orderBy('created_at', 'desc')->limit(10)->get();
         $recentTransactions = Transaction::with('user')->orderBy('created_at', 'desc')->limit(10)->get();
         return view('dashboard.reports', compact('stats', 'recentStudents', 'recentCourses', 'recentTransactions'));
+    }
+
+    public function exportReports()
+    {
+        $stats = [
+            'إجمالي الطلاب'     => User::where('role', 'student')->count(),
+            'المدربون'           => User::where('role', 'instructor')->count(),
+            'الدورات'            => Course::count(),
+            'المجموعات'          => Batch::count(),
+            'التسجيلات'          => Enrollment::count(),
+            'الشهادات'           => Certificate::count(),
+            'الإيرادات (ج.م)'   => Transaction::where('type', 'income')->sum('amount'),
+            'المصروفات (ج.م)'   => Transaction::where('type', 'expense')->sum('amount'),
+        ];
+
+        $csvLines = [];
+        $csvLines[] = 'البيان,القيمة';
+        foreach ($stats as $label => $value) {
+            $csvLines[] = '"' . $label . '",' . $value;
+        }
+
+        $csvLines[] = '';
+        $csvLines[] = 'آخر الطلاب المسجلين';
+        $csvLines[] = 'الاسم,البريد الإلكتروني,الهاتف,الحالة,تاريخ التسجيل';
+        $students = User::where('role', 'student')->orderBy('created_at', 'desc')->limit(50)->get();
+        foreach ($students as $s) {
+            $csvLines[] = '"' . $s->name . '","' . $s->email . '","' . ($s->phone ?? '') . '","' . ($s->status ?? 'active') . '","' . ($s->created_at ?? '') . '"';
+        }
+
+        $csvLines[] = '';
+        $csvLines[] = 'الدورات حسب التسجيل';
+        $csvLines[] = 'الدورة,التصنيف,السعر,عدد المسجلين';
+        $courses = Course::withCount('enrollments')->orderByDesc('enrollments_count')->limit(50)->get();
+        foreach ($courses as $c) {
+            $csvLines[] = '"' . $c->title . '","' . ($c->category ?? '') . '",' . $c->price . ',' . $c->enrollments_count;
+        }
+
+        $content  = "\xEF\xBB\xBF" . implode("\n", $csvLines); // UTF-8 BOM for Excel
+        $filename = 'insep-report-' . date('Y-m-d') . '.csv';
+
+        return response($content, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function gamification()
+    {
+        $leaderboard = User::where('role', 'student')
+            ->withSum('points as total_points', 'amount')
+            ->orderByDesc('total_points')
+            ->limit(20)
+            ->get();
+
+        $badges = Badge::withCount('users')->orderBy('min_points')->get();
+        $students = User::where('role', 'student')->get();
+
+        $user = auth()->user();
+        $myPoints = 0;
+        $myBadges = collect();
+        if ($user->role === 'student') {
+            $myPoints = Point::where('student_id', $user->id)->sum('amount');
+            $myBadges = Badge::whereHas('users', fn($q) => $q->where('user_id', $user->id))->get();
+        }
+
+        return view('dashboard.gamification', compact('leaderboard', 'badges', 'students', 'myPoints', 'myBadges'));
     }
 
     public function settings()
     {
         return view('dashboard.settings');
+    }
+
+    public function switchLocale(string $lang)
+    {
+        if (in_array($lang, ['ar', 'en'])) {
+            session(['locale' => $lang]);
+        }
+        return redirect()->back();
+    }
+
+    // ── Installments CRUD ──────────────────────────────────────────
+    public function installments()
+    {
+        return redirect()->route('dashboard.finance');
+    }
+
+    public function storeInstallment(Request $request)
+    {
+        Installment::create([
+            'student_id'   => $request->student_id,
+            'batch_id'     => $request->batch_id ?: null,
+            'course_id'    => $request->course_id ?: null,
+            'total_amount' => $request->total_amount,
+            'paid_amount'  => $request->paid_amount ?? 0,
+            'due_date'     => $request->due_date ?: null,
+            'status'       => $request->status ?? 'pending',
+            'notes'        => $request->notes,
+        ]);
+        return back()->with('success', 'تم إضافة خطة التقسيط بنجاح');
+    }
+
+    public function updateInstallment(Request $request, Installment $installment)
+    {
+        $installment->update($request->only(['total_amount', 'paid_amount', 'due_date', 'status', 'notes']));
+        // auto-update status
+        if ($installment->paid_amount >= $installment->total_amount) {
+            $installment->update(['status' => 'paid']);
+        } elseif ($installment->paid_amount > 0) {
+            $installment->update(['status' => 'partial']);
+        }
+        return back()->with('success', 'تم تحديث التقسيط بنجاح');
+    }
+
+    public function destroyInstallment(Installment $installment)
+    {
+        $installment->delete();
+        return back()->with('success', 'تم حذف التقسيط بنجاح');
+    }
+
+    // ── Gamification: Award Points / Badges ────────────────────────
+    public function awardPoints(Request $request)
+    {
+        Point::create([
+            'student_id' => $request->student_id,
+            'amount'     => $request->amount,
+            'reason'     => $request->reason,
+        ]);
+
+        // Auto-award badges based on total points
+        $total = Point::where('student_id', $request->student_id)->sum('amount');
+        $earnedBadges = Badge::where('min_points', '<=', $total)->pluck('id');
+        $student = User::find($request->student_id);
+        $student->badges()->syncWithoutDetaching($earnedBadges->map(fn($id) => [$id => ['awarded_at' => now()]])->collapse());
+
+        return back()->with('success', 'تم منح النقاط بنجاح');
+    }
+
+    public function storeGamification(Request $request)
+    {
+        if ($request->filled('badge_name_ar')) {
+            Badge::create([
+                'name_ar'     => $request->badge_name_ar,
+                'name_en'     => $request->badge_name_en ?? $request->badge_name_ar,
+                'icon'        => $request->icon ?? '⭐',
+                'description' => $request->description,
+                'min_points'  => $request->min_points ?? 0,
+            ]);
+            return back()->with('success', 'تم إضافة الشارة بنجاح');
+        }
+
+        Point::create([
+            'student_id' => $request->student_id,
+            'amount'     => $request->amount,
+            'reason'     => $request->reason,
+        ]);
+        return back()->with('success', 'تم منح النقاط بنجاح');
+    }
+
+    public function destroyBadge(Badge $badge)
+    {
+        $badge->delete();
+        return back()->with('success', 'تم حذف الشارة بنجاح');
     }
 
     // ── Students CRUD ──────────────────────────────────────────────
@@ -394,23 +560,33 @@ class DashboardWebController extends Controller
         return back()->with('success', 'تم حذف القسم بنجاح');
     }
 
-    // ── Transactions CRUD ──────────────────────────────────────────
+    // ── Transactions CRUD (with payment proof upload) ───────────────
     public function storeTransaction(Request $request)
     {
+        $proofPath = null;
+        if ($request->hasFile('payment_proof')) {
+            $proofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
+        }
+
         Transaction::create([
-            'description' => $request->description,
-            'amount'      => $request->amount,
-            'type'        => $request->type,
-            'method'      => $request->method,
-            'user_id'     => $request->user_id ?: null,
-            'status'      => $request->status ?? 'completed',
+            'description'   => $request->description,
+            'amount'        => $request->amount,
+            'type'          => $request->type,
+            'method'        => $request->method,
+            'user_id'       => $request->user_id ?: null,
+            'status'        => $request->status ?? 'completed',
+            'payment_proof' => $proofPath,
         ]);
         return back()->with('success', 'تم إضافة المعاملة المالية بنجاح');
     }
 
     public function updateTransaction(Request $request, Transaction $transaction)
     {
-        $transaction->update($request->only(['description', 'amount', 'type', 'method', 'status']));
+        $data = $request->only(['description', 'amount', 'type', 'method', 'status']);
+        if ($request->hasFile('payment_proof')) {
+            $data['payment_proof'] = $request->file('payment_proof')->store('payment-proofs', 'public');
+        }
+        $transaction->update($data);
         return back()->with('success', 'تم تحديث المعاملة المالية بنجاح');
     }
 

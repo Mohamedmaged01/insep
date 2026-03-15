@@ -36,6 +36,9 @@ Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/', [DashboardWebController::class, 'index'])->name('dashboard');
 
+    // Language switch
+    Route::get('/locale/{lang}', [DashboardWebController::class, 'switchLocale'])->name('dashboard.locale');
+
     // Main sections (GET)
     Route::get('/students', [DashboardWebController::class, 'students'])->name('dashboard.students');
     Route::get('/instructors', [DashboardWebController::class, 'instructors'])->name('dashboard.instructors');
@@ -51,6 +54,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/notifications', [DashboardWebController::class, 'notifications'])->name('dashboard.notifications');
     Route::get('/departments', [DashboardWebController::class, 'departments'])->name('dashboard.departments');
     Route::get('/reports', [DashboardWebController::class, 'reports'])->name('dashboard.reports');
+    Route::get('/reports/export', [DashboardWebController::class, 'exportReports'])->name('dashboard.reports.export');
+    Route::get('/gamification', [DashboardWebController::class, 'gamification'])->name('dashboard.gamification');
     Route::get('/settings', [DashboardWebController::class, 'settings'])->name('dashboard.settings');
 
     // Students CRUD
@@ -90,6 +95,16 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('/finance', [DashboardWebController::class, 'storeTransaction'])->name('dashboard.finance.store');
     Route::put('/finance/{transaction}', [DashboardWebController::class, 'updateTransaction'])->name('dashboard.finance.update');
     Route::delete('/finance/{transaction}', [DashboardWebController::class, 'destroyTransaction'])->name('dashboard.finance.destroy');
+
+    // Installments CRUD
+    Route::post('/installments', [DashboardWebController::class, 'storeInstallment'])->name('dashboard.installments.store');
+    Route::put('/installments/{installment}', [DashboardWebController::class, 'updateInstallment'])->name('dashboard.installments.update');
+    Route::delete('/installments/{installment}', [DashboardWebController::class, 'destroyInstallment'])->name('dashboard.installments.destroy');
+
+    // Gamification
+    Route::post('/gamification/points', [DashboardWebController::class, 'storeGamification'])->name('dashboard.gamification.points');
+    Route::post('/gamification/badges', [DashboardWebController::class, 'storeGamification'])->name('dashboard.gamification.badges');
+    Route::delete('/gamification/badges/{badge}', [DashboardWebController::class, 'destroyBadge'])->name('dashboard.gamification.badges.destroy');
 
     // Attendance per batch
     Route::get('/attendance/{batch}', [DashboardWebController::class, 'attendanceBatch'])->name('dashboard.attendance.batch');

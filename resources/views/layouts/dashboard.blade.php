@@ -33,6 +33,7 @@
         ['key' => 'notifications', 'label' => 'الإشعارات', 'icon' => 'bell', 'route' => 'dashboard.notifications'],
         ['key' => 'departments', 'label' => 'الأقسام', 'icon' => 'layers', 'route' => 'dashboard.departments'],
         ['key' => 'reports', 'label' => 'التقارير', 'icon' => 'bar-chart-3', 'route' => 'dashboard.reports'],
+        ['key' => 'gamification', 'label' => 'النقاط والشارات', 'icon' => 'award', 'route' => 'dashboard.gamification'],
         ['key' => 'settings', 'label' => 'الإعدادات', 'icon' => 'settings', 'route' => 'dashboard.settings'],
     ];
 
@@ -43,6 +44,7 @@
         ['key' => 'certificates', 'label' => 'شهاداتي', 'icon' => 'award', 'route' => 'dashboard.certificates'],
         ['key' => 'finance', 'label' => 'المالية', 'icon' => 'credit-card', 'route' => 'dashboard.finance'],
         ['key' => 'notifications', 'label' => 'الإشعارات', 'icon' => 'bell', 'route' => 'dashboard.notifications'],
+        ['key' => 'gamification', 'label' => 'نقاطي وشاراتي', 'icon' => 'award', 'route' => 'dashboard.gamification'],
         ['key' => 'settings', 'label' => 'الملف الشخصي', 'icon' => 'settings', 'route' => 'dashboard.settings'],
     ];
 
@@ -258,6 +260,13 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4">
+                    {{-- Language Toggle --}}
+                    @php $currentLang = app()->getLocale(); @endphp
+                    <a href="{{ route('dashboard.locale', $currentLang === 'ar' ? 'en' : 'ar') }}"
+                        class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-bold text-gray-600 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+                        {{ $currentLang === 'ar' ? 'EN' : 'عر' }}
+                    </a>
                     <a href="{{ route('dashboard.notifications') }}"
                         class="relative p-2 hover:bg-gray-100 rounded-xl transition-colors">
                         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2"

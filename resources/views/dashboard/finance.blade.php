@@ -12,10 +12,16 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 class="text-2xl font-black text-navy">المالية</h1>
         @if(auth()->user()->role === 'admin')
-        <button @click="showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            إضافة معاملة
-        </button>
+        <div class="flex gap-2">
+            <button @click="showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                معاملة جديدة
+            </button>
+            <button @click="showInstallmentModal = true" class="bg-navy hover:bg-navy-dark text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                خطة تقسيط
+            </button>
+        </div>
         @endif
     </div>
 
@@ -35,79 +41,162 @@
         </div>
     </div>
 
-    {{-- Table --}}
-    <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead><tr class="bg-gray-50 border-b border-gray-100">
-                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الوصف</th>
-                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">المبلغ</th>
-                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">النوع</th>
-                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">طريقة الدفع</th>
-                    @if(auth()->user()->role === 'admin')
-                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الطالب</th>
-                    @endif
-                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الحالة</th>
-                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">التاريخ</th>
-                    @if(auth()->user()->role === 'admin')
-                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">إجراءات</th>
-                    @endif
-                </tr></thead>
-                <tbody>
-                    @forelse($transactions as $tx)
-                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
-                        <td class="px-6 py-4 font-bold text-navy text-sm">{{ $tx->description }}</td>
-                        <td class="px-6 py-4 text-sm font-bold {{ $tx->type === 'income' ? 'text-green-600' : 'text-red-600' }}" style="font-family:'Roboto',sans-serif">
-                            {{ $tx->type === 'income' ? '+' : '-' }}{{ number_format($tx->amount) }} ج.م
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-lg text-xs font-bold {{ $tx->type === 'income' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                {{ $tx->type === 'income' ? 'إيراد' : 'مصروف' }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-600">{{ $tx->method ?? '-' }}</td>
+    {{-- Tabs --}}
+    <div class="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1 w-fit">
+        <button @click="tab = 'transactions'" :class="tab === 'transactions' ? 'bg-white shadow text-navy' : 'text-gray-500'" class="px-5 py-2 rounded-lg text-sm font-bold transition-all">المعاملات</button>
+        <button @click="tab = 'installments'" :class="tab === 'installments' ? 'bg-white shadow text-navy' : 'text-gray-500'" class="px-5 py-2 rounded-lg text-sm font-bold transition-all">التقسيط</button>
+    </div>
+
+    {{-- Transactions Tab --}}
+    <div x-show="tab === 'transactions'">
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead><tr class="bg-gray-50 border-b border-gray-100">
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الوصف</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">المبلغ</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">النوع</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">طريقة الدفع</th>
                         @if(auth()->user()->role === 'admin')
-                        <td class="px-6 py-4 text-sm text-gray-600">{{ $tx->user->name ?? '-' }}</td>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الطالب</th>
                         @endif
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-lg text-xs font-bold {{ $tx->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
-                                {{ $tx->status === 'completed' ? 'مكتمل' : 'معلق' }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500" style="font-family:'Roboto',sans-serif">
-                            {{ \Carbon\Carbon::parse($tx->created_at)->format('Y-m-d') }}
-                        </td>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الحالة</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">إثبات الدفع</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">التاريخ</th>
                         @if(auth()->user()->role === 'admin')
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $tx->id }}, '{{ addslashes($tx->description) }}', {{ $tx->amount }}, '{{ $tx->type }}', '{{ $tx->method ?? '' }}', '{{ $tx->status }}')"
-                                    class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                </button>
-                                <form method="POST" action="{{ route('dashboard.finance.destroy', $tx->id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذه المعاملة؟')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500" title="حذف">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">إجراءات</th>
+                        @endif
+                    </tr></thead>
+                    <tbody>
+                        @forelse($transactions as $tx)
+                        <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                            <td class="px-6 py-4 font-bold text-navy text-sm">{{ $tx->description }}</td>
+                            <td class="px-6 py-4 text-sm font-bold {{ $tx->type === 'income' ? 'text-green-600' : 'text-red-600' }}" style="font-family:'Roboto',sans-serif">
+                                {{ $tx->type === 'income' ? '+' : '-' }}{{ number_format($tx->amount) }} ج.م
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 rounded-lg text-xs font-bold {{ $tx->type === 'income' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                    {{ $tx->type === 'income' ? 'إيراد' : 'مصروف' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ $tx->method ?? '-' }}</td>
+                            @if(auth()->user()->role === 'admin')
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ $tx->user->name ?? '-' }}</td>
+                            @endif
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 rounded-lg text-xs font-bold {{ $tx->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                                    {{ $tx->status === 'completed' ? 'مكتمل' : 'معلق' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                @if($tx->payment_proof)
+                                <a href="{{ asset('storage/' . $tx->payment_proof) }}" target="_blank" class="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M13 12H3"/></svg>
+                                    عرض
+                                </a>
+                                @else
+                                <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500" style="font-family:'Roboto',sans-serif">
+                                {{ \Carbon\Carbon::parse($tx->created_at)->format('Y-m-d') }}
+                            </td>
+                            @if(auth()->user()->role === 'admin')
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <button @click="openEdit({{ $tx->id }}, '{{ addslashes($tx->description) }}', {{ $tx->amount }}, '{{ $tx->type }}', '{{ $tx->method ?? '' }}', '{{ $tx->status }}')"
+                                        class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                     </button>
-                                </form>
-                            </div>
-                        </td>
-                        @endif
-                    </tr>
-                    @empty
-                    <tr><td colspan="8" class="text-center py-12 text-gray-400">لا يوجد معاملات مالية بعد</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                    <form method="POST" action="{{ route('dashboard.finance.destroy', $tx->id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذه المعاملة؟')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500" title="حذف">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                            @endif
+                        </tr>
+                        @empty
+                        <tr><td colspan="9" class="text-center py-12 text-gray-400">لا يوجد معاملات مالية بعد</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    {{-- Add Modal --}}
+    {{-- Installments Tab --}}
+    <div x-show="tab === 'installments'">
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead><tr class="bg-gray-50 border-b border-gray-100">
+                        @if(auth()->user()->role === 'admin')
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الطالب</th>
+                        @endif
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الدورة / المجموعة</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الإجمالي</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">المدفوع</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">المتبقي</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">تاريخ الاستحقاق</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الحالة</th>
+                        @if(auth()->user()->role === 'admin')
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">إجراءات</th>
+                        @endif
+                    </tr></thead>
+                    <tbody>
+                        @forelse($installments as $inst)
+                        <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                            @if(auth()->user()->role === 'admin')
+                            <td class="px-6 py-4 font-bold text-navy text-sm">{{ $inst->student->name ?? '-' }}</td>
+                            @endif
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                {{ $inst->course->title ?? ($inst->batch->name ?? '-') }}
+                            </td>
+                            <td class="px-6 py-4 text-sm font-bold text-navy" style="font-family:'Roboto',sans-serif">{{ number_format($inst->total_amount) }} ج.م</td>
+                            <td class="px-6 py-4 text-sm font-bold text-green-600" style="font-family:'Roboto',sans-serif">{{ number_format($inst->paid_amount) }} ج.م</td>
+                            <td class="px-6 py-4 text-sm font-bold text-red-600" style="font-family:'Roboto',sans-serif">{{ number_format($inst->total_amount - $inst->paid_amount) }} ج.م</td>
+                            <td class="px-6 py-4 text-sm text-gray-500" style="font-family:'Roboto',sans-serif">{{ $inst->due_date ?? '-' }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 rounded-lg text-xs font-bold
+                                    {{ $inst->status === 'paid' ? 'bg-green-100 text-green-700' : ($inst->status === 'partial' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
+                                    {{ $inst->status === 'paid' ? 'مدفوع' : ($inst->status === 'partial' ? 'جزئي' : 'معلق') }}
+                                </span>
+                            </td>
+                            @if(auth()->user()->role === 'admin')
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <button @click="openInstallmentEdit({{ $inst->id }}, {{ $inst->total_amount }}, {{ $inst->paid_amount }}, '{{ $inst->due_date ?? '' }}', '{{ $inst->status }}', '{{ addslashes($inst->notes ?? '') }}')"
+                                        class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                    </button>
+                                    <form method="POST" action="{{ route('dashboard.installments.destroy', $inst->id) }}" onsubmit="return confirm('حذف خطة التقسيط؟')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500" title="حذف">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                            @endif
+                        </tr>
+                        @empty
+                        <tr><td colspan="8" class="text-center py-12 text-gray-400">لا يوجد خطط تقسيط بعد</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{-- Add Transaction Modal --}}
     <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showAddModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-black text-navy mb-6">إضافة معاملة مالية</h2>
-            <form method="POST" action="{{ route('dashboard.finance.store') }}" class="space-y-4">
+            <form method="POST" action="{{ route('dashboard.finance.store') }}" class="space-y-4" enctype="multipart/form-data">
                 @csrf
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">الوصف</label>
@@ -153,6 +242,10 @@
                         @endforeach
                     </select>
                 </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">إثبات الدفع (صورة/PDF) — اختياري</label>
+                    <input type="file" name="payment_proof" accept="image/*,.pdf" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm" dir="ltr">
+                </div>
                 <div class="flex gap-3 pt-4">
                     <button type="button" @click="showAddModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
                     <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">حفظ</button>
@@ -161,12 +254,12 @@
         </div>
     </div>
 
-    {{-- Edit Modal --}}
+    {{-- Edit Transaction Modal --}}
     <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showEditModal = false"></div>
-        <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-black text-navy mb-6">تعديل المعاملة المالية</h2>
-            <form method="POST" :action="'/dashboard/finance/' + editItem.id" class="space-y-4">
+            <form method="POST" :action="'/dashboard/finance/' + editItem.id" class="space-y-4" enctype="multipart/form-data">
                 @csrf @method('PUT')
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">الوصف</label>
@@ -203,6 +296,10 @@
                         </select>
                     </div>
                 </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">تحديث إثبات الدفع (اتركه فارغاً للإبقاء على الحالي)</label>
+                    <input type="file" name="payment_proof" accept="image/*,.pdf" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm" dir="ltr">
+                </div>
                 <div class="flex gap-3 pt-4">
                     <button type="button" @click="showEditModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
                     <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">حفظ التعديلات</button>
@@ -211,17 +308,131 @@
         </div>
     </div>
 
+    {{-- Add Installment Modal --}}
+    @if(auth()->user()->role === 'admin')
+    <div x-show="showInstallmentModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
+        <div class="absolute inset-0 bg-black/50" @click="showInstallmentModal = false"></div>
+        <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl font-black text-navy mb-6">إضافة خطة تقسيط</h2>
+            <form method="POST" action="{{ route('dashboard.installments.store') }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">الطالب</label>
+                    <select name="student_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                        <option value="">-- اختر الطالب --</option>
+                        @foreach($students as $student)
+                        <option value="{{ $student->id }}">{{ $student->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">الدورة</label>
+                    <select name="course_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <option value="">-- اختر الدورة --</option>
+                        @foreach($courses as $course)
+                        <option value="{{ $course->id }}">{{ $course->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">المبلغ الإجمالي (ج.م)</label>
+                        <input type="number" name="total_amount" min="0" step="0.01" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr" required>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">المدفوع حتى الآن</label>
+                        <input type="number" name="paid_amount" value="0" min="0" step="0.01" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">تاريخ الاستحقاق</label>
+                        <input type="date" name="due_date" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">الحالة</label>
+                        <select name="status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                            <option value="pending">معلق</option>
+                            <option value="partial">جزئي</option>
+                            <option value="paid">مدفوع</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">ملاحظات (اختياري)</label>
+                    <textarea name="notes" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" @click="showInstallmentModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
+                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Edit Installment Modal --}}
+    <div x-show="showInstallmentEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
+        <div class="absolute inset-0 bg-black/50" @click="showInstallmentEditModal = false"></div>
+        <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl">
+            <h2 class="text-xl font-black text-navy mb-6">تعديل خطة التقسيط</h2>
+            <form method="POST" :action="'/dashboard/installments/' + editInst.id" class="space-y-4">
+                @csrf @method('PUT')
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">المبلغ الإجمالي (ج.م)</label>
+                        <input type="number" name="total_amount" x-model="editInst.total_amount" min="0" step="0.01" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">المدفوع</label>
+                        <input type="number" name="paid_amount" x-model="editInst.paid_amount" min="0" step="0.01" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">تاريخ الاستحقاق</label>
+                        <input type="date" name="due_date" x-model="editInst.due_date" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">الحالة</label>
+                        <select name="status" x-model="editInst.status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                            <option value="pending">معلق</option>
+                            <option value="partial">جزئي</option>
+                            <option value="paid">مدفوع</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">ملاحظات</label>
+                    <textarea name="notes" x-model="editInst.notes" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" @click="showInstallmentEditModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
+                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">حفظ التعديلات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
 </div>
 @push('scripts')
 <script>
 function financeManager() {
     return {
+        tab: 'transactions',
         showAddModal: false,
         showEditModal: false,
+        showInstallmentModal: false,
+        showInstallmentEditModal: false,
         editItem: { id: null, description: '', amount: 0, type: 'income', method: 'cash', status: 'completed' },
+        editInst: { id: null, total_amount: 0, paid_amount: 0, due_date: '', status: 'pending', notes: '' },
         openEdit(id, description, amount, type, method, status) {
             this.editItem = { id, description, amount, type, method, status };
             this.showEditModal = true;
+        },
+        openInstallmentEdit(id, total_amount, paid_amount, due_date, status, notes) {
+            this.editInst = { id, total_amount, paid_amount, due_date, status, notes };
+            this.showInstallmentEditModal = true;
         }
     };
 }

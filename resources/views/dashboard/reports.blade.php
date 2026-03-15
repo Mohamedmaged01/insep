@@ -1,7 +1,13 @@
 @extends('layouts.dashboard')
 @section('title', 'INSEP PRO - التقارير')
 @section('dashboard-content')
-<h1 class="text-2xl font-black text-navy mb-6">التقارير</h1>
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <h1 class="text-2xl font-black text-navy">التقارير</h1>
+    <a href="{{ route('dashboard.reports.export') }}" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        تصدير CSV
+    </a>
+</div>
 
 {{-- Summary Stats --}}
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

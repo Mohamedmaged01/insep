@@ -68,4 +68,19 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Notification::class, 'user_id');
     }
+
+    public function points()
+    {
+        return $this->hasMany(Point::class, 'student_id');
+    }
+
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')->withPivot('awarded_at');
+    }
+
+    public function installments()
+    {
+        return $this->hasMany(Installment::class, 'student_id');
+    }
 }
