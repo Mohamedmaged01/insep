@@ -114,7 +114,10 @@
         <div x-show="tab === 'resources'" class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-navy">المحاضرات والمحتوى</h3>
-                <a href="{{ route('dashboard.resources') }}" class="bg-navy text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-navy-dark transition-colors">إدارة المحاضرات</a>
+                <button @click="showResourceModal = true" class="bg-navy text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-navy-dark transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    رفع ملف
+                </button>
             </div>
             @if($resources->count() > 0)
             <div class="space-y-3">
@@ -122,16 +125,31 @@
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-navy/10 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            @if(in_array(strtolower($res->type ?? ''), ['video', 'mp4']))
+                                <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            @else
+                                <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            @endif
                         </div>
                         <div>
                             <p class="font-bold text-navy text-sm">{{ $res->title }}</p>
                             <p class="text-xs text-gray-500">{{ $res->type ?? 'PDF' }}</p>
                         </div>
                     </div>
-                    @if($res->file_url)
-                    <a href="{{ $res->file_url }}" target="_blank" class="text-xs text-blue-500 hover:underline">فتح ←</a>
-                    @endif
+                    <div class="flex items-center gap-3">
+                        @if($res->file_url)
+                        <a href="{{ $res->file_url }}" target="_blank" class="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            تحميل
+                        </a>
+                        @endif
+                        <form method="POST" action="{{ route('dashboard.resources.destroy', $res->id) }}" onsubmit="return confirm('حذف هذا الملف؟')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="p-1.5 hover:bg-red-50 rounded-lg text-red-400 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 @endforeach
             </div>
@@ -186,6 +204,46 @@
                 <a href="{{ route('dashboard.attendance.batch', $batch->id) }}" class="bg-navy text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-navy-dark transition-colors">تسجيل الحضور</a>
             </div>
             <p class="text-sm text-gray-500">انقر على "تسجيل الحضور" لتسجيل حضور وغياب طلاب هذه المجموعة.</p>
+        </div>
+    </div>
+
+    {{-- Upload Resource Modal --}}
+    <div x-show="showResourceModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
+        <div class="absolute inset-0 bg-black/50" @click="showResourceModal = false"></div>
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
+            <h2 class="text-xl font-black text-navy mb-6">رفع ملف جديد</h2>
+            <form method="POST" action="{{ route('dashboard.resources.store') }}" enctype="multipart/form-data" class="space-y-4">
+                @csrf
+                <input type="hidden" name="batch_id" value="{{ $batch->id }}">
+                <input type="hidden" name="course_id" value="{{ $batch->course_id }}">
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">عنوان الملف</label>
+                    <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">نوع المحتوى</label>
+                    <select name="type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <option value="PDF">PDF</option>
+                        <option value="Video">فيديو</option>
+                        <option value="Word">Word</option>
+                        <option value="Excel">Excel</option>
+                        <option value="PowerPoint">PowerPoint</option>
+                        <option value="Other">أخرى</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">الملف</label>
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-navy hover:bg-navy/5 transition-colors">
+                        <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                        <span class="text-sm text-gray-500">اضغط لاختيار ملف</span>
+                        <input type="file" name="file" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp4,.mov,.avi,.zip,.rar">
+                    </label>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" @click="showResourceModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
+                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">رفع</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -311,6 +369,7 @@ function batchDetailManager() {
         tab: 'students',
         showEnrollModal: false,
         showSessionModal: false,
+        showResourceModal: false,
         showCertModal: false,
         certData: {},
         openCertModal(data) {

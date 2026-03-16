@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\Course;
 use App\Models\Batch;
@@ -560,10 +561,15 @@ class DashboardWebController extends Controller
     // ── Resources CRUD ─────────────────────────────────────────────
     public function storeResource(Request $request)
     {
+        $fileUrl = $request->file_url;
+        if ($request->hasFile('file')) {
+            $path = $request->file('file')->store('resources', 'public');
+            $fileUrl = Storage::url($path);
+        }
         Resource::create([
             'title'         => $request->title,
             'type'          => $request->type ?? 'PDF',
-            'file_url'      => $request->file_url,
+            'file_url'      => $fileUrl,
             'course_id'     => $request->course_id ?: null,
             'batch_id'      => $request->batch_id ?: null,
             'instructor_id' => auth()->id(),
