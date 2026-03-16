@@ -36,6 +36,7 @@
                     <tr class="bg-gray-50 border-b border-gray-100">
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">#</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الدورة</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الشعبة</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">التصنيف</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">المستوى</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">السعر</th>
@@ -50,9 +51,10 @@
                         x-show="!search || '{{ addslashes($course->title) }} {{ $course->category }}'.toLowerCase().includes(search.toLowerCase())">
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $i + 1 }}</td>
                         <td class="px-6 py-4 font-bold text-navy text-sm">{{ $course->title }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ $course->section->name_ar ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->category ?? '-' }}</td>
                         <td class="px-6 py-4"><span class="px-3 py-1 rounded-lg text-xs font-bold bg-navy/10 text-navy">{{ $course->level ?? '-' }}</span></td>
-                        <td class="px-6 py-4 text-sm font-bold text-red-brand" style="font-family:'Roboto',sans-serif">{{ $course->price }} ج.م</td>
+                        <td class="px-6 py-4 text-sm font-bold text-red-brand" style="font-family:'Roboto',sans-serif">$ {{ $course->price }}</td>
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 rounded-lg text-xs font-bold {{ ($course->status ?? 'active') === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
                                 {{ ($course->status ?? 'active') === 'active' ? 'نشطة' : 'مخفية' }}
@@ -61,7 +63,7 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->enrollments_count ?? 0 }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $course->id }}, '{{ addslashes($course->title) }}', '{{ addslashes($course->description ?? '') }}', '{{ $course->category ?? '' }}', {{ $course->price ?? 0 }}, '{{ $course->duration ?? '' }}', '{{ $course->level ?? '' }}', '{{ $course->status ?? 'active' }}')"
+                                <button @click="openEdit({{ $course->id }}, '{{ addslashes($course->title) }}', '{{ addslashes($course->description ?? '') }}', '{{ $course->category ?? '' }}', {{ $course->price ?? 0 }}, '{{ $course->duration ?? '' }}', '{{ $course->level ?? '' }}', '{{ $course->status ?? 'active' }}', {{ $course->section_id ?? 'null' }})"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -97,6 +99,15 @@
                     <label class="text-sm font-bold text-navy mb-2 block">الوصف</label>
                     <textarea name="description" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
                 </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">الشعبة التدريبية</label>
+                    <select name="section_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <option value="">-- بدون شعبة --</option>
+                        @foreach($sections as $section)
+                        <option value="{{ $section->id }}">{{ $section->name_ar }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">التصنيف</label>
@@ -113,7 +124,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">السعر (ج.م)</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">السعر ($)</label>
                         <input type="number" name="price" min="0" step="0.01" value="0" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
                     <div>
@@ -151,6 +162,15 @@
                     <label class="text-sm font-bold text-navy mb-2 block">الوصف</label>
                     <textarea name="description" x-model="editItem.description" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
                 </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">الشعبة التدريبية</label>
+                    <select name="section_id" x-model="editItem.section_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <option value="">-- بدون شعبة --</option>
+                        @foreach($sections as $section)
+                        <option value="{{ $section->id }}">{{ $section->name_ar }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">التصنيف</label>
@@ -167,7 +187,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">السعر (ج.م)</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">السعر ($)</label>
                         <input type="number" name="price" x-model="editItem.price" min="0" step="0.01" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
                     <div>
@@ -198,9 +218,9 @@ function coursesManager() {
         search: '',
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, title: '', description: '', category: '', price: 0, duration: '', level: '', status: 'active' },
-        openEdit(id, title, description, category, price, duration, level, status) {
-            this.editItem = { id, title, description, category, price, duration, level, status };
+        editItem: { id: null, title: '', description: '', category: '', price: 0, duration: '', level: '', status: 'active', section_id: '' },
+        openEdit(id, title, description, category, price, duration, level, status, section_id) {
+            this.editItem = { id, title, description, category, price, duration, level, status, section_id: section_id || '' };
             this.showEditModal = true;
         }
     };

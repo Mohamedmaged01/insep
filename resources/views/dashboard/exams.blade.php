@@ -34,6 +34,7 @@
                     <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">المدة</th>
                     <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">المحاولات</th>
                     <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الحالة</th>
+                    <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الرابط</th>
                     @if(auth()->user()->role !== 'student')
                     <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">إجراءات</th>
                     @endif
@@ -52,10 +53,21 @@
                                 {{ $exam->status === 'active' ? 'نشط' : 'مخفي' }}
                             </span>
                         </td>
+                        <td class="px-6 py-4">
+                            @if($exam->exam_link)
+                            <a href="{{ $exam->exam_link }}" target="_blank"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-navy/10 hover:bg-navy/20 text-navy rounded-lg text-xs font-bold transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                                ابدأ الاختبار
+                            </a>
+                            @else
+                            <span class="text-gray-300 text-xs">-</span>
+                            @endif
+                        </td>
                         @if(auth()->user()->role !== 'student')
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->course_id }}, '{{ $exam->type }}', {{ $exam->questions }}, '{{ $exam->duration ?? '' }}', {{ $exam->attempts }}, '{{ $exam->status }}')"
+                                <button @click="openEdit({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->course_id }}, '{{ $exam->type }}', {{ $exam->questions }}, '{{ $exam->duration ?? '' }}', {{ $exam->attempts }}, '{{ $exam->status }}', '{{ addslashes($exam->exam_link ?? '') }}')"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -87,6 +99,10 @@
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">عنوان الاختبار</label>
                     <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">رابط الاختبار</label>
+                    <input type="url" name="exam_link" placeholder="https://..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">الدورة</label>
@@ -148,6 +164,10 @@
                     <input type="text" name="title" x-model="editItem.title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
                 <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">رابط الاختبار</label>
+                    <input type="url" name="exam_link" x-model="editItem.exam_link" placeholder="https://..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
+                </div>
+                <div>
                     <label class="text-sm font-bold text-navy mb-2 block">الدورة</label>
                     <select name="course_id" x-model="editItem.course_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
                         @foreach($courses as $course)
@@ -201,9 +221,9 @@ function examsManager() {
     return {
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, title: '', course_id: '', type: 'quiz', questions: 30, duration: '', attempts: 1, status: 'active' },
-        openEdit(id, title, course_id, type, questions, duration, attempts, status) {
-            this.editItem = { id, title, course_id, type, questions, duration, attempts, status };
+        editItem: { id: null, title: '', exam_link: '', course_id: '', type: 'quiz', questions: 30, duration: '', attempts: 1, status: 'active' },
+        openEdit(id, title, course_id, type, questions, duration, attempts, status, exam_link) {
+            this.editItem = { id, title, exam_link: exam_link || '', course_id, type, questions, duration, attempts, status };
             this.showEditModal = true;
         }
     };

@@ -18,6 +18,7 @@ use App\Models\Department;
 use App\Models\Point;
 use App\Models\Badge;
 use App\Models\Installment;
+use App\Models\Section;
 
 class DashboardWebController extends Controller
 {
@@ -67,8 +68,42 @@ class DashboardWebController extends Controller
 
     public function courses()
     {
-        $courses = Course::withCount('enrollments')->orderBy('created_at', 'desc')->get();
-        return view('dashboard.courses', compact('courses'));
+        $courses = Course::with('section')->withCount('enrollments')->orderBy('created_at', 'desc')->get();
+        $sections = Section::orderBy('id', 'desc')->get();
+        return view('dashboard.courses', compact('courses', 'sections'));
+    }
+
+    // ── Sections CRUD ──────────────────────────────────────────────
+    public function sections()
+    {
+        $sections = Section::withCount('courses')->orderBy('id', 'desc')->get();
+        return view('dashboard.sections', compact('sections'));
+    }
+
+    public function storeSection(Request $request)
+    {
+        Section::create([
+            'name_ar'     => $request->name_ar,
+            'name_en'     => $request->name_en,
+            'description' => $request->description,
+        ]);
+        return back()->with('success', 'تم إضافة الشعبة بنجاح');
+    }
+
+    public function updateSection(Request $request, Section $section)
+    {
+        $section->update([
+            'name_ar'     => $request->name_ar,
+            'name_en'     => $request->name_en,
+            'description' => $request->description,
+        ]);
+        return back()->with('success', 'تم تحديث الشعبة بنجاح');
+    }
+
+    public function destroySection(Section $section)
+    {
+        $section->delete();
+        return back()->with('success', 'تم حذف الشعبة بنجاح');
     }
 
     public function batches()
@@ -86,7 +121,11 @@ class DashboardWebController extends Controller
         $liveSessions = LiveSession::where('batch_id', $batch->id)->orderBy('scheduled_at', 'desc')->get();
         $allStudents = User::where('role', 'student')->get();
         $enrolledIds = $batch->enrollments->pluck('student_id')->toArray();
-        return view('dashboard.batch-detail', compact('batch', 'resources', 'liveSessions', 'allStudents', 'enrolledIds'));
+        $certificates = Certificate::where('course_id', $batch->course_id)
+            ->whereIn('student_id', $enrolledIds)
+            ->get()
+            ->keyBy('student_id');
+        return view('dashboard.batch-detail', compact('batch', 'resources', 'liveSessions', 'allStudents', 'enrolledIds', 'certificates'));
     }
 
     public function enrollStudent(Request $request, Batch $batch)
@@ -401,7 +440,9 @@ class DashboardWebController extends Controller
     public function storeStudent(Request $request)
     {
         User::create([
-            'name'     => $request->name,
+            'name'     => $request->name_ar ?: $request->name,
+            'name_ar'  => $request->name_ar,
+            'name_en'  => $request->name_en,
             'email'    => $request->email,
             'password' => bcrypt($request->password),
             'phone'    => $request->phone,
@@ -413,7 +454,10 @@ class DashboardWebController extends Controller
 
     public function updateStudent(Request $request, User $user)
     {
-        $data = $request->only(['name', 'email', 'phone', 'status']);
+        $data = $request->only(['name_ar', 'name_en', 'email', 'phone', 'status']);
+        if ($request->filled('name_ar')) {
+            $data['name'] = $request->name_ar;
+        }
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request->password);
         }
@@ -469,13 +513,14 @@ class DashboardWebController extends Controller
             'duration'    => $request->duration,
             'level'       => $request->level,
             'status'      => $request->status ?? 'active',
+            'section_id'  => $request->section_id ?: null,
         ]);
         return back()->with('success', 'تم إضافة الدورة بنجاح');
     }
 
     public function updateCourse(Request $request, Course $course)
     {
-        $course->update($request->only(['title', 'description', 'category', 'price', 'duration', 'level', 'status']));
+        $course->update($request->only(['title', 'description', 'category', 'price', 'duration', 'level', 'status', 'section_id']));
         return back()->with('success', 'تم تحديث الدورة بنجاح');
     }
 
@@ -650,13 +695,14 @@ class DashboardWebController extends Controller
             'duration'  => $request->duration,
             'attempts'  => $request->attempts ?? 1,
             'status'    => $request->status ?? 'active',
+            'exam_link' => $request->exam_link ?: null,
         ]);
         return back()->with('success', 'تم إضافة الاختبار بنجاح');
     }
 
     public function updateExam(Request $request, Exam $exam)
     {
-        $exam->update($request->only(['title', 'course_id', 'type', 'questions', 'duration', 'attempts', 'status']));
+        $exam->update($request->only(['title', 'course_id', 'type', 'questions', 'duration', 'attempts', 'status', 'exam_link']));
         return back()->with('success', 'تم تحديث الاختبار بنجاح');
     }
 

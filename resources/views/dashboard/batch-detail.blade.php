@@ -65,16 +65,36 @@
             @if($batch->enrollments->count() > 0)
             <div class="space-y-3">
                 @foreach($batch->enrollments as $enr)
+                @php $cert = $certificates[$enr->student_id] ?? null; @endphp
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-navy to-navy-light flex items-center justify-center text-white font-bold text-sm">{{ mb_substr($enr->student->name ?? '?', 0, 1) }}</div>
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-navy to-navy-light flex items-center justify-center text-white font-bold text-sm">{{ mb_substr($enr->student->name_ar ?? $enr->student->name ?? '?', 0, 1) }}</div>
                         <div>
-                            <p class="font-bold text-navy text-sm">{{ $enr->student->name ?? 'محذوف' }}</p>
+                            <p class="font-bold text-navy text-sm">{{ $enr->student->name_ar ?? $enr->student->name ?? 'محذوف' }}</p>
+                            @if($enr->student->name_en)
+                            <p class="text-xs text-gray-400">{{ $enr->student->name_en }}</p>
+                            @endif
                             <p class="text-xs text-gray-500" style="font-family:'Roboto',sans-serif">{{ $enr->student->email ?? '' }}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="px-3 py-1 rounded-lg text-xs font-bold {{ $enr->status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">{{ $enr->status === 'active' ? 'نشط' : $enr->status }}</span>
+                        {{-- Certificate button --}}
+                        <button
+                            @click="openCertModal({
+                                studentName: '{{ addslashes($enr->student->name_ar ?? $enr->student->name ?? 'محذوف') }}',
+                                studentNameEn: '{{ addslashes($enr->student->name_en ?? '') }}',
+                                hasCert: {{ $cert ? 'true' : 'false' }},
+                                serial: '{{ $cert?->serial_number ?? '' }}',
+                                title: '{{ addslashes($cert?->title ?? '') }}',
+                                grade: '{{ $cert?->grade ?? '' }}',
+                                issueDate: '{{ $cert?->issue_date ?? '' }}',
+                                status: '{{ $cert?->status ?? '' }}'
+                            })"
+                            class="p-1.5 rounded-lg transition-colors {{ $cert ? 'hover:bg-yellow-50 text-yellow-500' : 'hover:bg-gray-100 text-gray-300' }}"
+                            title="عرض الشهادة">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path stroke-linecap="round" d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                        </button>
                         <form method="POST" action="{{ route('dashboard.batches.unenroll', [$batch->id, $enr->id]) }}" onsubmit="return confirm('إزالة الطالب من المجموعة؟')">
                             @csrf @method('DELETE')
                             <button type="submit" class="p-1.5 hover:bg-red-50 rounded-lg text-red-500 transition-colors" title="إزالة">
@@ -195,6 +215,58 @@
         </div>
     </div>
 
+    {{-- Certificate Modal --}}
+    <div x-show="showCertModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
+        <div class="absolute inset-0 bg-black/50" @click="showCertModal = false"></div>
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-black text-navy">شهادة الطالب</h2>
+                <button @click="showCertModal = false" class="p-2 hover:bg-gray-100 rounded-xl text-gray-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            {{-- Student name --}}
+            <div class="flex items-center gap-3 mb-6 p-4 bg-gray-50 rounded-xl">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-navy to-navy-light flex items-center justify-center text-white font-bold" x-text="certData.studentName.charAt(0)"></div>
+                <div>
+                    <p class="font-black text-navy" x-text="certData.studentName"></p>
+                    <p class="text-xs text-gray-500" x-show="certData.studentNameEn" x-text="certData.studentNameEn" style="font-family:'Roboto',sans-serif"></p>
+                </div>
+            </div>
+            {{-- Has certificate --}}
+            <template x-if="certData.hasCert">
+                <div class="space-y-3">
+                    <div class="border border-yellow-200 bg-yellow-50 rounded-xl p-5 text-center">
+                        <svg class="w-10 h-10 text-yellow-500 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path stroke-linecap="round" d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                        <p class="font-black text-navy text-lg" x-text="certData.title || 'شهادة إتمام'"></p>
+                        <p class="text-xs text-gray-500 mt-1" x-text="certData.serial" style="font-family:'Roboto',sans-serif"></p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-gray-50 rounded-xl p-3">
+                            <p class="text-xs text-gray-400 mb-1">التقدير</p>
+                            <p class="font-bold text-navy" x-text="certData.grade || '-'"></p>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-3">
+                            <p class="text-xs text-gray-400 mb-1">تاريخ الإصدار</p>
+                            <p class="font-bold text-navy" x-text="certData.issueDate || '-'" style="font-family:'Roboto',sans-serif"></p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-xs text-gray-400 mb-1">الحالة</p>
+                        <span :class="certData.status === 'issued' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'" class="px-3 py-1 rounded-lg text-xs font-bold" x-text="certData.status === 'issued' ? 'صادرة' : (certData.status || '-')"></span>
+                    </div>
+                </div>
+            </template>
+            {{-- No certificate --}}
+            <template x-if="!certData.hasCert">
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path stroke-linecap="round" d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                    <p class="text-gray-400 font-bold">لا توجد شهادة لهذا الطالب في هذه الدورة</p>
+                </div>
+            </template>
+        </div>
+    </div>
+
     {{-- Add Live Session Modal --}}
     <div x-show="showSessionModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showSessionModal = false"></div>
@@ -239,6 +311,12 @@ function batchDetailManager() {
         tab: 'students',
         showEnrollModal: false,
         showSessionModal: false,
+        showCertModal: false,
+        certData: {},
+        openCertModal(data) {
+            this.certData = data;
+            this.showCertModal = true;
+        }
     };
 }
 </script>

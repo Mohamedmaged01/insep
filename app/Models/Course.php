@@ -10,7 +10,7 @@ class Course extends Model
 
     protected $fillable = [
         'title', 'description', 'category', 'price', 'duration',
-        'level', 'image', 'status', 'rating', 'student_count',
+        'level', 'image', 'status', 'rating', 'student_count', 'section_id',
     ];
 
     protected $casts = [
@@ -18,6 +18,11 @@ class Course extends Model
         'rating' => 'float',
         'student_count' => 'integer',
     ];
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
 
     public function batches()
     {

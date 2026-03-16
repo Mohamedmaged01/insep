@@ -17,6 +17,7 @@
             'icon' => 'graduation-cap',
             'route' => 'dashboard.instructors',
         ],
+        ['key' => 'sections', 'label' => 'الشعب التدريبية', 'icon' => 'grid', 'route' => 'dashboard.sections'],
         ['key' => 'courses', 'label' => 'إدارة الدورات', 'icon' => 'book-open', 'route' => 'dashboard.courses'],
         [
             'key' => 'batches',
@@ -24,10 +25,6 @@
             'icon' => 'clipboard-list',
             'route' => 'dashboard.batches',
         ],
-        ['key' => 'attendance', 'label' => 'الحضور والغياب', 'icon' => 'user-check', 'route' => 'dashboard.attendance'],
-        ['key' => 'resources', 'label' => 'المحاضرات المسجلة', 'icon' => 'video', 'route' => 'dashboard.resources'],
-        ['key' => 'livesession', 'label' => 'البث المباشر', 'icon' => 'radio', 'route' => 'dashboard.live-sessions'],
-        ['key' => 'exams', 'label' => 'الاختبارات', 'icon' => 'file-text', 'route' => 'dashboard.exams'],
         ['key' => 'certificates', 'label' => 'الشهادات', 'icon' => 'award', 'route' => 'dashboard.certificates'],
         ['key' => 'finance', 'label' => 'المالية', 'icon' => 'dollar-sign', 'route' => 'dashboard.finance'],
         ['key' => 'notifications', 'label' => 'الإشعارات', 'icon' => 'bell', 'route' => 'dashboard.notifications'],
@@ -51,10 +48,6 @@
     $instructorMenu = [
         ['key' => 'home', 'label' => 'الرئيسية', 'icon' => 'home', 'route' => 'dashboard'],
         ['key' => 'mybatches', 'label' => 'مجموعاتي', 'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
-        ['key' => 'attendance', 'label' => 'الحضور والغياب', 'icon' => 'user-check', 'route' => 'dashboard.attendance'],
-        ['key' => 'resources', 'label' => 'الحقيبة التدريبية', 'icon' => 'briefcase', 'route' => 'dashboard.resources'],
-        ['key' => 'livesession', 'label' => 'البث المباشر', 'icon' => 'radio', 'route' => 'dashboard.live-sessions'],
-        ['key' => 'exams', 'label' => 'الاختبارات', 'icon' => 'file-text', 'route' => 'dashboard.exams'],
         ['key' => 'notifications', 'label' => 'الإشعارات', 'icon' => 'bell', 'route' => 'dashboard.notifications'],
         ['key' => 'settings', 'label' => 'الملف الشخصي', 'icon' => 'settings', 'route' => 'dashboard.settings'],
     ];
@@ -125,6 +118,13 @@
                                 @case('graduation-cap')
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                @break
+
+                                @case('grid')
+                                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                                    <rect x="14" y="14" width="7" height="7" rx="1" />
                                 @break
 
                                 @case('book-open')

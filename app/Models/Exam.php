@@ -10,7 +10,7 @@ class Exam extends Model
 
     protected $fillable = [
         'title', 'course_id', 'type', 'questions', 'duration',
-        'attempts', 'status', 'avg_score',
+        'attempts', 'status', 'avg_score', 'exam_link',
     ];
 
     protected $casts = [

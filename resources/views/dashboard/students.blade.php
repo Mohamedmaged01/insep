@@ -35,7 +35,8 @@
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-100">
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">#</th>
-                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الطالب</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الاسم بالعربي</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الاسم بالإنجليزي</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">البريد الإلكتروني</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الهاتف</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الحالة</th>
@@ -45,14 +46,15 @@
                 </thead>
                 <tbody>
                     @forelse($students as $i => $student)
-                    <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors" x-show="!search || '{{ addslashes($student->name) }} {{ $student->email }}'.toLowerCase().includes(search.toLowerCase())">
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors" x-show="!search || '{{ addslashes($student->name_ar ?? $student->name) }} {{ addslashes($student->name_en ?? '') }} {{ $student->email }}'.toLowerCase().includes(search.toLowerCase())">
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $i + 1 }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-navy to-navy-light flex items-center justify-center text-white font-bold text-sm">{{ mb_substr($student->name, 0, 1) }}</div>
-                                <span class="font-bold text-navy text-sm">{{ $student->name }}</span>
+                                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-navy to-navy-light flex items-center justify-center text-white font-bold text-sm">{{ mb_substr($student->name_ar ?? $student->name, 0, 1) }}</div>
+                                <span class="font-bold text-navy text-sm">{{ $student->name_ar ?? $student->name }}</span>
                             </div>
                         </td>
+                        <td class="px-6 py-4 text-sm text-gray-600" style="font-family:'Roboto',sans-serif">{{ $student->name_en ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600" style="font-family:'Roboto',sans-serif">{{ $student->email }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600" style="font-family:'Roboto',sans-serif">{{ $student->phone ?? '-' }}</td>
                         <td class="px-6 py-4">
@@ -63,7 +65,7 @@
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $student->created_at?->format('Y-m-d') }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $student->id }}, '{{ addslashes($student->name) }}', '{{ $student->email }}', '{{ $student->phone ?? '' }}', '{{ $student->status ?? 'active' }}')"
+                                <button @click="openEdit({{ $student->id }}, '{{ addslashes($student->name_ar ?? $student->name) }}', '{{ addslashes($student->name_en ?? '') }}', '{{ $student->email }}', '{{ $student->phone ?? '' }}', '{{ $student->status ?? 'active' }}')"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -77,7 +79,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="7" class="text-center py-12 text-gray-400">لا يوجد طلاب مسجلين بعد</td></tr>
+                    <tr><td colspan="8" class="text-center py-12 text-gray-400">لا يوجد طلاب مسجلين بعد</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -92,8 +94,12 @@
             <form method="POST" action="{{ route('dashboard.students.store') }}" class="space-y-4">
                 @csrf
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الاسم الكامل</label>
-                    <input type="text" name="name" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <label class="text-sm font-bold text-navy mb-2 block">الاسم الكامل بالعربي</label>
+                    <input type="text" name="name_ar" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">الاسم الكامل بالإنجليزي</label>
+                    <input type="text" name="name_en" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">البريد الإلكتروني</label>
@@ -123,8 +129,12 @@
             <form method="POST" :action="'/dashboard/students/' + editItem.id" class="space-y-4">
                 @csrf @method('PUT')
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الاسم الكامل</label>
-                    <input type="text" name="name" x-model="editItem.name" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <label class="text-sm font-bold text-navy mb-2 block">الاسم الكامل بالعربي</label>
+                    <input type="text" name="name_ar" x-model="editItem.name_ar" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">الاسم الكامل بالإنجليزي</label>
+                    <input type="text" name="name_en" x-model="editItem.name_en" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">البريد الإلكتروني</label>
@@ -161,9 +171,9 @@ function studentsManager() {
         search: '',
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, name: '', email: '', phone: '', status: 'active' },
-        openEdit(id, name, email, phone, status) {
-            this.editItem = { id, name, email, phone, status };
+        editItem: { id: null, name_ar: '', name_en: '', email: '', phone: '', status: 'active' },
+        openEdit(id, name_ar, name_en, email, phone, status) {
+            this.editItem = { id, name_ar, name_en, email, phone, status };
             this.showEditModal = true;
         }
     };

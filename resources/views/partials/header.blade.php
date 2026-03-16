@@ -26,20 +26,20 @@
 
     {{-- Main Navbar --}}
     <nav class="bg-white relative" x-data="{ mobileMenuOpen: false, searchOpen: false, servicesOpen: false }">
-        <div class="container mx-auto px-4 flex justify-between items-center h-18">
+        <div class="container mx-auto px-6 flex justify-between items-center h-22 py-3">
             {{-- Logo --}}
-            <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300 group-hover:scale-105 transform overflow-hidden">
+            <a href="{{ route('home') }}" class="flex items-center gap-4 group">
+                <div class="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300 group-hover:scale-105 transform overflow-hidden">
                     <img src="/insep-logo.png" alt="INSEP" class="w-full h-full object-contain">
                 </div>
                 <div class="text-right">
-                    <h1 class="font-black text-navy text-xl leading-tight tracking-wide" style="font-family: 'Roboto', sans-serif">INSEP</h1>
-                    <p class="text-[11px] text-gray-500 font-medium">{{ $lang === 'ar' ? 'معهد علوم الرياضة' : 'Sports Science Institute' }}</p>
+                    <h1 class="font-black text-navy text-2xl leading-tight tracking-wide" style="font-family: 'Roboto', sans-serif">INSEP</h1>
+                    <p class="text-xs text-gray-500 font-medium">{{ $lang === 'ar' ? 'معهد علوم الرياضة' : 'Sports Science Institute' }}</p>
                 </div>
             </a>
 
             {{-- Desktop Menu --}}
-            <div class="hidden lg:flex items-center gap-1">
+            <div class="hidden lg:flex items-center gap-2">
                 @php
                     $navItems = [
                         ['key' => 'home', 'label' => $lang === 'ar' ? 'الرئيسية' : 'Home', 'route' => 'home'],
@@ -50,13 +50,13 @@
                 @endphp
                 @foreach($navItems as $item)
                     <a href="{{ route($item['route']) }}"
-                       class="px-4 py-2 font-semibold transition-all duration-300 rounded-lg {{ request()->routeIs($item['route']) ? 'text-red-brand bg-red-brand/5' : 'text-navy hover:text-red-brand hover:bg-gray-50' }}">
+                       class="px-5 py-2.5 text-base font-semibold transition-all duration-300 rounded-lg {{ request()->routeIs($item['route']) ? 'text-red-brand bg-red-brand/5' : 'text-navy hover:text-red-brand hover:bg-gray-50' }}">
                         {{ $item['label'] }}
                     </a>
                 @endforeach
                 {{-- Services Dropdown --}}
                 <div class="relative" @mouseenter="servicesOpen = true" @mouseleave="servicesOpen = false">
-                    <button class="px-4 py-2 text-navy hover:text-red-brand font-semibold transition-colors duration-300 flex items-center gap-1.5 rounded-lg hover:bg-gray-50">
+                    <button class="px-5 py-2.5 text-base text-navy hover:text-red-brand font-semibold transition-colors duration-300 flex items-center gap-1.5 rounded-lg hover:bg-gray-50">
                         {{ $lang === 'ar' ? 'خدمات المنصة' : 'Services' }}
                         <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="servicesOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </button>
@@ -73,10 +73,10 @@
 
             {{-- Actions --}}
             <div class="flex items-center gap-2">
-                <a href="{{ route('login') }}" class="bg-red-brand text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-red-brand-dark transition-all duration-300 hover:shadow-lg hover:shadow-red-brand/20 hidden sm:block">
+                <a href="{{ route('login') }}" class="bg-red-brand text-white px-6 py-3 rounded-xl font-bold hover:bg-red-brand-dark transition-all duration-300 hover:shadow-lg hover:shadow-red-brand/20 hidden sm:block">
                     {{ $lang === 'ar' ? 'تسجيل جديد' : 'Sign Up' }}
                 </a>
-                <a href="{{ route('login') }}" class="bg-navy text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-navy-dark transition-all duration-300 hover:shadow-lg hover:shadow-navy/20">
+                <a href="{{ route('login') }}" class="bg-navy text-white px-6 py-3 rounded-xl font-bold hover:bg-navy-dark transition-all duration-300 hover:shadow-lg hover:shadow-navy/20">
                     {{ $lang === 'ar' ? 'دخول' : 'Login' }}
                 </a>
                 <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-2.5 hover:bg-gray-100 rounded-xl transition">

@@ -53,6 +53,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/finance', [DashboardWebController::class, 'finance'])->name('dashboard.finance');
     Route::get('/notifications', [DashboardWebController::class, 'notifications'])->name('dashboard.notifications');
     Route::get('/departments', [DashboardWebController::class, 'departments'])->name('dashboard.departments');
+    Route::get('/sections', [DashboardWebController::class, 'sections'])->name('dashboard.sections');
     Route::get('/reports', [DashboardWebController::class, 'reports'])->name('dashboard.reports');
     Route::get('/reports/export', [DashboardWebController::class, 'exportReports'])->name('dashboard.reports.export');
     Route::get('/gamification', [DashboardWebController::class, 'gamification'])->name('dashboard.gamification');
@@ -85,6 +86,11 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('/resources', [DashboardWebController::class, 'storeResource'])->name('dashboard.resources.store');
     Route::put('/resources/{resource}', [DashboardWebController::class, 'updateResource'])->name('dashboard.resources.update');
     Route::delete('/resources/{resource}', [DashboardWebController::class, 'destroyResource'])->name('dashboard.resources.destroy');
+
+    // Sections CRUD
+    Route::post('/sections', [DashboardWebController::class, 'storeSection'])->name('dashboard.sections.store');
+    Route::put('/sections/{section}', [DashboardWebController::class, 'updateSection'])->name('dashboard.sections.update');
+    Route::delete('/sections/{section}', [DashboardWebController::class, 'destroySection'])->name('dashboard.sections.destroy');
 
     // Departments CRUD
     Route::post('/departments', [DashboardWebController::class, 'storeDepartment'])->name('dashboard.departments.store');
