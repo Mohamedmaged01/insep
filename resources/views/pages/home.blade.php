@@ -318,9 +318,9 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @php
                 $placeholderImages = [
-                    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=800&auto=format&fit=crop',
-                    'https://images.unsplash.com/photo-1526676037777-05a232554f77?q=80&w=800&auto=format&fit=crop',
-                    'https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=800&auto=format&fit=crop',
+                    'https://picsum.photos/seed/sport1/800/400',
+                    'https://picsum.photos/seed/sport2/800/400',
+                    'https://picsum.photos/seed/sport3/800/400',
                 ];
                 $newsItems = $news->count() > 0 ? $news : collect([
                     (object)['id' => 1, 'title' => 'إطلاق برنامج الدبلوم الجديد في التحليل الرياضي', 'created_at' => now(), 'description' => 'يسر معهد INSEP الإعلان عن إطلاق برنامج الدبلوم الجديد في التحليل الرياضي باستخدام التقنيات الحديثة', 'tag' => 'أخبار', 'image' => null],
@@ -329,10 +329,9 @@
                 ]);
             @endphp
             @foreach($newsItems as $i => $item)
-            @php $imgUrl = !empty($item->image) ? asset('storage/' . $item->image) : $placeholderImages[$i % 3]; @endphp
             <div class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp" style="animation-delay: {{ $i * 0.15 }}s; animation-fill-mode: forwards">
                 <div class="h-52 relative overflow-hidden">
-                    <img src="{{ $imgUrl }}" alt="{{ $item->title }}"
+                    <img src="{{ $placeholderImages[$i % 3] }}" alt="{{ $item->title }}"
                          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                     <div class="absolute top-4 right-4 bg-red-brand text-white px-3 py-1 rounded-lg text-xs font-bold">{{ $item->tag ?? 'أخبار' }}</div>
