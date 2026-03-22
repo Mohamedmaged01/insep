@@ -14,6 +14,8 @@ class User extends Authenticatable implements JWTSubject
 
     protected $hidden = ['password'];
 
+    public $rememberTokenName = null;
+
     protected $casts = [
         'rating' => 'float',
     ];
