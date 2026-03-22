@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100" width="160" height="100">
+  <rect width="160" height="100" fill="#f0f4f8" rx="12"/>
+  <circle cx="80" cy="50" r="35" fill="none" stroke="#c0c8d4" stroke-width="2"/>
+  <text x="80" y="44" text-anchor="middle" font-family="'Roboto',Arial,sans-serif" font-weight="900" font-size="18" fill="#6b7a8d">NSCA</text>
+  <text x="80" y="62" text-anchor="middle" font-family="'Roboto',Arial,sans-serif" font-size="8" fill="#a0aab4" letter-spacing="1">STRENGTH &amp; COND.</text>
+</svg>

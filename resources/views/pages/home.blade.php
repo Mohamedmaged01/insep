@@ -67,6 +67,27 @@
     </div>
 </section>
 
+{{-- Statistics Bar --}}
+<section class="bg-navy py-12">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+            @foreach([
+                ['value' => '20K+', 'label' => $lang === 'ar' ? 'متدرب' : 'Trainees'],
+                ['value' => '100+', 'label' => $lang === 'ar' ? 'دورة تدريبية' : 'Courses'],
+                ['value' => '1M+',  'label' => $lang === 'ar' ? 'زيارة' : 'Visitors'],
+                ['value' => '50+',  'label' => $lang === 'ar' ? 'مدرب متخصص' : 'Trainers'],
+            ] as $stat)
+            <div class="group">
+                <div class="text-4xl md:text-5xl font-black text-white mb-2 group-hover:text-red-brand transition-colors duration-300" style="font-family:'Roboto',sans-serif">
+                    {{ $stat['value'] }}
+                </div>
+                <div class="text-gray-400 font-medium text-sm uppercase tracking-wider">{{ $stat['label'] }}</div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
 {{-- Identity Bar --}}
 <section class="bg-white py-16 relative overflow-hidden">
     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-l from-navy via-red-brand to-navy"></div>
@@ -169,7 +190,7 @@
 </section>
 
 {{-- Stats Counter --}}
-<section class="relative py-20 overflow-hidden">
+<section class="relative py-20 overflow-hidden" id="stats-section">
     <div class="absolute inset-0 bg-gradient-to-br from-navy via-navy-light to-navy-dark">
         <div class="absolute inset-0 hero-pattern"></div>
         <div class="absolute top-10 left-[10%] w-40 h-40 bg-red-brand/10 rounded-full blur-3xl"></div>
@@ -178,17 +199,23 @@
     <div class="container mx-auto px-4 relative z-10">
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
             @foreach([
-                ['end' => 20000, 'label' => 'متدرب', 'suffix' => '+'],
-                ['end' => 5000, 'label' => 'دورة تدريبية', 'suffix' => '+'],
-                ['end' => 2000000, 'label' => 'زائر', 'suffix' => '+'],
-                ['end' => 150, 'label' => 'مدرب معتمد', 'suffix' => '+'],
+                ['end' => 20000,   'display' => '20K',  'label' => 'متدرب',       'suffix' => '+', 'icon' => 'user'],
+                ['end' => 100,     'display' => '100',  'label' => 'دورة تدريبية','suffix' => '+', 'icon' => 'book'],
+                ['end' => 1000000, 'display' => '1M',   'label' => 'زيارة',       'suffix' => '+', 'icon' => 'globe'],
+                ['end' => 50,      'display' => '50',   'label' => 'مدرب متخصص',  'suffix' => '+', 'icon' => 'award'],
             ] as $stat)
-            <div class="text-center group" x-data="{ count: 0, started: false }" x-intersect.once="started = true; animateCounter($el.querySelector('.counter-val'), {{ $stat['end'] }})">
+            <div class="text-center group stat-counter" data-end="{{ $stat['end'] }}" data-display="{{ $stat['display'] }}">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 group-hover:scale-110 transform transition-transform duration-500 group-hover:bg-red-brand/20">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        @if($stat['icon'] === 'user') <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        @elseif($stat['icon'] === 'book') <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                        @elseif($stat['icon'] === 'globe') <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+                        @else <circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+                        @endif
+                    </svg>
                 </div>
                 <div class="text-4xl md:text-5xl font-black text-white mb-2" style="font-family: 'Roboto', sans-serif">
-                    <span class="counter-val">0</span>{{ $stat['suffix'] }}
+                    <span class="counter-val">{{ $stat['display'] }}</span>{{ $stat['suffix'] }}
                 </div>
                 <p class="text-white/70 font-medium text-lg">{{ $stat['label'] }}</p>
             </div>
@@ -196,6 +223,46 @@
         </div>
     </div>
 </section>
+<script>
+(function() {
+    const counters = [
+        { el: null, end: 20000,   display: '20K',  suffix: '+' },
+        { el: null, end: 100,     display: '100',  suffix: '+' },
+        { el: null, end: 1000000, display: '1M',   suffix: '+' },
+        { el: null, end: 50,      display: '50',   suffix: '+' },
+    ];
+    function formatNum(n, display) {
+        if (display === '20K') return Math.round(n / 1000) + 'K';
+        if (display === '1M')  return (n >= 1000000) ? '1M' : Math.round(n / 1000) + 'K';
+        return Math.round(n).toString();
+    }
+    function animateStat(valEl, end, display) {
+        const duration = 2000, steps = 60, interval = duration / steps;
+        let current = 0;
+        const step = end / steps;
+        const timer = setInterval(() => {
+            current = Math.min(current + step, end);
+            valEl.textContent = formatNum(current, display);
+            if (current >= end) clearInterval(timer);
+        }, interval);
+    }
+    const section = document.getElementById('stats-section');
+    if (section && 'IntersectionObserver' in window) {
+        const obs = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                obs.disconnect();
+                document.querySelectorAll('.stat-counter').forEach((el, i) => {
+                    const valEl = el.querySelector('.counter-val');
+                    const end = parseInt(el.dataset.end);
+                    const display = el.dataset.display;
+                    animateStat(valEl, end, display);
+                });
+            }
+        }, { threshold: 0.3 });
+        obs.observe(section);
+    }
+})();
+</script>
 
 {{-- Why Choose Us --}}
 <section class="bg-white py-20">
@@ -250,18 +317,26 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @php
+                $placeholderImages = [
+                    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=800&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1526676037777-05a232554f77?q=80&w=800&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=800&auto=format&fit=crop',
+                ];
                 $newsItems = $news->count() > 0 ? $news : collect([
-                    (object)['id' => 1, 'title' => 'إطلاق برنامج الدبلوم الجديد في التحليل الرياضي', 'created_at' => now(), 'description' => 'يسر معهد INSEP الإعلان عن إطلاق برنامج الدبلوم الجديد في التحليل الرياضي باستخدام التقنيات الحديثة', 'tag' => 'أخبار'],
-                    (object)['id' => 2, 'title' => 'شراكة استراتيجية مع الاتحاد الدولي للرياضة', 'created_at' => now(), 'description' => 'وقّع المعهد اتفاقية شراكة مع الاتحاد الدولي لتبادل الخبرات وتطوير البرامج التدريبية المعتمدة', 'tag' => 'شراكات'],
-                    (object)['id' => 3, 'title' => 'تخريج الدفعة الخامسة من برنامج التدريب الرياضي', 'created_at' => now(), 'description' => 'احتفل المعهد بتخريج أكثر من 200 متدرب من برنامج التدريب الرياضي المتقدم في حفل كبير', 'tag' => 'فعاليات'],
+                    (object)['id' => 1, 'title' => 'إطلاق برنامج الدبلوم الجديد في التحليل الرياضي', 'created_at' => now(), 'description' => 'يسر معهد INSEP الإعلان عن إطلاق برنامج الدبلوم الجديد في التحليل الرياضي باستخدام التقنيات الحديثة', 'tag' => 'أخبار', 'image' => null],
+                    (object)['id' => 2, 'title' => 'شراكة استراتيجية مع الاتحاد الدولي للرياضة', 'created_at' => now(), 'description' => 'وقّع المعهد اتفاقية شراكة مع الاتحاد الدولي لتبادل الخبرات وتطوير البرامج التدريبية المعتمدة', 'tag' => 'شراكات', 'image' => null],
+                    (object)['id' => 3, 'title' => 'تخريج الدفعة الخامسة من برنامج التدريب الرياضي', 'created_at' => now(), 'description' => 'احتفل المعهد بتخريج أكثر من 200 متدرب من برنامج التدريب الرياضي المتقدم في حفل كبير', 'tag' => 'فعاليات', 'image' => null],
                 ]);
             @endphp
             @foreach($newsItems as $i => $item)
+            @php $imgUrl = !empty($item->image) ? asset('storage/' . $item->image) : $placeholderImages[$i % 3]; @endphp
             <div class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp" style="animation-delay: {{ $i * 0.15 }}s; animation-fill-mode: forwards">
-                <div class="h-48 bg-gradient-to-br from-navy/90 to-navy-light relative overflow-hidden">
-                    <div class="absolute inset-0 hero-pattern opacity-30"></div>
+                <div class="h-52 relative overflow-hidden">
+                    <img src="{{ $imgUrl }}" alt="{{ $item->title }}"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                     <div class="absolute top-4 right-4 bg-red-brand text-white px-3 py-1 rounded-lg text-xs font-bold">{{ $item->tag ?? 'أخبار' }}</div>
-                    <div class="absolute bottom-4 right-4 text-white/60 text-sm flex items-center gap-1">
+                    <div class="absolute bottom-4 right-4 text-white/80 text-sm flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         {{ $item->date ?? ($item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') : '') }}
                     </div>
@@ -276,16 +351,131 @@
         </div>
     </div>
 </section>
-
 {{-- Partners --}}
+@php
+$partners = [
+    ['name' => 'FIFA',  'img' => '/images/partners/fifa.svg'],
+    ['name' => 'AFC',   'img' => '/images/partners/afc.svg'],
+    ['name' => 'IOC',   'img' => '/images/partners/ioc.svg'],
+    ['name' => 'NSCA',  'img' => '/images/partners/nsca.svg'],
+    ['name' => 'ACSM',  'img' => '/images/partners/acsm.svg'],
+    ['name' => 'NASM',  'img' => '/images/partners/nasm.svg'],
+    ['name' => 'UEFA',  'img' => '/images/partners/uefa.svg'],
+    ['name' => 'WADA',  'img' => '/images/partners/wada.svg'],
+    ['name' => 'IPC',   'img' => '/images/partners/ipc.svg'],
+];
+@endphp
 <section class="bg-white py-16">
-    <div class="container mx-auto px-4">
-        <h3 class="text-center text-gray-400 font-semibold mb-10">شركاؤنا في النجاح</h3>
-        <div class="flex flex-wrap justify-center items-center gap-10 opacity-50">
-            @foreach(['FIFA', 'AFC', 'IOC', 'NSCA', 'ACSM', 'NASM'] as $partner)
-            <div class="text-2xl font-black text-gray-300 hover:text-navy transition-colors duration-300 cursor-pointer" style="font-family: 'Roboto', sans-serif">{{ $partner }}</div>
-            @endforeach
+ 
+    {{-- Heading --}}
+    <div class="text-center mb-10">
+        <h2 class="text-2xl font-black text-gray-800 uppercase tracking-widest" style="font-family:'Roboto',sans-serif">
+            {{ $lang === 'ar' ? 'شركاؤنا' : 'OUR PARTNERS' }}
+        </h2>
+        <div class="mx-auto mt-3 w-12 h-0.5 bg-gray-300"></div>
+    </div>
+ 
+    {{-- Carousel --}}
+    <div
+        x-data="{
+            current: 0,
+            total: {{ count($partners) }},
+            perPage: 3,
+            autoplayInterval: null,
+            paused: false,
+ 
+            init() {
+                this.updatePerPage();
+                window.addEventListener('resize', () => this.updatePerPage());
+                this.startAutoplay();
+            },
+ 
+            updatePerPage() {
+                const w = window.innerWidth;
+                if (w < 640) this.perPage = 2;
+                else if (w < 1024) this.perPage = 3;
+                else this.perPage = 5;
+                // Clamp current index so we don't overshoot
+                if (this.current > this.maxIndex()) this.current = this.maxIndex();
+            },
+ 
+            maxIndex() {
+                return Math.max(0, this.total - this.perPage);
+            },
+ 
+            prev() {
+                this.current = this.current <= 0 ? this.maxIndex() : this.current - 1;
+            },
+ 
+            next() {
+                this.current = this.current >= this.maxIndex() ? 0 : this.current + 1;
+            },
+ 
+            startAutoplay() {
+                this.autoplayInterval = setInterval(() => {
+                    if (!this.paused) this.next();
+                }, 3000);
+            },
+ 
+            get offset() {
+                // Each item is (100 / perPage)% wide; shift by current * that width
+                // Positive for RTL (slide track rightward), negative for LTR
+                const dir = document.documentElement.dir === 'rtl' || document.body.dir === 'rtl' ? 1 : -1;
+                return dir * this.current * (100 / this.perPage);
+            }
+        }"
+        @mouseenter="paused = true"
+        @mouseleave="paused = false"
+        class="relative max-w-6xl mx-auto px-14 sm:px-16"
+    >
+        {{-- Prev button --}}
+        <button @click="prev()"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border-2 border-gray-200 shadow-md flex items-center justify-center text-gray-400 hover:text-navy hover:border-navy hover:shadow-lg transition-all duration-300 z-10 group">
+            <svg class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+ 
+        {{-- Track --}}
+        <div class="overflow-hidden">
+            <div
+                class="flex transition-transform duration-500 ease-in-out"
+                :style="'transform: translateX(' + offset + '%)'"
+            >
+                @foreach($partners as $i => $p)
+                <div
+                    class="flex-shrink-0 px-3 sm:px-4"
+                    :style="'width: ' + (100 / perPage) + '%'"
+                >
+                    <div class="flex items-center justify-center h-28 rounded-xl border border-gray-100 hover:border-navy/30 hover:shadow-lg transition-all duration-300 bg-white group cursor-pointer">
+                        <img src="{{ $p['img'] }}"
+                             alt="{{ $p['name'] }}"
+                             class="max-h-16 sm:max-h-20 max-w-[80%] object-contain grayscale group-hover:grayscale-0 opacity-40 group-hover:opacity-90 transition-all duration-500 group-hover:scale-110 transform"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                        <span class="text-xl sm:text-2xl font-black text-gray-300 group-hover:text-navy hidden items-center justify-center h-20 transition-colors duration-300" style="font-family:'Roboto',sans-serif">{{ $p['name'] }}</span>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+ 
+        {{-- Next button --}}
+        <button @click="next()"
+            class="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border-2 border-gray-200 shadow-md flex items-center justify-center text-gray-400 hover:text-navy hover:border-navy hover:shadow-lg transition-all duration-300 z-10 group">
+            <svg class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+ 
+        {{-- Progress dots --}}
+        <div class="flex justify-center gap-1.5 mt-8">
+            <template x-for="i in (maxIndex() + 1)" :key="i">
+                <button
+                    @click="current = i - 1"
+                    :class="(i - 1) === current
+                        ? 'bg-navy w-6'
+                        : 'bg-gray-300 w-2 hover:bg-gray-400'"
+                    class="h-2 rounded-full transition-all duration-400"
+                ></button>
+            </template>
         </div>
     </div>
+ 
 </section>
 @endsection

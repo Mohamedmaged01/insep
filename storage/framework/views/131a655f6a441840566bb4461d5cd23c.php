@@ -20,26 +20,32 @@
                 <a href="https://www.instagram.com/insep_pro/" target="_blank" rel="noopener noreferrer" class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-brand transition-all duration-300 hover:scale-110">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                 </a>
+                <a href="https://www.youtube.com/@inseppro" target="_blank" rel="noopener noreferrer" class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-brand transition-all duration-300 hover:scale-110">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+                </a>
+                <a href="https://www.linkedin.com/company/insep-pro" target="_blank" rel="noopener noreferrer" class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center hover:bg-red-brand transition-all duration-300 hover:scale-110">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                </a>
             </div>
         </div>
     </div>
 
     
     <nav class="bg-white relative" x-data="{ mobileMenuOpen: false, searchOpen: false, servicesOpen: false }">
-        <div class="container mx-auto px-4 flex justify-between items-center h-18">
+        <div class="container mx-auto px-6 flex justify-between items-center h-22 py-3">
             
-            <a href="<?php echo e(route('home')); ?>" class="flex items-center gap-3 group">
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300 group-hover:scale-105 transform overflow-hidden">
+            <a href="<?php echo e(route('home')); ?>" class="flex items-center gap-4 group">
+                <div class="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300 group-hover:scale-105 transform overflow-hidden">
                     <img src="/insep-logo.png" alt="INSEP" class="w-full h-full object-contain">
                 </div>
                 <div class="text-right">
-                    <h1 class="font-black text-navy text-xl leading-tight tracking-wide" style="font-family: 'Roboto', sans-serif">INSEP</h1>
-                    <p class="text-[11px] text-gray-500 font-medium"><?php echo e($lang === 'ar' ? 'معهد علوم الرياضة' : 'Sports Science Institute'); ?></p>
+                    <h1 class="font-black text-navy text-2xl leading-tight tracking-wide" style="font-family: 'Roboto', sans-serif">INSEP</h1>
+                    <p class="text-xs text-gray-500 font-medium"><?php echo e($lang === 'ar' ? 'معهد علوم الرياضة' : 'Sports Science Institute'); ?></p>
                 </div>
             </a>
 
             
-            <div class="hidden lg:flex items-center gap-1">
+            <div class="hidden lg:flex items-center gap-2">
                 <?php
                     $navItems = [
                         ['key' => 'home', 'label' => $lang === 'ar' ? 'الرئيسية' : 'Home', 'route' => 'home'],
@@ -50,14 +56,14 @@
                 ?>
                 <?php $__currentLoopData = $navItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <a href="<?php echo e(route($item['route'])); ?>"
-                       class="px-4 py-2 font-semibold transition-all duration-300 rounded-lg <?php echo e(request()->routeIs($item['route']) ? 'text-red-brand bg-red-brand/5' : 'text-navy hover:text-red-brand hover:bg-gray-50'); ?>">
+                       class="px-5 py-2.5 text-base font-semibold transition-all duration-300 rounded-lg <?php echo e(request()->routeIs($item['route']) ? 'text-red-brand bg-red-brand/5' : 'text-navy hover:text-red-brand hover:bg-gray-50'); ?>">
                         <?php echo e($item['label']); ?>
 
                     </a>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 
                 <div class="relative" @mouseenter="servicesOpen = true" @mouseleave="servicesOpen = false">
-                    <button class="px-4 py-2 text-navy hover:text-red-brand font-semibold transition-colors duration-300 flex items-center gap-1.5 rounded-lg hover:bg-gray-50">
+                    <button class="px-5 py-2.5 text-base text-navy hover:text-red-brand font-semibold transition-colors duration-300 flex items-center gap-1.5 rounded-lg hover:bg-gray-50">
                         <?php echo e($lang === 'ar' ? 'خدمات المنصة' : 'Services'); ?>
 
                         <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="servicesOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
@@ -75,11 +81,11 @@
 
             
             <div class="flex items-center gap-2">
-                <a href="<?php echo e(route('login')); ?>" class="bg-red-brand text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-red-brand-dark transition-all duration-300 hover:shadow-lg hover:shadow-red-brand/20 hidden sm:block">
+                <a href="<?php echo e(route('login')); ?>" class="bg-red-brand text-white px-6 py-3 rounded-xl font-bold hover:bg-red-brand-dark transition-all duration-300 hover:shadow-lg hover:shadow-red-brand/20 hidden sm:block">
                     <?php echo e($lang === 'ar' ? 'تسجيل جديد' : 'Sign Up'); ?>
 
                 </a>
-                <a href="<?php echo e(route('login')); ?>" class="bg-navy text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-navy-dark transition-all duration-300 hover:shadow-lg hover:shadow-navy/20">
+                <a href="<?php echo e(route('login')); ?>" class="bg-navy text-white px-6 py-3 rounded-xl font-bold hover:bg-navy-dark transition-all duration-300 hover:shadow-lg hover:shadow-navy/20">
                     <?php echo e($lang === 'ar' ? 'دخول' : 'Login'); ?>
 
                 </a>

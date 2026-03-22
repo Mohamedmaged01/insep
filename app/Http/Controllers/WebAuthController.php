@@ -45,19 +45,22 @@ class WebAuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name_ar' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
             'phone' => 'nullable|string',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'name'    => $request->name_en,
+            'name_ar' => $request->name_ar,
+            'name_en' => $request->name_en,
+            'email'   => $request->email,
             'password' => Hash::make($request->password),
-            'phone' => $request->phone,
-            'role' => 'student',
-            'status' => 'active',
+            'phone'   => $request->phone,
+            'role'    => 'student',
+            'status'  => 'active',
         ]);
 
         Auth::login($user);

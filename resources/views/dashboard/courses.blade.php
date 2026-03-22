@@ -54,7 +54,7 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->section->name_ar ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->category ?? '-' }}</td>
                         <td class="px-6 py-4"><span class="px-3 py-1 rounded-lg text-xs font-bold bg-navy/10 text-navy">{{ $course->level ?? '-' }}</span></td>
-                        <td class="px-6 py-4 text-sm font-bold text-red-brand" style="font-family:'Roboto',sans-serif">$ {{ $course->price }}</td>
+                        <td class="px-6 py-4 text-sm font-bold text-red-brand" style="font-family:'Roboto',sans-serif">{{ $course->currency ?? 'USD' }} {{ $course->price }}</td>
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 rounded-lg text-xs font-bold {{ ($course->status ?? 'active') === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
                                 {{ ($course->status ?? 'active') === 'active' ? 'نشطة' : 'مخفية' }}
@@ -63,7 +63,7 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->enrollments_count ?? 0 }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $course->id }}, '{{ addslashes($course->title) }}', '{{ addslashes($course->description ?? '') }}', '{{ $course->category ?? '' }}', {{ $course->price ?? 0 }}, '{{ $course->duration ?? '' }}', '{{ $course->level ?? '' }}', '{{ $course->status ?? 'active' }}', {{ $course->section_id ?? 'null' }})"
+                                <button @click="openEdit({{ $course->id }}, '{{ addslashes($course->title) }}', '{{ addslashes($course->description ?? '') }}', '{{ $course->category ?? '' }}', {{ $course->price ?? 0 }}, '{{ $course->currency ?? 'USD' }}', '{{ $course->duration ?? '' }}', '{{ $course->level ?? '' }}', '{{ $course->status ?? 'active' }}', {{ $course->section_id ?? 'null' }})"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -122,22 +122,33 @@
                         </select>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">السعر ($)</label>
-                        <input type="number" name="price" min="0" step="0.01" value="0" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">السعر والعملة</label>
+                    <div class="flex gap-2">
+                        <div class="flex rounded-xl border-2 border-gray-200 overflow-hidden focus-within:border-navy transition-colors flex-shrink-0">
+                            @foreach([['USD','$ دولار'],['EGP','ج.م'],['SAR','ر.س']] as [$val,$lbl])
+                            <label class="flex items-center gap-1.5 px-3 py-3 cursor-pointer text-sm font-bold transition-colors has-[:checked]:bg-navy has-[:checked]:text-white text-gray-500 hover:bg-gray-50 border-l border-gray-200 first:border-l-0">
+                                <input type="radio" name="currency" value="{{ $val }}" {{ $val==='USD' ? 'checked' : '' }} class="sr-only">
+                                {{ $lbl }}
+                            </label>
+                            @endforeach
+                        </div>
+                        <input type="number" name="price" min="0" step="0.01" value="0"
+                            class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">المدة</label>
                         <input type="text" name="duration" placeholder="مثال: 30 ساعة" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
                     </div>
-                </div>
-                <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الحالة</label>
-                    <select name="status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                        <option value="active">نشطة</option>
-                        <option value="hidden">مخفية</option>
-                    </select>
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">الحالة</label>
+                        <select name="status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                            <option value="active">نشطة</option>
+                            <option value="hidden">مخفية</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="flex gap-3 pt-4">
                     <button type="button" @click="showAddModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
@@ -185,16 +196,28 @@
                         </select>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">السعر ($)</label>
-                        <input type="number" name="price" x-model="editItem.price" min="0" step="0.01" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">السعر والعملة</label>
+                    <div class="flex gap-2">
+                        <div class="flex rounded-xl border-2 border-gray-200 overflow-hidden focus-within:border-navy transition-colors flex-shrink-0">
+                            @foreach([['USD','$ دولار'],['EGP','ج.م'],['SAR','ر.س']] as [$val,$lbl])
+                            <label class="flex items-center gap-1.5 px-3 py-3 cursor-pointer text-sm font-bold transition-colors text-gray-500 hover:bg-gray-50 border-l border-gray-200 first:border-l-0"
+                                :class="editItem.currency === '{{ $val }}' ? 'bg-navy text-white' : ''">
+                                <input type="radio" name="currency" value="{{ $val }}"
+                                    x-model="editItem.currency" class="sr-only">
+                                {{ $lbl }}
+                            </label>
+                            @endforeach
+                        </div>
+                        <input type="number" name="price" x-model="editItem.price" min="0" step="0.01"
+                            class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">المدة</label>
                         <input type="text" name="duration" x-model="editItem.duration" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
                     </div>
-                </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">الحالة</label>
                     <select name="status" x-model="editItem.status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
@@ -218,9 +241,9 @@ function coursesManager() {
         search: '',
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, title: '', description: '', category: '', price: 0, duration: '', level: '', status: 'active', section_id: '' },
-        openEdit(id, title, description, category, price, duration, level, status, section_id) {
-            this.editItem = { id, title, description, category, price, duration, level, status, section_id: section_id || '' };
+        editItem: { id: null, title: '', description: '', category: '', price: 0, currency: 'USD', duration: '', level: '', status: 'active', section_id: '' },
+        openEdit(id, title, description, category, price, currency, duration, level, status, section_id) {
+            this.editItem = { id, title, description, category, price, currency: currency || 'USD', duration, level, status, section_id: section_id || '' };
             this.showEditModal = true;
         }
     };

@@ -116,20 +116,58 @@
             {{-- Register Form --}}
             <form x-show="isRegister" x-cloak method="POST" action="{{ url('/register') }}" class="space-y-5">
                 @csrf
-                <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الاسم الكامل</label>
-                    <div class="relative">
-                        <svg class="w-[18px] h-[18px] absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 3a4 4 0 100 8 4 4 0 000-8z"/></svg>
-                        <input type="text" name="name" placeholder="أدخل اسمك الكامل"
-                            class="w-full border-2 border-gray-200 rounded-xl pr-12 pl-4 py-3.5 focus:border-navy transition-colors text-gray-700" required>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">الاسم بالعربية</label>
+                        <div class="relative">
+                            <svg class="w-[18px] h-[18px] absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 3a4 4 0 100 8 4 4 0 000-8z"/></svg>
+                            <input type="text" name="name_ar" placeholder="الاسم الكامل"
+                                class="w-full border-2 border-gray-200 rounded-xl pr-12 pl-4 py-3.5 focus:border-navy transition-colors text-gray-700" dir="rtl" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">Full Name (EN)</label>
+                        <div class="relative">
+                            <svg class="w-[18px] h-[18px] absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 3a4 4 0 100 8 4 4 0 000-8z"/></svg>
+                            <input type="text" name="name_en" placeholder="Full name"
+                                class="w-full border-2 border-gray-200 rounded-xl pr-12 pl-4 py-3.5 focus:border-navy transition-colors text-gray-700" dir="ltr" required>
+                        </div>
                     </div>
                 </div>
-                <div>
+                <div x-data="countryPicker()" class="relative">
                     <label class="text-sm font-bold text-navy mb-2 block">رقم الجوال</label>
-                    <div class="relative">
-                        <svg class="w-[18px] h-[18px] absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                        <input type="tel" name="phone" placeholder="+966 5X XXX XXXX"
-                            class="w-full border-2 border-gray-200 rounded-xl pr-12 pl-4 py-3.5 focus:border-navy transition-colors text-gray-700" dir="ltr">
+                    {{-- Hidden combined phone field --}}
+                    <input type="hidden" name="phone" :value="selected.code + phoneNumber">
+                    <div class="flex gap-2">
+                        {{-- Country code button --}}
+                        <div class="relative flex-shrink-0">
+                            <button type="button" @click="open = !open" @keydown.escape="open = false"
+                                class="h-full flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-3.5 bg-white hover:border-navy transition-colors text-sm font-semibold text-navy min-w-[90px]" dir="ltr">
+                                <span x-text="selected.flag" class="text-lg leading-none"></span>
+                                <span x-text="selected.code" style="font-family:'Roboto',sans-serif"></span>
+                                <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            {{-- Dropdown --}}
+                            <div x-show="open" x-cloak @click.outside="open = false"
+                                class="absolute top-full mt-1 right-0 z-50 bg-white border border-gray-200 rounded-xl shadow-2xl w-64 max-h-64 overflow-y-auto">
+                                <div class="p-2">
+                                    <input type="text" x-model="search" placeholder="ابحث عن دولة..." @click.stop
+                                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-navy transition-colors mb-1">
+                                </div>
+                                <template x-for="c in filtered" :key="c.code + c.name">
+                                    <button type="button" @click="selected = c; open = false; search = ''"
+                                        class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-navy/5 transition-colors text-sm text-right"
+                                        :class="selected.code === c.code && selected.name === c.name ? 'bg-navy/5 font-bold' : ''">
+                                        <span x-text="c.flag" class="text-lg flex-shrink-0"></span>
+                                        <span x-text="c.name" class="flex-1 text-gray-700"></span>
+                                        <span x-text="c.code" class="text-gray-400 flex-shrink-0" style="font-family:'Roboto',sans-serif; direction:ltr"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                        {{-- Phone number input --}}
+                        <input type="tel" x-model="phoneNumber" placeholder="1XXXXXXXXX"
+                            class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3.5 focus:border-navy transition-colors text-gray-700" dir="ltr">
                     </div>
                 </div>
                 <div>
@@ -248,6 +286,54 @@ function loginPage() {
             this.email = account.email;
             this.password = account.password;
             this.selectedRole = role;
+        }
+    };
+}
+
+function countryPicker() {
+    const countries = [
+        { flag: '🇪🇬', name: 'Egypt', code: '+20' },
+        { flag: '🇸🇦', name: 'Saudi Arabia', code: '+966' },
+        { flag: '🇦🇪', name: 'UAE', code: '+971' },
+        { flag: '🇰🇼', name: 'Kuwait', code: '+965' },
+        { flag: '🇶🇦', name: 'Qatar', code: '+974' },
+        { flag: '🇧🇭', name: 'Bahrain', code: '+973' },
+        { flag: '🇴🇲', name: 'Oman', code: '+968' },
+        { flag: '🇯🇴', name: 'Jordan', code: '+962' },
+        { flag: '🇱🇧', name: 'Lebanon', code: '+961' },
+        { flag: '🇮🇶', name: 'Iraq', code: '+964' },
+        { flag: '🇸🇾', name: 'Syria', code: '+963' },
+        { flag: '🇵🇸', name: 'Palestine', code: '+970' },
+        { flag: '🇱🇾', name: 'Libya', code: '+218' },
+        { flag: '🇹🇳', name: 'Tunisia', code: '+216' },
+        { flag: '🇲🇦', name: 'Morocco', code: '+212' },
+        { flag: '🇩🇿', name: 'Algeria', code: '+213' },
+        { flag: '🇸🇩', name: 'Sudan', code: '+249' },
+        { flag: '🇾🇪', name: 'Yemen', code: '+967' },
+        { flag: '🇹🇷', name: 'Turkey', code: '+90' },
+        { flag: '🇬🇧', name: 'United Kingdom', code: '+44' },
+        { flag: '🇺🇸', name: 'United States', code: '+1' },
+        { flag: '🇫🇷', name: 'France', code: '+33' },
+        { flag: '🇩🇪', name: 'Germany', code: '+49' },
+        { flag: '🇮🇹', name: 'Italy', code: '+39' },
+        { flag: '🇪🇸', name: 'Spain', code: '+34' },
+        { flag: '🇵🇰', name: 'Pakistan', code: '+92' },
+        { flag: '🇮🇳', name: 'India', code: '+91' },
+        { flag: '🇳🇬', name: 'Nigeria', code: '+234' },
+        { flag: '🇿🇦', name: 'South Africa', code: '+27' },
+        { flag: '🇨🇦', name: 'Canada', code: '+1' },
+        { flag: '🇦🇺', name: 'Australia', code: '+61' },
+    ];
+    return {
+        open: false,
+        search: '',
+        phoneNumber: '',
+        selected: countries[0],
+        countries,
+        get filtered() {
+            if (!this.search) return this.countries;
+            const q = this.search.toLowerCase();
+            return this.countries.filter(c => c.name.toLowerCase().includes(q) || c.code.includes(q));
         }
     };
 }

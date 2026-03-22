@@ -9,7 +9,7 @@ class Course extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'title', 'description', 'category', 'price', 'duration',
+        'title', 'description', 'category', 'price', 'currency', 'duration',
         'level', 'image', 'status', 'rating', 'student_count', 'section_id',
     ];
 

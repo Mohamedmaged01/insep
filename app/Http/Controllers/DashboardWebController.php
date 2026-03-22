@@ -511,6 +511,7 @@ class DashboardWebController extends Controller
             'description' => $request->description,
             'category'    => $request->category,
             'price'       => $request->price ?? 0,
+            'currency'    => $request->currency ?? 'USD',
             'duration'    => $request->duration,
             'level'       => $request->level,
             'status'      => $request->status ?? 'active',
@@ -521,7 +522,7 @@ class DashboardWebController extends Controller
 
     public function updateCourse(Request $request, Course $course)
     {
-        $course->update($request->only(['title', 'description', 'category', 'price', 'duration', 'level', 'status', 'section_id']));
+        $course->update($request->only(['title', 'description', 'category', 'price', 'currency', 'duration', 'level', 'status', 'section_id']));
         return back()->with('success', 'تم تحديث الدورة بنجاح');
     }
 
