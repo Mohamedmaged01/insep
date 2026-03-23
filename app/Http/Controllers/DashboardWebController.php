@@ -279,48 +279,100 @@ class DashboardWebController extends Controller
         return view('dashboard.reports', compact('stats', 'recentStudents', 'recentCourses', 'recentTransactions'));
     }
 
-    public function exportReports()
+    public function exportReports(Request $request)
     {
+        $format   = $request->get('format', 'excel');
+        $date     = date('Y-m-d');
+        $filename = 'insep-report-' . $date;
+
         $stats = [
-            'إجمالي الطلاب'     => User::where('role', 'student')->count(),
-            'المدربون'           => User::where('role', 'instructor')->count(),
-            'الدورات'            => Course::count(),
-            'المجموعات'          => Batch::count(),
-            'التسجيلات'          => Enrollment::count(),
-            'الشهادات'           => Certificate::count(),
-            'الإيرادات (ج.م)'   => Transaction::where('type', 'income')->sum('amount'),
-            'المصروفات (ج.م)'   => Transaction::where('type', 'expense')->sum('amount'),
+            'إجمالي الطلاب'   => User::where('role', 'student')->count(),
+            'المدربون'         => User::where('role', 'instructor')->count(),
+            'الدورات'          => Course::count(),
+            'المجموعات'        => Batch::count(),
+            'التسجيلات'        => Enrollment::count(),
+            'الشهادات'         => Certificate::count(),
+            'الإيرادات'        => Transaction::where('type', 'income')->sum('amount'),
+            'المصروفات'        => Transaction::where('type', 'expense')->sum('amount'),
         ];
 
-        $csvLines = [];
-        $csvLines[] = 'البيان,القيمة';
-        foreach ($stats as $label => $value) {
-            $csvLines[] = '"' . $label . '",' . $value;
+        $students = User::where('role', 'student')->orderBy('created_at', 'desc')->limit(100)->get();
+        $courses  = Course::withCount('enrollments')->orderByDesc('enrollments_count')->limit(100)->get();
+        $transactions = Transaction::with('user')->orderBy('created_at', 'desc')->limit(100)->get();
+
+        if ($format === 'pdf') {
+            $html = $this->buildReportHtml($stats, $students, $courses, $transactions, $date, true);
+            return response($html, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
         }
 
-        $csvLines[] = '';
-        $csvLines[] = 'آخر الطلاب المسجلين';
-        $csvLines[] = 'الاسم,البريد الإلكتروني,الهاتف,الحالة,تاريخ التسجيل';
-        $students = User::where('role', 'student')->orderBy('created_at', 'desc')->limit(50)->get();
-        foreach ($students as $s) {
-            $csvLines[] = '"' . $s->name . '","' . $s->email . '","' . ($s->phone ?? '') . '","' . ($s->status ?? 'active') . '","' . ($s->created_at ?? '') . '"';
-        }
-
-        $csvLines[] = '';
-        $csvLines[] = 'الدورات حسب التسجيل';
-        $csvLines[] = 'الدورة,التصنيف,السعر,عدد المسجلين';
-        $courses = Course::withCount('enrollments')->orderByDesc('enrollments_count')->limit(50)->get();
-        foreach ($courses as $c) {
-            $csvLines[] = '"' . $c->title . '","' . ($c->category ?? '') . '",' . $c->price . ',' . $c->enrollments_count;
-        }
-
-        $content  = "\xEF\xBB\xBF" . implode("\n", $csvLines); // UTF-8 BOM for Excel
-        $filename = 'insep-report-' . date('Y-m-d') . '.csv';
-
-        return response($content, 200, [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        // Excel: HTML table exported as .xls (opens natively in Excel)
+        $html = $this->buildReportHtml($stats, $students, $courses, $transactions, $date, false);
+        return response($html, 200, [
+            'Content-Type'        => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '.xls"',
         ]);
+    }
+
+    private function buildReportHtml(array $stats, $students, $courses, $transactions, string $date, bool $forPrint): string
+    {
+        $printScript = $forPrint ? '<script>window.onload=function(){window.print();}</script>' : '';
+        $printStyle  = $forPrint ? '@media print{.no-print{display:none}}body{margin:20px}' : '';
+
+        $statsRows = '';
+        foreach ($stats as $label => $value) {
+            $statsRows .= '<tr><td style="padding:6px 12px;border:1px solid #ddd;font-weight:bold">' . $label . '</td><td style="padding:6px 12px;border:1px solid #ddd;text-align:center">' . number_format((float)$value) . '</td></tr>';
+        }
+
+        $studentRows = '';
+        foreach ($students as $s) {
+            $status = ($s->status ?? 'active') === 'active' ? 'نشط' : 'معلق';
+            $studentRows .= '<tr><td style="padding:6px 10px;border:1px solid #ddd">' . e($s->name) . '</td><td style="padding:6px 10px;border:1px solid #ddd">' . e($s->email) . '</td><td style="padding:6px 10px;border:1px solid #ddd">' . e($s->phone ?? '-') . '</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center">' . $status . '</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center">' . ($s->created_at ? \Carbon\Carbon::parse($s->created_at)->format('Y-m-d') : '-') . '</td></tr>';
+        }
+
+        $courseRows = '';
+        foreach ($courses as $c) {
+            $courseRows .= '<tr><td style="padding:6px 10px;border:1px solid #ddd">' . e($c->title) . '</td><td style="padding:6px 10px;border:1px solid #ddd">' . e($c->category ?? '-') . '</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center">' . number_format((float)$c->price) . '</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center">' . $c->enrollments_count . '</td></tr>';
+        }
+
+        $txRows = '';
+        foreach ($transactions as $tx) {
+            $type = $tx->type === 'income' ? 'إيراد' : 'مصروف';
+            $color = $tx->type === 'income' ? '#16a34a' : '#dc2626';
+            $txRows .= '<tr><td style="padding:6px 10px;border:1px solid #ddd">' . e($tx->description) . '</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center;color:' . $color . ';font-weight:bold">' . ($tx->type === 'income' ? '+' : '-') . number_format((float)$tx->amount) . '</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center">' . $type . '</td><td style="padding:6px 10px;border:1px solid #ddd">' . e($tx->user->name ?? '-') . '</td><td style="padding:6px 10px;border:1px solid #ddd;text-align:center">' . ($tx->created_at ? \Carbon\Carbon::parse($tx->created_at)->format('Y-m-d') : '-') . '</td></tr>';
+        }
+
+        return '<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
+        <style>
+            body{font-family:Tahoma,Arial,sans-serif;direction:rtl;font-size:13px;color:#111}
+            h1{color:#101756;font-size:20px;margin-bottom:4px}
+            h2{color:#101756;font-size:15px;margin:24px 0 8px;border-bottom:2px solid #101756;padding-bottom:4px}
+            table{width:100%;border-collapse:collapse;margin-bottom:16px}
+            thead tr{background:#101756;color:#fff}
+            thead th{padding:8px 10px;text-align:right;font-size:12px}
+            tbody tr:nth-child(even){background:#f8f8f8}
+            ' . $printStyle . '
+        </style>' . $printScript . '</head><body>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h1>تقرير INSEP PRO</h1>
+            <span style="color:#888;font-size:12px">' . $date . '</span>
+        </div>
+
+        <h2>الإحصائيات العامة</h2>
+        <table><thead><tr><th>البيان</th><th style="text-align:center">القيمة</th></tr></thead>
+        <tbody>' . $statsRows . '</tbody></table>
+
+        <h2>الطلاب المسجلون</h2>
+        <table><thead><tr><th>الاسم</th><th>البريد الإلكتروني</th><th>الهاتف</th><th style="text-align:center">الحالة</th><th style="text-align:center">تاريخ التسجيل</th></tr></thead>
+        <tbody>' . $studentRows . '</tbody></table>
+
+        <h2>الدورات حسب التسجيل</h2>
+        <table><thead><tr><th>الدورة</th><th>التصنيف</th><th style="text-align:center">السعر</th><th style="text-align:center">المسجلون</th></tr></thead>
+        <tbody>' . $courseRows . '</tbody></table>
+
+        <h2>آخر المعاملات المالية</h2>
+        <table><thead><tr><th>الوصف</th><th style="text-align:center">المبلغ</th><th style="text-align:center">النوع</th><th>الطالب</th><th style="text-align:center">التاريخ</th></tr></thead>
+        <tbody>' . $txRows . '</tbody></table>
+        </body></html>';
     }
 
     public function gamification()

@@ -1,12 +1,20 @@
 @extends('layouts.dashboard')
 @section('title', 'INSEP PRO - التقارير')
 @section('dashboard-content')
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
     <h1 class="text-2xl font-black text-navy">التقارير</h1>
-    <a href="{{ route('dashboard.reports.export') }}" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-        تصدير CSV
-    </a>
+    <div class="flex items-center gap-3">
+        <a href="{{ route('dashboard.reports.export', ['format' => 'excel']) }}"
+           style="background:#1d6f42;color:#fff;padding:10px 20px;border-radius:12px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
+            <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            تصدير Excel
+        </a>
+        <a href="{{ route('dashboard.reports.export', ['format' => 'pdf']) }}"
+           style="background:#D61A23;color:#fff;padding:10px 20px;border-radius:12px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
+            <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            تصدير PDF
+        </a>
+    </div>
 </div>
 
 {{-- Summary Stats --}}
