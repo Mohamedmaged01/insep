@@ -104,7 +104,7 @@
                             @if(auth()->user()->role === 'admin')
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-2">
-                                    <button @click="openEdit({{ $tx->id }}, '{{ addslashes($tx->description) }}', {{ $tx->amount }}, '{{ $tx->type }}', '{{ $tx->method ?? '' }}', '{{ $tx->status }}')"
+                                    <button @click="openEdit({{ $tx->id }}, '{{ addslashes($tx->description) }}', {{ $tx->amount }}, '{{ $tx->currency ?? 'EGP' }}', '{{ $tx->type }}', '{{ $tx->method ?? '' }}', '{{ $tx->status }}')"
                                         class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                     </button>
@@ -202,18 +202,26 @@
                     <label class="text-sm font-bold text-navy mb-2 block">الوصف</label>
                     <input type="text" name="description" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">المبلغ (ج.م)</label>
-                        <input type="number" name="amount" min="0" step="0.01" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr" required>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">العملة والمبلغ</label>
+                    <div class="flex gap-2">
+                        <div class="flex rounded-xl border-2 border-gray-200 overflow-hidden flex-shrink-0">
+                            @foreach([['USD','$ دولار'],['EGP','ج.م'],['SAR','ر.س']] as [$val,$lbl])
+                            <label class="px-3 py-3 text-sm font-bold cursor-pointer transition-colors has-[:checked]:bg-navy has-[:checked]:text-white text-gray-600 hover:bg-gray-50">
+                                <input type="radio" name="currency" value="{{ $val }}" {{ $val==='EGP' ? 'checked' : '' }} class="sr-only">
+                                {{ $lbl }}
+                            </label>
+                            @endforeach
+                        </div>
+                        <input type="number" name="amount" min="0" step="0.01" placeholder="0.00" class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr" required>
                     </div>
-                    <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">النوع</label>
-                        <select name="type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                            <option value="income">إيراد</option>
-                            <option value="expense">مصروف</option>
-                        </select>
-                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">النوع</label>
+                    <select name="type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <option value="income">إيراد</option>
+                        <option value="expense">مصروف</option>
+                    </select>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -265,18 +273,28 @@
                     <label class="text-sm font-bold text-navy mb-2 block">الوصف</label>
                     <input type="text" name="description" x-model="editItem.description" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">المبلغ (ج.م)</label>
-                        <input type="number" name="amount" x-model="editItem.amount" min="0" step="0.01" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr" required>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">العملة والمبلغ</label>
+                    <div class="flex gap-2">
+                        <div class="flex rounded-xl border-2 border-gray-200 overflow-hidden flex-shrink-0">
+                            @foreach([['USD','$ دولار'],['EGP','ج.م'],['SAR','ر.س']] as [$val,$lbl])
+                            <label class="px-3 py-3 text-sm font-bold cursor-pointer transition-colors text-gray-600 hover:bg-gray-50"
+                                   :class="editItem.currency === '{{ $val }}' ? 'bg-navy text-white' : ''">
+                                <input type="radio" name="currency" value="{{ $val }}" x-model="editItem.currency" class="sr-only">
+                                {{ $lbl }}
+                            </label>
+                            @endforeach
+                        </div>
+                        <input type="number" name="amount" x-model="editItem.amount" min="0" step="0.01" class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr" required>
                     </div>
-                    <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">النوع</label>
-                        <select name="type" x-model="editItem.type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                            <option value="income">إيراد</option>
-                            <option value="expense">مصروف</option>
-                        </select>
-                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">النوع</label>
+                    <select name="type" x-model="editItem.type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <option value="income">إيراد</option>
+                        <option value="expense">مصروف</option>
+                    </select>
+                </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -424,10 +442,10 @@ function financeManager() {
         showEditModal: false,
         showInstallmentModal: false,
         showInstallmentEditModal: false,
-        editItem: { id: null, description: '', amount: 0, type: 'income', method: 'cash', status: 'completed' },
+        editItem: { id: null, description: '', amount: 0, currency: 'EGP', type: 'income', method: 'cash', status: 'completed' },
         editInst: { id: null, total_amount: 0, paid_amount: 0, due_date: '', status: 'pending', notes: '' },
-        openEdit(id, description, amount, type, method, status) {
-            this.editItem = { id, description, amount, type, method, status };
+        openEdit(id, description, amount, currency, type, method, status) {
+            this.editItem = { id, description, amount, currency, type, method, status };
             this.showEditModal = true;
         },
         openInstallmentEdit(id, total_amount, paid_amount, due_date, status, notes) {

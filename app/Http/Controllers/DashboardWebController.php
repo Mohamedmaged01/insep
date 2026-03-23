@@ -15,7 +15,6 @@ use App\Models\Attendance;
 use App\Models\Resource;
 use App\Models\LiveSession;
 use App\Models\Notification;
-use App\Models\Department;
 use App\Models\Point;
 use App\Models\Badge;
 use App\Models\Installment;
@@ -243,18 +242,24 @@ class DashboardWebController extends Controller
         $user = auth()->user();
         if ($user->role === 'student') {
             $notifications = Notification::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+            $batches = collect();
+        } elseif ($user->role === 'instructor') {
+            // Only batches this instructor teaches
+            $batches = Batch::with('course')->where('instructor_id', $user->id)->orderBy('id', 'desc')->get();
+            // Notifications sent to students in their batches
+            $batchIds = $batches->pluck('id');
+            $studentIds = Enrollment::whereIn('batch_id', $batchIds)->pluck('student_id')->unique();
+            $notifications = Notification::with('user')
+                ->whereIn('user_id', $studentIds)
+                ->orderBy('created_at', 'desc')->get();
         } else {
+            // Admin sees everything
             $notifications = Notification::with('user')->orderBy('created_at', 'desc')->get();
+            $batches = Batch::with('course')->orderBy('id', 'desc')->get();
         }
-        $batches = Batch::with('course')->orderBy('id', 'desc')->get();
         return view('dashboard.notifications', compact('notifications', 'batches'));
     }
 
-    public function departments()
-    {
-        $departments = Department::orderBy('created_at', 'desc')->get();
-        return view('dashboard.departments', compact('departments'));
-    }
 
     public function reports()
     {
@@ -506,23 +511,28 @@ class DashboardWebController extends Controller
     // ── Courses CRUD ───────────────────────────────────────────────
     public function storeCourse(Request $request)
     {
-        Course::create([
+        $hasCurrency = \Illuminate\Support\Facades\Schema::hasColumn('courses', 'currency');
+        $data = [
             'title'       => $request->title,
             'description' => $request->description,
             'category'    => $request->category,
             'price'       => $request->price ?? 0,
-            'currency'    => $request->currency ?? 'USD',
             'duration'    => $request->duration,
             'level'       => $request->level,
             'status'      => $request->status ?? 'active',
             'section_id'  => $request->section_id ?: null,
-        ]);
+        ];
+        if ($hasCurrency) $data['currency'] = $request->currency ?? 'USD';
+        Course::create($data);
         return back()->with('success', 'تم إضافة الدورة بنجاح');
     }
 
     public function updateCourse(Request $request, Course $course)
     {
-        $course->update($request->only(['title', 'description', 'category', 'price', 'currency', 'duration', 'level', 'status', 'section_id']));
+        $hasCurrency = \Illuminate\Support\Facades\Schema::hasColumn('courses', 'currency');
+        $fields = ['title', 'description', 'category', 'price', 'duration', 'level', 'status', 'section_id'];
+        if ($hasCurrency) $fields[] = 'currency';
+        $course->update($request->only($fields));
         return back()->with('success', 'تم تحديث الدورة بنجاح');
     }
 
@@ -590,27 +600,6 @@ class DashboardWebController extends Controller
         return back()->with('success', 'تم حذف المحتوى بنجاح');
     }
 
-    // ── Departments CRUD ───────────────────────────────────────────
-    public function storeDepartment(Request $request)
-    {
-        Department::create([
-            'name_ar' => $request->name_ar,
-            'name_en' => $request->name_en,
-        ]);
-        return back()->with('success', 'تم إضافة القسم بنجاح');
-    }
-
-    public function updateDepartment(Request $request, Department $department)
-    {
-        $department->update($request->only(['name_ar', 'name_en']));
-        return back()->with('success', 'تم تحديث القسم بنجاح');
-    }
-
-    public function destroyDepartment(Department $department)
-    {
-        $department->delete();
-        return back()->with('success', 'تم حذف القسم بنجاح');
-    }
 
     // ── Transactions CRUD (with payment proof upload) ───────────────
     public function storeTransaction(Request $request)
@@ -622,6 +611,7 @@ class DashboardWebController extends Controller
 
         Transaction::create([
             'description'   => $request->description,
+            'currency'      => $request->currency ?? 'EGP',
             'amount'        => $request->amount,
             'type'          => $request->type,
             'method'        => $request->method,
@@ -634,7 +624,7 @@ class DashboardWebController extends Controller
 
     public function updateTransaction(Request $request, Transaction $transaction)
     {
-        $data = $request->only(['description', 'amount', 'type', 'method', 'status']);
+        $data = $request->only(['description', 'amount', 'currency', 'type', 'method', 'status']);
         if ($request->hasFile('payment_proof')) {
             $data['payment_proof'] = $request->file('payment_proof')->store('payment-proofs', 'public');
         }
@@ -651,14 +641,28 @@ class DashboardWebController extends Controller
     // ── Notifications ──────────────────────────────────────────────
     public function storeNotification(Request $request)
     {
+        $user    = auth()->user();
         $text    = $request->text;
         $type    = $request->type ?? 'general';
         $batchId = $request->batch_id ?: null;
 
         if ($batchId) {
+            // Security: instructor can only send to their own batch
+            if ($user->role === 'instructor') {
+                $batch = Batch::where('id', $batchId)->where('instructor_id', $user->id)->first();
+                if (!$batch) return back()->with('error', 'غير مصرح لك بإرسال إشعار لهذه المجموعة');
+            }
             $studentIds = Enrollment::where('batch_id', $batchId)->pluck('student_id');
+        } elseif ($user->role === 'instructor') {
+            // Instructor "all" = only their own students
+            $batchIds   = Batch::where('instructor_id', $user->id)->pluck('id');
+            $studentIds = Enrollment::whereIn('batch_id', $batchIds)->pluck('student_id')->unique();
         } else {
             $studentIds = User::where('role', 'student')->pluck('id');
+        }
+
+        if ($studentIds->isEmpty()) {
+            return back()->with('error', 'لا يوجد طلاب مسجلون في هذه المجموعة');
         }
 
         foreach ($studentIds as $userId) {
@@ -670,7 +674,7 @@ class DashboardWebController extends Controller
                 'is_read'  => false,
             ]);
         }
-        return back()->with('success', 'تم إرسال الإشعار بنجاح');
+        return back()->with('success', 'تم إرسال الإشعار بنجاح لـ ' . $studentIds->count() . ' طالب');
     }
 
     public function markNotificationRead(Notification $notification)

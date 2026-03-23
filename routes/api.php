@@ -17,7 +17,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\LiveSessionController;
-use App\Http\Controllers\DepartmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -261,15 +260,3 @@ Route::middleware('auth:api')->group(function () {
     });
 });
 
-/*
-|--------------------------------------------------------------------------
-| Departments (public read, admin CUD)
-|--------------------------------------------------------------------------
-*/
-Route::get('departments', [DepartmentController::class, 'index']);
-Route::get('departments/{id}', [DepartmentController::class, 'show']);
-Route::middleware(['auth:api', 'role:admin'])->group(function () {
-    Route::post('departments', [DepartmentController::class, 'store']);
-    Route::put('departments/{id}', [DepartmentController::class, 'update']);
-    Route::delete('departments/{id}', [DepartmentController::class, 'destroy']);
-});

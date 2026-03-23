@@ -52,7 +52,6 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/certificates', [DashboardWebController::class, 'certificates'])->name('dashboard.certificates');
     Route::get('/finance', [DashboardWebController::class, 'finance'])->name('dashboard.finance');
     Route::get('/notifications', [DashboardWebController::class, 'notifications'])->name('dashboard.notifications');
-    Route::get('/departments', [DashboardWebController::class, 'departments'])->name('dashboard.departments');
     Route::get('/sections', [DashboardWebController::class, 'sections'])->name('dashboard.sections');
     Route::get('/reports', [DashboardWebController::class, 'reports'])->name('dashboard.reports');
     Route::get('/reports/export', [DashboardWebController::class, 'exportReports'])->name('dashboard.reports.export');
@@ -92,10 +91,6 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::put('/sections/{section}', [DashboardWebController::class, 'updateSection'])->name('dashboard.sections.update');
     Route::delete('/sections/{section}', [DashboardWebController::class, 'destroySection'])->name('dashboard.sections.destroy');
 
-    // Departments CRUD
-    Route::post('/departments', [DashboardWebController::class, 'storeDepartment'])->name('dashboard.departments.store');
-    Route::put('/departments/{department}', [DashboardWebController::class, 'updateDepartment'])->name('dashboard.departments.update');
-    Route::delete('/departments/{department}', [DashboardWebController::class, 'destroyDepartment'])->name('dashboard.departments.destroy');
 
     // Finance / Transactions CRUD
     Route::post('/finance', [DashboardWebController::class, 'storeTransaction'])->name('dashboard.finance.store');

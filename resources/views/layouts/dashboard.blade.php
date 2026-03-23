@@ -28,7 +28,6 @@
         ['key' => 'certificates', 'label' => 'الشهادات', 'icon' => 'award', 'route' => 'dashboard.certificates'],
         ['key' => 'finance', 'label' => 'المالية', 'icon' => 'dollar-sign', 'route' => 'dashboard.finance'],
         ['key' => 'notifications', 'label' => 'الإشعارات', 'icon' => 'bell', 'route' => 'dashboard.notifications'],
-        ['key' => 'departments', 'label' => 'الأقسام', 'icon' => 'layers', 'route' => 'dashboard.departments'],
         ['key' => 'reports', 'label' => 'التقارير', 'icon' => 'bar-chart-3', 'route' => 'dashboard.reports'],
         ['key' => 'gamification', 'label' => 'النقاط والشارات', 'icon' => 'award', 'route' => 'dashboard.gamification'],
         ['key' => 'settings', 'label' => 'الإعدادات', 'icon' => 'settings', 'route' => 'dashboard.settings'],
@@ -267,12 +266,20 @@
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
                         {{ $currentLang === 'ar' ? 'EN' : 'عر' }}
                     </a>
+                    @php
+                        $unreadCount = \App\Models\Notification::where('user_id', $user->id)->where('is_read', false)->count();
+                    @endphp
                     <a href="{{ route('dashboard.notifications') }}"
                         class="relative p-2 hover:bg-gray-100 rounded-xl transition-colors">
                         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
                         </svg>
+                        @if($unreadCount > 0)
+                        <span class="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                            {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                        </span>
+                        @endif
                     </a>
                     <div class="flex items-center gap-3 pr-3 border-r border-gray-200">
                         <div class="text-right">

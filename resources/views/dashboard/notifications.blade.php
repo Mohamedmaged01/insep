@@ -7,6 +7,9 @@
     @if(session('success'))
     <div class="mb-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm font-bold">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+    <div class="mb-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm font-bold">{{ session('error') }}</div>
+    @endif
 
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -39,7 +42,7 @@
                     <span class="text-xs font-bold px-2 py-0.5 bg-gray-100 text-gray-500 rounded-lg">{{ $notif->type }}</span>
                     @endif
                     <p class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}</p>
-                    @if(!$notif->is_read && auth()->user()->role === 'student')
+                    @if(!$notif->is_read)
                     <form method="POST" action="{{ route('dashboard.notifications.read', $notif->id) }}">
                         @csrf
                         <button type="submit" class="text-xs text-navy hover:underline font-bold">تحديد كمقروء</button>

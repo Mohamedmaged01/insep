@@ -8,16 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasColumn('courses', 'currency')) {
-            Schema::table('courses', function (Blueprint $table) {
-                $table->string('currency', 10)->default('USD')->after('price');
+        if (!Schema::hasColumn('transactions', 'currency')) {
+            Schema::table('transactions', function (Blueprint $table) {
+                $table->string('currency', 10)->default('EGP')->after('amount');
             });
         }
     }
 
     public function down(): void
     {
-        Schema::table('courses', function (Blueprint $table) {
+        Schema::table('transactions', function (Blueprint $table) {
             $table->dropColumn('currency');
         });
     }
