@@ -575,6 +575,9 @@ class DashboardWebController extends Controller
             'section_id'  => $request->section_id ?: null,
         ];
         if ($hasCurrency) $data['currency'] = $request->currency ?? 'USD';
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('courses', 'public');
+        }
         Course::create($data);
         return back()->with('success', 'تم إضافة الدورة بنجاح');
     }
@@ -584,7 +587,11 @@ class DashboardWebController extends Controller
         $hasCurrency = \Illuminate\Support\Facades\Schema::hasColumn('courses', 'currency');
         $fields = ['title', 'description', 'category', 'price', 'duration', 'level', 'status', 'section_id'];
         if ($hasCurrency) $fields[] = 'currency';
-        $course->update($request->only($fields));
+        $data = $request->only($fields);
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('courses', 'public');
+        }
+        $course->update($data);
         return back()->with('success', 'تم تحديث الدورة بنجاح');
     }
 

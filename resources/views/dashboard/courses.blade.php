@@ -63,7 +63,7 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->enrollments_count ?? 0 }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $course->id }}, '{{ addslashes($course->title) }}', '{{ addslashes($course->description ?? '') }}', '{{ $course->category ?? '' }}', {{ $course->price ?? 0 }}, '{{ $course->currency ?? 'USD' }}', '{{ $course->duration ?? '' }}', '{{ $course->level ?? '' }}', '{{ $course->status ?? 'active' }}', {{ $course->section_id ?? 'null' }})"
+                                <button @click="openEdit({{ $course->id }}, '{{ addslashes($course->title) }}', '{{ addslashes($course->description ?? '') }}', '{{ $course->category ?? '' }}', {{ $course->price ?? 0 }}, '{{ $course->currency ?? 'USD' }}', '{{ $course->duration ?? '' }}', '{{ $course->level ?? '' }}', '{{ $course->status ?? 'active' }}', {{ $course->section_id ?? 'null' }}, '{{ $course->image ?? '' }}')"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -89,8 +89,12 @@
         <div class="absolute inset-0 bg-black/50" @click="showAddModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-black text-navy mb-6">إضافة دورة جديدة</h2>
-            <form method="POST" action="{{ route('dashboard.courses.store') }}" class="space-y-4">
+            <form method="POST" action="{{ route('dashboard.courses.store') }}" class="space-y-4" enctype="multipart/form-data">
                 @csrf
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">صورة الدورة</label>
+                    <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 focus:border-navy transition-colors text-sm text-gray-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-navy file:text-white file:text-xs file:font-bold">
+                </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">عنوان الدورة</label>
                     <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
@@ -163,8 +167,15 @@
         <div class="absolute inset-0 bg-black/50" @click="showEditModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-black text-navy mb-6">تعديل الدورة</h2>
-            <form method="POST" :action="'/dashboard/courses/' + editItem.id" class="space-y-4">
+            <form method="POST" :action="'/dashboard/courses/' + editItem.id" class="space-y-4" enctype="multipart/form-data">
                 @csrf @method('PUT')
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">صورة الدورة (اتركها فارغة للإبقاء على الحالية)</label>
+                    <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 focus:border-navy transition-colors text-sm text-gray-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-navy file:text-white file:text-xs file:font-bold">
+                    <template x-if="editItem.image">
+                        <img :src="editItem.image" class="mt-2 h-20 rounded-xl object-cover" alt="صورة الدورة">
+                    </template>
+                </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">عنوان الدورة</label>
                     <input type="text" name="title" x-model="editItem.title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
@@ -241,9 +252,9 @@ function coursesManager() {
         search: '',
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, title: '', description: '', category: '', price: 0, currency: 'USD', duration: '', level: '', status: 'active', section_id: '' },
-        openEdit(id, title, description, category, price, currency, duration, level, status, section_id) {
-            this.editItem = { id, title, description, category, price, currency: currency || 'USD', duration, level, status, section_id: section_id || '' };
+        editItem: { id: null, title: '', description: '', category: '', price: 0, currency: 'USD', duration: '', level: '', status: 'active', section_id: '', image: '' },
+        openEdit(id, title, description, category, price, currency, duration, level, status, section_id, image) {
+            this.editItem = { id, title, description, category, price, currency: currency || 'USD', duration, level, status, section_id: section_id || '', image: image || '' };
             this.showEditModal = true;
         }
     };

@@ -8,10 +8,10 @@
 <section class="relative min-h-[600px] lg:min-h-[700px] overflow-hidden" x-data="{ currentSlide: 0 }" x-init="setInterval(() => currentSlide = (currentSlide + 1) % 4, 5000)">
     @php
         $slideImages = [
-            'https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=1500&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=1500&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1574680096141-1cddd32e04ca?q=80&w=1500&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1526676037777-05a232554f77?q=80&w=1500&auto=format&fit=crop',
+            'https://picsum.photos/seed/sport10/1500/700',
+            'https://picsum.photos/seed/sport11/1500/700',
+            'https://picsum.photos/seed/sport12/1500/700',
+            'https://picsum.photos/seed/sport13/1500/700',
         ];
         $slides = [
             ['title' => 'ابدأ رحلتك الاحترافية في علوم الرياضة مع INSEP PRO', 'subtitle' => 'حوّل شغفك بالرياضة إلى مهنة معتمدة', 'desc' => 'انضم إلى مجتمعنا التعليمي المتميز واحصل على شهادات معتمدة دولياً تفتح لك آفاقاً جديدة في سوق العمل الرياضي.'],
@@ -67,26 +67,6 @@
     </div>
 </section>
 
-{{-- Statistics Bar --}}
-<section class="bg-navy py-12">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            @foreach([
-                ['value' => '20K+', 'label' => $lang === 'ar' ? 'متدرب' : 'Trainees'],
-                ['value' => '100+', 'label' => $lang === 'ar' ? 'دورة تدريبية' : 'Courses'],
-                ['value' => '1M+',  'label' => $lang === 'ar' ? 'زيارة' : 'Visitors'],
-                ['value' => '50+',  'label' => $lang === 'ar' ? 'مدرب متخصص' : 'Trainers'],
-            ] as $stat)
-            <div class="group">
-                <div class="text-4xl md:text-5xl font-black text-white mb-2 group-hover:text-red-brand transition-colors duration-300" style="font-family:'Roboto',sans-serif">
-                    {{ $stat['value'] }}
-                </div>
-                <div class="text-gray-400 font-medium text-sm uppercase tracking-wider">{{ $stat['label'] }}</div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
 
 {{-- Identity Bar --}}
 <section class="bg-white py-16 relative overflow-hidden">
@@ -189,80 +169,6 @@
     </div>
 </section>
 
-{{-- Stats Counter --}}
-<section class="relative py-20 overflow-hidden" id="stats-section">
-    <div class="absolute inset-0 bg-gradient-to-br from-navy via-navy-light to-navy-dark">
-        <div class="absolute inset-0 hero-pattern"></div>
-        <div class="absolute top-10 left-[10%] w-40 h-40 bg-red-brand/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-10 right-[20%] w-60 h-60 bg-white/5 rounded-full blur-3xl"></div>
-    </div>
-    <div class="container mx-auto px-4 relative z-10">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            @foreach([
-                ['end' => 20000,   'display' => '20K',  'label' => 'متدرب',       'suffix' => '+', 'icon' => 'user'],
-                ['end' => 100,     'display' => '100',  'label' => 'دورة تدريبية','suffix' => '+', 'icon' => 'book'],
-                ['end' => 1000000, 'display' => '1M',   'label' => 'زيارة',       'suffix' => '+', 'icon' => 'globe'],
-                ['end' => 50,      'display' => '50',   'label' => 'مدرب متخصص',  'suffix' => '+', 'icon' => 'award'],
-            ] as $stat)
-            <div class="text-center group stat-counter" data-end="{{ $stat['end'] }}" data-display="{{ $stat['display'] }}">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 group-hover:scale-110 transform transition-transform duration-500 group-hover:bg-red-brand/20">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        @if($stat['icon'] === 'user') <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                        @elseif($stat['icon'] === 'book') <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-                        @elseif($stat['icon'] === 'globe') <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
-                        @else <circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
-                        @endif
-                    </svg>
-                </div>
-                <div class="text-4xl md:text-5xl font-black text-white mb-2" style="font-family: 'Roboto', sans-serif">
-                    <span class="counter-val">{{ $stat['display'] }}</span>{{ $stat['suffix'] }}
-                </div>
-                <p class="text-white/70 font-medium text-lg">{{ $stat['label'] }}</p>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-<script>
-(function() {
-    const counters = [
-        { el: null, end: 20000,   display: '20K',  suffix: '+' },
-        { el: null, end: 100,     display: '100',  suffix: '+' },
-        { el: null, end: 1000000, display: '1M',   suffix: '+' },
-        { el: null, end: 50,      display: '50',   suffix: '+' },
-    ];
-    function formatNum(n, display) {
-        if (display === '20K') return Math.round(n / 1000) + 'K';
-        if (display === '1M')  return (n >= 1000000) ? '1M' : Math.round(n / 1000) + 'K';
-        return Math.round(n).toString();
-    }
-    function animateStat(valEl, end, display) {
-        const duration = 2000, steps = 60, interval = duration / steps;
-        let current = 0;
-        const step = end / steps;
-        const timer = setInterval(() => {
-            current = Math.min(current + step, end);
-            valEl.textContent = formatNum(current, display);
-            if (current >= end) clearInterval(timer);
-        }, interval);
-    }
-    const section = document.getElementById('stats-section');
-    if (section && 'IntersectionObserver' in window) {
-        const obs = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
-                obs.disconnect();
-                document.querySelectorAll('.stat-counter').forEach((el, i) => {
-                    const valEl = el.querySelector('.counter-val');
-                    const end = parseInt(el.dataset.end);
-                    const display = el.dataset.display;
-                    animateStat(valEl, end, display);
-                });
-            }
-        }, { threshold: 0.3 });
-        obs.observe(section);
-    }
-})();
-</script>
 
 {{-- Why Choose Us --}}
 <section class="bg-white py-20">

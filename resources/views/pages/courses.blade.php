@@ -37,7 +37,7 @@
             @forelse($courses as $i => $course)
             <div class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp" style="animation-delay: {{ $i * 0.08 }}s; animation-fill-mode: forwards">
                 <div class="relative h-48 overflow-hidden group">
-                    <img src="{{ $course->image ?? 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    <img src="{{ $course->image ? (str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . $course->image)) : 'https://picsum.photos/seed/course' . $course->id . '/800/400' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
                     <div class="absolute top-4 right-4 bg-navy/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->category }}</div>
                     <div class="absolute top-4 left-4 bg-red-brand/90 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->level }}</div>
                 </div>
@@ -48,7 +48,7 @@
                         <span class="flex items-center gap-1">{{ $course->duration ?? '-' }}</span>
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">{{ $course->price ?? 0 }} ج.م</span>
+                        <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">{{ $course->currency ?? 'EGP' }} {{ number_format($course->price ?? 0) }}</span>
                         <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-1">
                             سجل الآن <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
                         </a>

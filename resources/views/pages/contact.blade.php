@@ -87,8 +87,8 @@
                             <label class="text-sm font-bold text-navy mb-2 block">الرسالة *</label>
                             <textarea name="message" rows="5" placeholder="اكتب رسالتك هنا..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 transition-colors resize-none" required>{{ old('message') }}</textarea>
                         </div>
-                        <button type="submit" class="bg-navy hover:bg-navy-dark text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center gap-2 hover:shadow-xl hover:shadow-navy/20">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        <button type="submit" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center gap-2 hover:shadow-lg hover:shadow-navy/20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                             إرسال الرسالة
                         </button>
                     </form>
@@ -96,13 +96,13 @@
             </div>
         </div>
 
-        {{-- Map Placeholder --}}
-        <div class="mt-12 bg-gradient-to-br from-navy/5 to-navy/10 rounded-2xl h-80 flex items-center justify-center border border-gray-200">
-            <div class="text-center">
-                <svg class="w-12 h-12 text-navy/30 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <p class="text-gray-400 font-medium">خريطة الموقع</p>
-                <p class="text-gray-300 text-sm">١٣ الخليفة المأمون، روكسي، مصر الجديدة، القاهرة</p>
-            </div>
+        {{-- Map --}}
+        <div class="mt-12 rounded-2xl overflow-hidden border border-gray-200 shadow-sm" style="height:380px">
+            <iframe
+                src="https://maps.google.com/maps?q=13+El+Khalifa+El+Maamoun+Roxy+Heliopolis+Cairo+Egypt&output=embed&z=16"
+                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
         </div>
     </div>
 </section>

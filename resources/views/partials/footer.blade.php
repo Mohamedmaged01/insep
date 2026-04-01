@@ -98,7 +98,7 @@
                 <div class="flex gap-2">
                     <input type="email" placeholder="{{ $lang === 'ar' ? 'بريدك الإلكتروني' : 'Your email' }}" class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:border-red-brand">
                     <button class="bg-red-brand hover:bg-red-brand-dark text-white px-4 py-3 rounded-xl transition-colors duration-300">
-                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                     </button>
                 </div>
             </div>
@@ -112,8 +112,8 @@
                 <span>© {{ date('Y') }} INSEP PRO - {{ $lang === 'ar' ? 'معهد علوم الرياضة. جميع الحقوق محفوظة.' : 'Sports Science Institute. All rights reserved.' }}</span>
                 <span class="hidden lg:inline text-gray-700">-</span>
                 <span>
-                    {{ $lang === 'ar' ? 'تصميم وتطوير شركة سكاد تيك للخدمات الرقمية' : 'Designed and Developed by Scada Tech' }}
-                    <a href="https://www.scadaatech.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-brand transition-colors font-semibold" style="font-family: 'Roboto', sans-serif">www.scadaatech.com</a>
+                    {{ $lang === 'ar' ? 'تصميم وتطوير' : 'Designed and Developed by' }}
+                    <a href="https://www.scadaatech.com" target="_blank" rel="noopener noreferrer" class="text-red-brand hover:text-red-brand-dark transition-colors font-bold" style="font-family: 'Roboto', sans-serif">ScadaTech</a>
                 </span>
             </div>
             <div class="flex items-center gap-4 text-sm text-gray-500 flex-shrink-0">

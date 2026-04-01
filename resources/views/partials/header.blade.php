@@ -79,7 +79,7 @@
 
             {{-- Actions --}}
             <div class="flex items-center gap-2">
-                <a href="{{ route('login') }}" class="bg-red-brand text-white px-6 py-3 rounded-xl font-bold hover:bg-red-brand-dark transition-all duration-300 hover:shadow-lg hover:shadow-red-brand/20 hidden sm:block">
+                <a href="{{ route('register') }}" class="bg-red-brand text-white px-6 py-3 rounded-xl font-bold hover:bg-red-brand-dark transition-all duration-300 hover:shadow-lg hover:shadow-red-brand/20 hidden sm:block">
                     {{ $lang === 'ar' ? 'تسجيل جديد' : 'Sign Up' }}
                 </a>
                 <a href="{{ route('login') }}" class="bg-navy text-white px-6 py-3 rounded-xl font-bold hover:bg-navy-dark transition-all duration-300 hover:shadow-lg hover:shadow-navy/20">
