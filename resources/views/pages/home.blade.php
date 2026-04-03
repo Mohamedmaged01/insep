@@ -67,6 +67,24 @@
     </div>
 </section>
 
+{{-- Statistics Bar --}}
+<section class="bg-navy py-10">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            @foreach([
+                ['number' => '+50',  'label' => 'مدرب معتمد'],
+                ['number' => '+1M',  'label' => 'طالب'],
+                ['number' => '+100', 'label' => 'دورة تدريبية'],
+                ['number' => '+20K', 'label' => 'شهادة معتمدة'],
+            ] as $stat)
+            <div class="text-white">
+                <div class="text-4xl font-black text-red-brand mb-1" style="font-family: 'Roboto', sans-serif">{{ $stat['number'] }}</div>
+                <div class="text-sm font-medium text-white/80">{{ $stat['label'] }}</div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
 
 {{-- Identity Bar --}}
 <section class="bg-white py-16 relative overflow-hidden">
