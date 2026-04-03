@@ -67,25 +67,6 @@
     </div>
 </section>
 
-{{-- Statistics Bar --}}
-<section class="bg-navy py-10">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            @foreach([
-                ['number' => '+50',  'label' => 'مدرب معتمد'],
-                ['number' => '+1M',  'label' => 'طالب'],
-                ['number' => '+100', 'label' => 'دورة تدريبية'],
-                ['number' => '+20K', 'label' => 'شهادة معتمدة'],
-            ] as $stat)
-            <div class="text-white">
-                <div class="text-4xl font-black text-red-brand mb-1" style="font-family: 'Roboto', sans-serif">{{ $stat['number'] }}</div>
-                <div class="text-sm font-medium text-white/80">{{ $stat['label'] }}</div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
 {{-- Identity Bar --}}
 <section class="bg-white py-16 relative overflow-hidden">
     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-l from-navy via-red-brand to-navy"></div>
@@ -228,6 +209,25 @@
         <div class="flex flex-wrap justify-center gap-4">
             <a href="{{ route('login') }}" class="bg-white text-red-brand hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 transform">سجل الآن</a>
             <a href="{{ route('contact') }}" class="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 border border-white/30">تواصل معنا</a>
+        </div>
+    </div>
+</section>
+
+{{-- Statistics Bar --}}
+<section class="bg-navy py-10">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            @foreach([
+                ['number' => '+50',  'label' => 'مدرب معتمد'],
+                ['number' => '+1M',  'label' => 'طالب'],
+                ['number' => '+100', 'label' => 'دورة تدريبية'],
+                ['number' => '+20K', 'label' => 'شهادة معتمدة'],
+            ] as $stat)
+            <div class="text-white">
+                <div class="text-4xl font-black text-red-brand mb-1" style="font-family: 'Roboto', sans-serif">{{ $stat['number'] }}</div>
+                <div class="text-sm font-medium text-white/80">{{ $stat['label'] }}</div>
+            </div>
+            @endforeach
         </div>
     </div>
 </section>
