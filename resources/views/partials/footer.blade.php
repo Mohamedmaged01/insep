@@ -109,12 +109,7 @@
     <div class="border-t border-gray-800">
         <div class="container mx-auto px-4 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-gray-500 text-sm flex flex-col lg:flex-row items-center gap-2 text-center lg:text-start">
-                <span>© {{ date('Y') }} INSEP PRO - {{ $lang === 'ar' ? 'معهد علوم الرياضة. جميع الحقوق محفوظة.' : 'Sports Science Institute. All rights reserved.' }}</span>
-                <span class="hidden lg:inline text-gray-700">-</span>
-                <span>
-                    {{ $lang === 'ar' ? 'تصميم وتطوير' : 'Designed and Developed by' }}
-                    <a href="https://www.scadaatech.com" target="_blank" rel="noopener noreferrer" class="text-red-brand hover:text-red-brand-dark transition-colors font-bold" style="font-family: 'Roboto', sans-serif">ScadaTech</a>
-                </span>
+                <span>INSEP PRO {{ date('Y') }} © Development By <a href="https://www.scadaatech.com" target="_blank" rel="noopener noreferrer" class="text-red-brand hover:text-red-brand-dark transition-colors font-bold" style="font-family: 'Roboto', sans-serif">SCADA Tech</a></span>
             </div>
             <div class="flex items-center gap-4 text-sm text-gray-500 flex-shrink-0">
                 <a href="#" class="hover:text-red-brand transition-colors">{{ $lang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' }}</a>

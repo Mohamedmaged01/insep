@@ -69,7 +69,27 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
                                 <label class="text-sm font-bold text-navy mb-2 block">رقم الجوال</label>
-                                <input name="phone" type="tel" placeholder="+966 5X XXX XXXX" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3.5 transition-colors" dir="ltr" value="{{ old('phone') }}">
+                                <div class="flex gap-2">
+                                    <select name="phone_code" class="border-2 border-gray-200 rounded-xl px-2 py-3.5 focus:border-navy transition-colors text-sm font-bold text-gray-700 flex-shrink-0" dir="ltr">
+                                        <option value="+20">🇪🇬 +20</option>
+                                        <option value="+966">🇸🇦 +966</option>
+                                        <option value="+971">🇦🇪 +971</option>
+                                        <option value="+974">🇶🇦 +974</option>
+                                        <option value="+965">🇰🇼 +965</option>
+                                        <option value="+973">🇧🇭 +973</option>
+                                        <option value="+968">🇴🇲 +968</option>
+                                        <option value="+962">🇯🇴 +962</option>
+                                        <option value="+961">🇱🇧 +961</option>
+                                        <option value="+963">🇸🇾 +963</option>
+                                        <option value="+964">🇮🇶 +964</option>
+                                        <option value="+212">🇲🇦 +212</option>
+                                        <option value="+216">🇹🇳 +216</option>
+                                        <option value="+213">🇩🇿 +213</option>
+                                        <option value="+1">🇺🇸 +1</option>
+                                        <option value="+44">🇬🇧 +44</option>
+                                    </select>
+                                    <input name="phone" type="tel" placeholder="1234567890" class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3.5 transition-colors" dir="ltr" value="{{ old('phone') }}">
+                                </div>
                             </div>
                             <div>
                                 <label class="text-sm font-bold text-navy mb-2 block">الموضوع *</label>
