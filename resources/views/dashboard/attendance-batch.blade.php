@@ -1,6 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'INSEP PRO - تسجيل الحضور')
+@section('title', 'INSEP PRO')
 @section('dashboard-content')
+@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
 
 {{-- Flash --}}
 @if(session('success'))
@@ -14,7 +15,7 @@
     </a>
     <div>
         <h1 class="text-2xl font-black text-navy">{{ $batch->name }}</h1>
-        <p class="text-gray-500 text-sm">{{ $batch->course->title ?? '-' }} &bull; {{ $enrolled->count() }} طالب</p>
+        <p class="text-gray-500 text-sm">{{ $batch->course->title ?? '-' }} &bull; {{ $enrolled->count() }} {{ $isAr ? 'طالب' : 'students' }}</p>
     </div>
 </div>
 
@@ -22,15 +23,15 @@
 <div class="bg-white rounded-2xl p-5 border border-gray-100 mb-6">
     <div class="flex flex-wrap items-center gap-4">
         <div>
-            <label class="text-sm font-bold text-navy mb-1 block">تاريخ الحضور</label>
+            <label class="text-sm font-bold text-navy mb-1 block">{{ $isAr ? 'تاريخ الحضور' : 'Attendance Date' }}</label>
             <form method="GET" action="{{ route('dashboard.attendance.batch', $batch->id) }}" class="flex gap-3">
                 <input type="date" name="date" value="{{ $selectedDate }}" class="border-2 border-gray-200 rounded-xl px-4 py-2.5 focus:border-navy transition-colors" dir="ltr">
-                <button type="submit" class="bg-navy text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-navy-dark transition-colors">عرض</button>
+                <button type="submit" class="bg-navy text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-navy-dark transition-colors">{{ $isAr ? 'عرض' : 'View' }}</button>
             </form>
         </div>
         @if($dates->count() > 0)
         <div>
-            <label class="text-sm font-bold text-navy mb-1 block">التواريخ السابقة</label>
+            <label class="text-sm font-bold text-navy mb-1 block">{{ $isAr ? 'التواريخ السابقة' : 'Previous Dates' }}</label>
             <div class="flex flex-wrap gap-2">
                 @foreach($dates->take(5) as $d)
                 <a href="{{ route('dashboard.attendance.batch', $batch->id) }}?date={{ $d }}"
@@ -51,10 +52,10 @@
 
     <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-6">
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-            <h3 class="font-bold text-navy">حضور يوم {{ $selectedDate }}</h3>
+            <h3 class="font-bold text-navy">{{ $isAr ? 'حضور يوم' : 'Attendance for' }} {{ $selectedDate }}</h3>
             <div class="flex gap-3 text-xs font-bold">
-                <button type="button" onclick="setAll('present')" class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">تحديد الكل حاضر</button>
-                <button type="button" onclick="setAll('absent')" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">تحديد الكل غائب</button>
+                <button type="button" onclick="setAll('present')" class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">{{ $isAr ? 'تحديد الكل حاضر' : 'Mark All Present' }}</button>
+                <button type="button" onclick="setAll('absent')" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">{{ $isAr ? 'تحديد الكل غائب' : 'Mark All Absent' }}</button>
             </div>
         </div>
         @if($enrolled->count() > 0)
@@ -70,29 +71,29 @@
                 <div class="flex gap-3 items-center">
                     <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="radio" name="statuses[{{ $student->id }}]" value="present" class="attendance-radio" {{ ($record?->status ?? 'present') === 'present' ? 'checked' : '' }}>
-                        <span class="text-xs font-bold text-green-600">حاضر</span>
+                        <span class="text-xs font-bold text-green-600">{{ $isAr ? 'حاضر' : 'Present' }}</span>
                     </label>
                     <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="radio" name="statuses[{{ $student->id }}]" value="absent" class="attendance-radio" {{ ($record?->status ?? '') === 'absent' ? 'checked' : '' }}>
-                        <span class="text-xs font-bold text-red-600">غائب</span>
+                        <span class="text-xs font-bold text-red-600">{{ $isAr ? 'غائب' : 'Absent' }}</span>
                     </label>
                     <label class="flex items-center gap-1.5 cursor-pointer">
                         <input type="radio" name="statuses[{{ $student->id }}]" value="excused" class="attendance-radio" {{ ($record?->status ?? '') === 'excused' ? 'checked' : '' }}>
-                        <span class="text-xs font-bold text-yellow-600">معذور</span>
+                        <span class="text-xs font-bold text-yellow-600">{{ $isAr ? 'معذور' : 'Excused' }}</span>
                     </label>
-                    <input type="text" name="notes[{{ $student->id }}]" value="{{ $record?->notes ?? '' }}" placeholder="ملاحظة..." class="border border-gray-200 rounded-lg px-3 py-1.5 text-xs w-32 focus:border-navy transition-colors">
+                    <input type="text" name="notes[{{ $student->id }}]" value="{{ $record?->notes ?? '' }}" placeholder="{{ $isAr ? 'ملاحظة...' : 'Note...' }}" class="border border-gray-200 rounded-lg px-3 py-1.5 text-xs w-32 focus:border-navy transition-colors">
                 </div>
             </div>
             @endforeach
         </div>
         @else
-        <p class="text-center py-12 text-gray-400">لا يوجد طلاب مسجلون في هذه المجموعة</p>
+        <p class="text-center py-12 text-gray-400">{{ $isAr ? 'لا يوجد طلاب مسجلون في هذه المجموعة' : 'No students enrolled in this batch' }}</p>
         @endif
     </div>
 
     @if($enrolled->count() > 0)
     <button type="submit" class="w-full bg-navy hover:bg-navy-dark text-white py-4 rounded-2xl font-black text-lg transition-colors shadow-xl">
-        حفظ الحضور
+        {{ $isAr ? 'حفظ الحضور' : 'Save Attendance' }}
     </button>
     @endif
 </form>

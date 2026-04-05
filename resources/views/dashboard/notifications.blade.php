@@ -1,6 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'INSEP PRO - الإشعارات')
+@section('title', 'INSEP PRO')
 @section('dashboard-content')
+@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
 <div x-data="{ showSendModal: false }">
 
     {{-- Flash --}}
@@ -14,13 +15,13 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-black text-navy">الإشعارات</h1>
-            <p class="text-gray-500 text-sm">{{ $notifications->count() }} إشعار</p>
+            <h1 class="text-2xl font-black text-navy">{{ $isAr ? 'الإشعارات' : 'Notifications' }}</h1>
+            <p class="text-gray-500 text-sm">{{ $notifications->count() }} {{ $isAr ? 'إشعار' : 'notifications' }}</p>
         </div>
         @if(auth()->user()->role !== 'student')
         <button @click="showSendModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            إرسال إشعار
+            {{ $isAr ? 'إرسال إشعار' : 'Send Notification' }}
         </button>
         @endif
     </div>
@@ -34,7 +35,7 @@
             </div>
             <div class="flex-1">
                 @if(auth()->user()->role !== 'student')
-                <p class="text-xs text-gray-400 mb-1">إلى: {{ $notif->user->name ?? '-' }}</p>
+                <p class="text-xs text-gray-400 mb-1">{{ $isAr ? 'إلى:' : 'To:' }} {{ $notif->user->name ?? '-' }}</p>
                 @endif
                 <p class="font-bold text-navy text-sm {{ $notif->is_read ? '' : 'text-navy' }}">{{ $notif->text }}</p>
                 <div class="flex items-center gap-3 mt-2">
@@ -45,7 +46,7 @@
                     @if(!$notif->is_read)
                     <form method="POST" action="{{ route('dashboard.notifications.read', $notif->id) }}">
                         @csrf
-                        <button type="submit" class="text-xs text-navy hover:underline font-bold">تحديد كمقروء</button>
+                        <button type="submit" class="text-xs text-navy hover:underline font-bold">{{ $isAr ? 'تحديد كمقروء' : 'Mark as Read' }}</button>
                     </form>
                     @endif
                 </div>
@@ -55,7 +56,7 @@
             @endif
         </div>
         @empty
-        <div class="text-center py-12 text-gray-400">لا يوجد إشعارات</div>
+        <div class="text-center py-12 text-gray-400">{{ $isAr ? 'لا يوجد إشعارات' : 'No notifications found' }}</div>
         @endforelse
     </div>
 
@@ -64,27 +65,27 @@
     <div x-show="showSendModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showSendModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl">
-            <h2 class="text-xl font-black text-navy mb-6">إرسال إشعار</h2>
+            <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'إرسال إشعار' : 'Send Notification' }}</h2>
             <form method="POST" action="{{ route('dashboard.notifications.store') }}" class="space-y-4">
                 @csrf
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">نص الإشعار</label>
-                    <textarea name="text" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required placeholder="اكتب نص الإشعار هنا..."></textarea>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'نص الإشعار' : 'Notification Text' }}</label>
+                    <textarea name="text" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required placeholder="{{ $isAr ? 'اكتب نص الإشعار هنا...' : 'Write notification text here...' }}"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">نوع الإشعار</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'نوع الإشعار' : 'Notification Type' }}</label>
                         <select name="type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                            <option value="general">عام</option>
-                            <option value="attendance">حضور</option>
-                            <option value="live">بث مباشر</option>
-                            <option value="resource">محتوى جديد</option>
+                            <option value="general">{{ $isAr ? 'عام' : 'General' }}</option>
+                            <option value="attendance">{{ $isAr ? 'حضور' : 'Attendance' }}</option>
+                            <option value="live">{{ $isAr ? 'بث مباشر' : 'Live Session' }}</option>
+                            <option value="resource">{{ $isAr ? 'محتوى جديد' : 'New Content' }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">إرسال إلى</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'إرسال إلى' : 'Send To' }}</label>
                         <select name="batch_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                            <option value="">جميع الطلاب</option>
+                            <option value="">{{ $isAr ? 'جميع الطلاب' : 'All Students' }}</option>
                             @foreach($batches as $batch)
                             <option value="{{ $batch->id }}">{{ $batch->name }} - {{ $batch->course->title ?? '' }}</option>
                             @endforeach
@@ -92,8 +93,8 @@
                     </div>
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button type="button" @click="showSendModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
-                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">إرسال</button>
+                    <button type="button" @click="showSendModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
+                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'إرسال' : 'Send' }}</button>
                 </div>
             </form>
         </div>

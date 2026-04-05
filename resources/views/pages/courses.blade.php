@@ -1,17 +1,18 @@
 @extends('layouts.app')
-@section('title', 'INSEP PRO - البرامج التدريبية')
+@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
+@section('title', 'INSEP PRO - ' . ($isAr ? 'البرامج التدريبية' : 'Training Programs'))
 
 @section('content')
 {{-- Hero --}}
 <section class="bg-gradient-to-br from-navy via-navy-light to-navy-dark py-20 relative overflow-hidden">
     <div class="absolute inset-0 hero-pattern opacity-30"></div>
     <div class="container mx-auto px-4 relative z-10 text-center">
-        <span class="inline-block bg-white/10 text-white px-4 py-1.5 rounded-full text-sm font-bold mb-4 border border-white/20">أكثر من 5,000 دورة تدريبية</span>
-        <h1 class="text-4xl md:text-5xl font-black text-white mb-4">البرامج التدريبية</h1>
-        <p class="text-white/70 text-lg max-w-2xl mx-auto mb-8">اكتشف مجموعة واسعة من البرامج التدريبية المعتمدة في مجال علوم الرياضة</p>
+        <span class="inline-block bg-white/10 text-white px-4 py-1.5 rounded-full text-sm font-bold mb-4 border border-white/20">{{ $isAr ? 'أكثر من 5,000 دورة تدريبية' : 'Over 5,000 Training Courses' }}</span>
+        <h1 class="text-4xl md:text-5xl font-black text-white mb-4">{{ $isAr ? 'البرامج التدريبية' : 'Training Programs' }}</h1>
+        <p class="text-white/70 text-lg max-w-2xl mx-auto mb-8">{{ $isAr ? 'اكتشف مجموعة واسعة من البرامج التدريبية المعتمدة في مجال علوم الرياضة' : 'Discover a broad range of accredited training programs in sports science' }}</p>
         <form action="{{ route('courses') }}" method="GET" class="max-w-xl mx-auto relative">
             <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="ابحث عن دورة..." class="w-full bg-white rounded-xl pr-12 pl-4 py-4 text-lg shadow-xl focus:ring-2 focus:ring-red-brand">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ $isAr ? 'ابحث عن دورة...' : 'Search for a course...' }}" class="w-full bg-white rounded-xl pr-12 pl-4 py-4 text-lg shadow-xl focus:ring-2 focus:ring-red-brand">
         </form>
     </div>
 </section>
@@ -19,19 +20,25 @@
 {{-- Content --}}
 <section class="py-12 bg-gray-50">
     <div class="container mx-auto px-4">
-        @php $categories = ['الكل', 'التدريب الرياضي', 'العلاج الطبيعي', 'التغذية الرياضية', 'الإدارة الرياضية']; @endphp
+        @php
+            $categories = $isAr
+                ? ['الكل', 'التدريب الرياضي', 'العلاج الطبيعي', 'التغذية الرياضية', 'الإدارة الرياضية']
+                : ['All', 'Sports Coaching', 'Physiotherapy', 'Sports Nutrition', 'Sports Management'];
+            $catValues = ['', 'التدريب الرياضي', 'العلاج الطبيعي', 'التغذية الرياضية', 'الإدارة الرياضية'];
+        @endphp
         <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div class="flex flex-wrap gap-2">
-                @foreach($categories as $cat)
-                <a href="{{ route('courses', array_merge(request()->query(), ['category' => $cat === 'الكل' ? '' : $cat])) }}"
-                   class="px-4 py-2 rounded-xl text-sm font-semibold transition-all {{ (request('category') ?: 'الكل') === ($cat === 'الكل' && !request('category') ? 'الكل' : $cat) ? 'bg-navy text-white shadow-lg' : 'bg-white text-navy border border-gray-200 hover:border-navy' }}">
+                @foreach($categories as $idx => $cat)
+                @php $val = $catValues[$idx]; @endphp
+                <a href="{{ route('courses', array_merge(request()->query(), ['category' => $val])) }}"
+                   class="px-4 py-2 rounded-xl text-sm font-semibold transition-all {{ (request('category', '') === $val) ? 'bg-navy text-white shadow-lg' : 'bg-white text-navy border border-gray-200 hover:border-navy' }}">
                     {{ $cat }}
                 </a>
                 @endforeach
             </div>
         </div>
 
-        <p class="text-gray-500 mb-6">عرض {{ $courses->count() }} دورة</p>
+        <p class="text-gray-500 mb-6">{{ $isAr ? 'عرض' : 'Showing' }} {{ $courses->count() }} {{ $isAr ? 'دورة' : 'courses' }}</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($courses as $i => $course)
@@ -48,7 +55,7 @@
                         <span class="flex items-center gap-1">{{ $course->duration ?? '-' }}</span>
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">{{ $course->currency ?? 'EGP' }} {{ number_format($course->price ?? 0) }}</span>
+                        <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">$ {{ number_format($course->price ?? 0) }} USD</span>
                         <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-1">
                             سجل الآن <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
                         </a>
@@ -58,8 +65,8 @@
             @empty
             <div class="text-center py-20 col-span-3">
                 <svg class="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-                <h3 class="text-xl font-bold text-gray-400">لم يتم العثور على نتائج</h3>
-                <p class="text-gray-400 mt-2">حاول تغيير معايير البحث أو الفلترة</p>
+                <h3 class="text-xl font-bold text-gray-400">{{ $isAr ? 'لم يتم العثور على نتائج' : 'No Results Found' }}</h3>
+                <p class="text-gray-400 mt-2">{{ $isAr ? 'حاول تغيير معايير البحث أو الفلترة' : 'Try changing your search or filter criteria' }}</p>
             </div>
             @endforelse
         </div>

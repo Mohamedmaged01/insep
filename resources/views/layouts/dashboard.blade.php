@@ -4,51 +4,42 @@
     $isAdmin = $user && $user->role === 'admin';
     $isStudent = $user && $user->role === 'student';
     $isInstructor = $user && $user->role === 'instructor';
-    $roleName = $isAdmin ? 'مدير النظام' : ($isStudent ? 'طالب' : 'مدرب');
-    $userName = $user->name ?? 'مستخدم';
+    $isAr = $lang === 'ar';
+    $roleName = $isAdmin ? ($isAr ? 'مدير النظام' : 'System Admin') : ($isStudent ? ($isAr ? 'طالب' : 'Student') : ($isAr ? 'مدرب' : 'Trainer'));
+    $userName = $user->name ?? ($isAr ? 'مستخدم' : 'User');
     $userEmail = $user->email ?? '';
 
     $adminMenu = [
-        ['key' => 'home', 'label' => 'الرئيسية', 'icon' => 'home', 'route' => 'dashboard'],
-        ['key' => 'students', 'label' => 'إدارة الطلاب', 'icon' => 'users', 'route' => 'dashboard.students'],
-        [
-            'key' => 'instructors',
-            'label' => 'إدارة المدربين',
-            'icon' => 'graduation-cap',
-            'route' => 'dashboard.instructors',
-        ],
-        ['key' => 'sections', 'label' => 'الشعب التدريبية', 'icon' => 'grid', 'route' => 'dashboard.sections'],
-        ['key' => 'courses', 'label' => 'إدارة الدورات', 'icon' => 'book-open', 'route' => 'dashboard.courses'],
-        [
-            'key' => 'batches',
-            'label' => 'المجموعات التدريبية',
-            'icon' => 'clipboard-list',
-            'route' => 'dashboard.batches',
-        ],
-        ['key' => 'certificates', 'label' => 'الشهادات', 'icon' => 'award', 'route' => 'dashboard.certificates'],
-        ['key' => 'finance', 'label' => 'المالية', 'icon' => 'dollar-sign', 'route' => 'dashboard.finance'],
-        ['key' => 'notifications', 'label' => 'الإشعارات', 'icon' => 'bell', 'route' => 'dashboard.notifications'],
-        ['key' => 'reports', 'label' => 'التقارير', 'icon' => 'bar-chart-3', 'route' => 'dashboard.reports'],
-        ['key' => 'gamification', 'label' => 'النقاط والشارات', 'icon' => 'award', 'route' => 'dashboard.gamification'],
-        ['key' => 'settings', 'label' => 'الإعدادات', 'icon' => 'settings', 'route' => 'dashboard.settings'],
+        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'           : 'Home',           'icon' => 'home',           'route' => 'dashboard'],
+        ['key' => 'students',     'label' => $isAr ? 'إدارة الطلاب'       : 'Students',        'icon' => 'users',          'route' => 'dashboard.students'],
+        ['key' => 'instructors',  'label' => $isAr ? 'إدارة المدربين'     : 'Trainers',        'icon' => 'graduation-cap', 'route' => 'dashboard.instructors'],
+        ['key' => 'sections',     'label' => $isAr ? 'الشعب التدريبية'    : 'Sections',        'icon' => 'grid',           'route' => 'dashboard.sections'],
+        ['key' => 'courses',      'label' => $isAr ? 'إدارة الدورات'      : 'Courses',         'icon' => 'book-open',      'route' => 'dashboard.courses'],
+        ['key' => 'batches',      'label' => $isAr ? 'المجموعات التدريبية': 'Batches',         'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
+        ['key' => 'certificates', 'label' => $isAr ? 'الشهادات'           : 'Certificates',    'icon' => 'award',          'route' => 'dashboard.certificates'],
+        ['key' => 'finance',      'label' => $isAr ? 'المالية'            : 'Finance',         'icon' => 'dollar-sign',    'route' => 'dashboard.finance'],
+        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'          : 'Notifications',   'icon' => 'bell',           'route' => 'dashboard.notifications'],
+        ['key' => 'reports',      'label' => $isAr ? 'التقارير'           : 'Reports',         'icon' => 'bar-chart-3',    'route' => 'dashboard.reports'],
+        ['key' => 'gamification', 'label' => $isAr ? 'النقاط والشارات'   : 'Points & Badges', 'icon' => 'award',          'route' => 'dashboard.gamification'],
+        ['key' => 'settings',     'label' => $isAr ? 'الإعدادات'          : 'Settings',        'icon' => 'settings',       'route' => 'dashboard.settings'],
     ];
 
     $studentMenu = [
-        ['key' => 'home', 'label' => 'الرئيسية', 'icon' => 'home', 'route' => 'dashboard'],
-        ['key' => 'mycourses', 'label' => 'دوراتي', 'icon' => 'book-open', 'route' => 'dashboard.mycourses'],
-        ['key' => 'exams', 'label' => 'الاختبارات', 'icon' => 'file-text', 'route' => 'dashboard.exams'],
-        ['key' => 'certificates', 'label' => 'شهاداتي', 'icon' => 'award', 'route' => 'dashboard.certificates'],
-        ['key' => 'finance', 'label' => 'المالية', 'icon' => 'credit-card', 'route' => 'dashboard.finance'],
-        ['key' => 'notifications', 'label' => 'الإشعارات', 'icon' => 'bell', 'route' => 'dashboard.notifications'],
-        ['key' => 'gamification', 'label' => 'نقاطي وشاراتي', 'icon' => 'award', 'route' => 'dashboard.gamification'],
-        ['key' => 'settings', 'label' => 'الملف الشخصي', 'icon' => 'settings', 'route' => 'dashboard.settings'],
+        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'     : 'Home',          'icon' => 'home',        'route' => 'dashboard'],
+        ['key' => 'mycourses',    'label' => $isAr ? 'دوراتي'       : 'My Courses',    'icon' => 'book-open',   'route' => 'dashboard.mycourses'],
+        ['key' => 'exams',        'label' => $isAr ? 'الاختبارات'   : 'Exams',         'icon' => 'file-text',   'route' => 'dashboard.exams'],
+        ['key' => 'certificates', 'label' => $isAr ? 'شهاداتي'     : 'My Certificates','icon' => 'award',       'route' => 'dashboard.certificates'],
+        ['key' => 'finance',      'label' => $isAr ? 'المالية'      : 'Finance',       'icon' => 'credit-card', 'route' => 'dashboard.finance'],
+        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'    : 'Notifications', 'icon' => 'bell',        'route' => 'dashboard.notifications'],
+        ['key' => 'gamification', 'label' => $isAr ? 'نقاطي وشاراتي': 'My Points',    'icon' => 'award',       'route' => 'dashboard.gamification'],
+        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي' : 'Profile',       'icon' => 'settings',    'route' => 'dashboard.settings'],
     ];
 
     $instructorMenu = [
-        ['key' => 'home', 'label' => 'الرئيسية', 'icon' => 'home', 'route' => 'dashboard'],
-        ['key' => 'mybatches', 'label' => 'مجموعاتي', 'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
-        ['key' => 'notifications', 'label' => 'الإشعارات', 'icon' => 'bell', 'route' => 'dashboard.notifications'],
-        ['key' => 'settings', 'label' => 'الملف الشخصي', 'icon' => 'settings', 'route' => 'dashboard.settings'],
+        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'     : 'Home',          'icon' => 'home',           'route' => 'dashboard'],
+        ['key' => 'mybatches',    'label' => $isAr ? 'مجموعاتي'    : 'My Batches',    'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
+        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'    : 'Notifications', 'icon' => 'bell',           'route' => 'dashboard.notifications'],
+        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي' : 'Profile',       'icon' => 'settings',       'route' => 'dashboard.settings'],
     ];
 
     $menuItems = $isAdmin ? $adminMenu : ($isStudent ? $studentMenu : $instructorMenu);
@@ -214,7 +205,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    <span x-show="sidebarOpen" class="font-medium text-sm" x-cloak>الموقع الرئيسي</span>
+                    <span x-show="sidebarOpen" class="font-medium text-sm" x-cloak>{{ $isAr ? 'الموقع الرئيسي' : 'Main Website' }}</span>
                 </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -225,7 +216,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
-                        <span x-show="sidebarOpen" class="font-medium text-sm" x-cloak>تسجيل خروج</span>
+                        <span x-show="sidebarOpen" class="font-medium text-sm" x-cloak>{{ $isAr ? 'تسجيل خروج' : 'Sign Out' }}</span>
                     </button>
                 </form>
             </div>
@@ -254,7 +245,7 @@
                             <circle cx="11" cy="11" r="8" />
                             <path stroke-linecap="round" d="M21 21l-4.35-4.35" />
                         </svg>
-                        <input type="text" placeholder="بحث..."
+                        <input type="text" placeholder="{{ $isAr ? 'بحث...' : 'Search...' }}"
                             class="bg-gray-50 border border-gray-200 rounded-xl pr-10 pl-4 py-2 text-sm w-64 focus:border-navy">
                     </div>
                 </div>

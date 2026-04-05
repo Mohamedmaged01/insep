@@ -1,6 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'INSEP PRO - المجموعات التدريبية')
+@section('title', 'INSEP PRO')
 @section('dashboard-content')
+@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
 <div x-data="batchesManager()">
 
     {{-- Flash --}}
@@ -11,12 +12,12 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-black text-navy">المجموعات التدريبية</h1>
-            <p class="text-gray-500 text-sm">إجمالي {{ $batches->count() }} مجموعة</p>
+            <h1 class="text-2xl font-black text-navy">{{ $isAr ? 'المجموعات التدريبية' : 'Training Batches' }}</h1>
+            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $batches->count() }} {{ $isAr ? 'مجموعة' : 'batches' }}</p>
         </div>
         <button @click="showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            إضافة مجموعة
+            {{ $isAr ? 'إضافة مجموعة' : 'Add Batch' }}
         </button>
     </div>
 
@@ -27,13 +28,13 @@
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-100">
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">#</th>
-                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الاسم</th>
-                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الدورة</th>
-                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">المدرب</th>
-                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">تاريخ البدء</th>
-                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الحد الأقصى</th>
-                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">الحالة</th>
-                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">إجراءات</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'الاسم' : 'Name' }}</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'الدورة' : 'Course' }}</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'المدرب' : 'Trainer' }}</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'تاريخ البدء' : 'Start Date' }}</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'الحد الأقصى' : 'Max Students' }}</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'الحالة' : 'Status' }}</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'إجراءات' : 'Actions' }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,7 +48,7 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $batch->max_students }}</td>
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 rounded-lg text-xs font-bold {{ ($batch->status ?? 'active') === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
-                                {{ ($batch->status ?? 'active') === 'active' ? 'نشطة' : 'منتهية' }}
+                                {{ ($batch->status ?? 'active') === 'active' ? ($isAr ? 'نشطة' : 'Active') : ($isAr ? 'منتهية' : 'Completed') }}
                             </span>
                         </td>
                         <td class="px-6 py-4">
@@ -55,7 +56,7 @@
                                 {{-- Gear dropdown --}}
                                 <div class="relative" x-data="{ open: false }">
                                     <button @click="open = !open" @click.outside="open = false"
-                                        class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500" title="إدارة">
+                                        class="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500" title="{{ $isAr ? 'إدارة' : 'Manage' }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                             <circle cx="12" cy="12" r="3"/>
                                             <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
@@ -66,36 +67,36 @@
                                         <a href="{{ route('dashboard.attendance.batch', $batch->id) }}"
                                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                             <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                            الحضور والغياب
+                                            {{ $isAr ? 'الحضور والغياب' : 'Attendance' }}
                                         </a>
                                         <a href="{{ route('dashboard.live-sessions') }}?batch={{ $batch->id }}"
                                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                             <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49"/></svg>
-                                            البث المباشر
+                                            {{ $isAr ? 'البث المباشر' : 'Live Sessions' }}
                                         </a>
                                         <a href="{{ route('dashboard.exams') }}?batch={{ $batch->id }}"
                                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                             <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                            الاختبارات
+                                            {{ $isAr ? 'الاختبارات' : 'Exams' }}
                                         </a>
                                         <a href="{{ route('dashboard.resources') }}?batch={{ $batch->id }}"
                                             class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                             <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                            المحاضرات المسجلة
+                                            {{ $isAr ? 'المحاضرات المسجلة' : 'Recorded Lectures' }}
                                         </a>
                                     </div>
                                 </div>
                                 <a href="{{ route('dashboard.batches.detail', $batch->id) }}"
-                                    class="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-500" title="تفاصيل">
+                                    class="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-500" title="{{ $isAr ? 'تفاصيل' : 'Details' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
                                 <button @click="openEdit({{ $batch->id }}, '{{ addslashes($batch->name) }}', {{ $batch->course_id }}, {{ $batch->instructor_id }}, '{{ $batch->start_date ?? '' }}', '{{ $batch->end_date ?? '' }}', {{ $batch->max_students }}, '{{ $batch->status ?? 'active' }}')"
-                                    class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="تعديل">
+                                    class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
-                                <form method="POST" action="{{ route('dashboard.batches.destroy', $batch->id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذه المجموعة؟')">
+                                <form method="POST" action="{{ route('dashboard.batches.destroy', $batch->id) }}" onsubmit="return confirm('{{ $isAr ? 'هل أنت متأكد من حذف هذه المجموعة؟' : 'Are you sure you want to delete this batch?' }}')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500" title="حذف">
+                                    <button type="submit" class="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500" title="{{ $isAr ? 'حذف' : 'Delete' }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                                     </button>
                                 </form>
@@ -103,7 +104,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center py-12 text-gray-400">لا يوجد مجموعات بعد</td></tr>
+                    <tr><td colspan="8" class="text-center py-12 text-gray-400">{{ $isAr ? 'لا يوجد مجموعات بعد' : 'No batches found yet' }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -114,26 +115,26 @@
     <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showAddModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h2 class="text-xl font-black text-navy mb-6">إضافة مجموعة جديدة</h2>
+            <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'إضافة مجموعة جديدة' : 'Add New Batch' }}</h2>
             <form method="POST" action="{{ route('dashboard.batches.store') }}" class="space-y-4">
                 @csrf
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">اسم المجموعة</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'اسم المجموعة' : 'Batch Name' }}</label>
                     <input type="text" name="name" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الدورة</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الدورة' : 'Course' }}</label>
                     <select name="course_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
-                        <option value="">-- اختر الدورة --</option>
+                        <option value="">{{ $isAr ? '-- اختر الدورة --' : '-- Select Course --' }}</option>
                         @foreach($courses as $course)
                         <option value="{{ $course->id }}">{{ $course->title }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">المدرب</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المدرب' : 'Trainer' }}</label>
                     <select name="instructor_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
-                        <option value="">-- اختر المدرب --</option>
+                        <option value="">{{ $isAr ? '-- اختر المدرب --' : '-- Select Trainer --' }}</option>
                         @foreach($instructors as $inst)
                         <option value="{{ $inst->id }}">{{ $inst->name }}</option>
                         @endforeach
@@ -141,28 +142,28 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">تاريخ البدء</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'تاريخ البدء' : 'Start Date' }}</label>
                         <input type="date" name="start_date" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">تاريخ الانتهاء</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'تاريخ الانتهاء' : 'End Date' }}</label>
                         <input type="date" name="end_date" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الحد الأقصى للطلاب</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحد الأقصى للطلاب' : 'Max Students' }}</label>
                     <input type="number" name="max_students" value="30" min="1" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الحالة</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحالة' : 'Status' }}</label>
                     <select name="status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                        <option value="active">نشطة</option>
-                        <option value="ended">منتهية</option>
+                        <option value="active">{{ $isAr ? 'نشطة' : 'Active' }}</option>
+                        <option value="ended">{{ $isAr ? 'منتهية' : 'Completed' }}</option>
                     </select>
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button type="button" @click="showAddModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
-                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">حفظ</button>
+                    <button type="button" @click="showAddModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
+                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'حفظ' : 'Save' }}</button>
                 </div>
             </form>
         </div>
@@ -172,15 +173,15 @@
     <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showEditModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <h2 class="text-xl font-black text-navy mb-6">تعديل المجموعة</h2>
+            <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'تعديل المجموعة' : 'Edit Batch' }}</h2>
             <form method="POST" :action="'/dashboard/batches/' + editItem.id" class="space-y-4">
                 @csrf @method('PUT')
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">اسم المجموعة</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'اسم المجموعة' : 'Batch Name' }}</label>
                     <input type="text" name="name" x-model="editItem.name" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الدورة</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الدورة' : 'Course' }}</label>
                     <select name="course_id" x-model="editItem.course_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
                         @foreach($courses as $course)
                         <option value="{{ $course->id }}">{{ $course->title }}</option>
@@ -188,7 +189,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">المدرب</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المدرب' : 'Trainer' }}</label>
                     <select name="instructor_id" x-model="editItem.instructor_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
                         @foreach($instructors as $inst)
                         <option value="{{ $inst->id }}">{{ $inst->name }}</option>
@@ -197,28 +198,28 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">تاريخ البدء</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'تاريخ البدء' : 'Start Date' }}</label>
                         <input type="date" name="start_date" x-model="editItem.start_date" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">تاريخ الانتهاء</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'تاريخ الانتهاء' : 'End Date' }}</label>
                         <input type="date" name="end_date" x-model="editItem.end_date" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الحد الأقصى للطلاب</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحد الأقصى للطلاب' : 'Max Students' }}</label>
                     <input type="number" name="max_students" x-model="editItem.max_students" min="1" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الحالة</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحالة' : 'Status' }}</label>
                     <select name="status" x-model="editItem.status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                        <option value="active">نشطة</option>
-                        <option value="ended">منتهية</option>
+                        <option value="active">{{ $isAr ? 'نشطة' : 'Active' }}</option>
+                        <option value="ended">{{ $isAr ? 'منتهية' : 'Completed' }}</option>
                     </select>
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button type="button" @click="showEditModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
-                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">حفظ التعديلات</button>
+                    <button type="button" @click="showEditModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
+                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'حفظ التعديلات' : 'Save Changes' }}</button>
                 </div>
             </form>
         </div>

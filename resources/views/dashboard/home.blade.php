@@ -1,7 +1,8 @@
 @extends('layouts.dashboard')
-@section('title', 'INSEP PRO - لوحة التحكم')
+@section('title', 'INSEP PRO')
 
 @section('dashboard-content')
+@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
 @php $user = auth()->user(); @endphp
 
 {{-- Stats Cards --}}
@@ -35,19 +36,19 @@
     <div class="lg:col-span-2 bg-gradient-to-br from-navy to-navy-light rounded-2xl p-8 text-white relative overflow-hidden">
         <div class="absolute inset-0 hero-pattern opacity-20"></div>
         <div class="relative z-10">
-            <h2 class="text-2xl font-black mb-2">مرحباً {{ $user->name }} 👋</h2>
-            <p class="text-white/70 mb-6">مرحباً بك في لوحة التحكم الخاصة بك. لديك نظرة عامة على أهم الأرقام والأنشطة.</p>
+            <h2 class="text-2xl font-black mb-2">{{ $isAr ? 'مرحباً' : 'Welcome' }} {{ $user->name }} 👋</h2>
+            <p class="text-white/70 mb-6">{{ $isAr ? 'مرحباً بك في لوحة التحكم الخاصة بك. لديك نظرة عامة على أهم الأرقام والأنشطة.' : 'Welcome to your dashboard. You have an overview of the most important numbers and activities.' }}</p>
             <div class="flex flex-wrap gap-3">
                 @if($user->role === 'admin')
-                <a href="{{ route('dashboard.students') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">إدارة الطلاب</a>
-                <a href="{{ route('dashboard.courses') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">إدارة الدورات</a>
-                <a href="{{ route('dashboard.reports') }}" class="bg-red-brand hover:bg-red-brand-dark px-4 py-2 rounded-xl text-sm font-bold transition-colors">التقارير</a>
+                <a href="{{ route('dashboard.students') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">{{ $isAr ? 'إدارة الطلاب' : 'Manage Students' }}</a>
+                <a href="{{ route('dashboard.courses') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">{{ $isAr ? 'إدارة الدورات' : 'Manage Courses' }}</a>
+                <a href="{{ route('dashboard.reports') }}" class="bg-red-brand hover:bg-red-brand-dark px-4 py-2 rounded-xl text-sm font-bold transition-colors">{{ $isAr ? 'التقارير' : 'Reports' }}</a>
                 @elseif($user->role === 'student')
-                <a href="{{ route('dashboard.mycourses') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">دوراتي</a>
-                <a href="{{ route('dashboard.certificates') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">شهاداتي</a>
+                <a href="{{ route('dashboard.mycourses') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">{{ $isAr ? 'دوراتي' : 'My Courses' }}</a>
+                <a href="{{ route('dashboard.certificates') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">{{ $isAr ? 'شهاداتي' : 'My Certificates' }}</a>
                 @else
-                <a href="{{ route('dashboard.batches') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">مجموعاتي</a>
-                <a href="{{ route('dashboard.attendance') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">الحضور والغياب</a>
+                <a href="{{ route('dashboard.batches') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">{{ $isAr ? 'مجموعاتي' : 'My Batches' }}</a>
+                <a href="{{ route('dashboard.attendance') }}" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-sm font-bold transition-colors border border-white/20">{{ $isAr ? 'الحضور والغياب' : 'Attendance' }}</a>
                 @endif
             </div>
         </div>
@@ -55,15 +56,15 @@
 
     {{-- Quick Links --}}
     <div class="bg-white rounded-2xl p-6 border border-gray-100">
-        <h3 class="font-bold text-navy mb-4">روابط سريعة</h3>
+        <h3 class="font-bold text-navy mb-4">{{ $isAr ? 'روابط سريعة' : 'Quick Links' }}</h3>
         <div class="space-y-3">
             <a href="{{ route('dashboard.settings') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors">
                 <div class="w-10 h-10 rounded-xl bg-navy/10 flex items-center justify-center">
                     <svg class="w-5 h-5 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>
                 </div>
                 <div>
-                    <p class="font-bold text-navy text-sm">الإعدادات</p>
-                    <p class="text-xs text-gray-500">تعديل الملف الشخصي</p>
+                    <p class="font-bold text-navy text-sm">{{ $isAr ? 'الإعدادات' : 'Settings' }}</p>
+                    <p class="text-xs text-gray-500">{{ $isAr ? 'تعديل الملف الشخصي' : 'Edit Profile' }}</p>
                 </div>
             </a>
             <a href="{{ route('dashboard.notifications') }}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors">
@@ -71,8 +72,8 @@
                     <svg class="w-5 h-5 text-red-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
                 </div>
                 <div>
-                    <p class="font-bold text-navy text-sm">الإشعارات</p>
-                    <p class="text-xs text-gray-500">عرض آخر الإشعارات</p>
+                    <p class="font-bold text-navy text-sm">{{ $isAr ? 'الإشعارات' : 'Notifications' }}</p>
+                    <p class="text-xs text-gray-500">{{ $isAr ? 'عرض آخر الإشعارات' : 'View latest notifications' }}</p>
                 </div>
             </a>
         </div>

@@ -1,7 +1,8 @@
 @extends('layouts.dashboard')
-@section('title', 'INSEP PRO - الشهادات')
+@section('title', 'INSEP PRO')
 @section('dashboard-content')
-<h1 class="text-2xl font-black text-navy mb-6">الشهادات</h1>
+@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
+<h1 class="text-2xl font-black text-navy mb-6">{{ $isAr ? 'الشهادات' : 'Certificates' }}</h1>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @forelse($certificates as $cert)
     <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 card-hover">
@@ -10,30 +11,30 @@
             <div class="relative z-10 flex items-center gap-3">
                 <svg class="w-8 h-8 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
                 <div class="text-white">
-                    <h3 class="font-bold text-sm">{{ $cert->course->title ?? 'شهادة معتمدة' }}</h3>
+                    <h3 class="font-bold text-sm">{{ $cert->course->title ?? ($isAr ? 'شهادة معتمدة' : 'Certified Certificate') }}</h3>
                     <p class="text-white/60 text-xs" style="font-family:'Roboto',sans-serif">{{ $cert->serial_number ?? '-' }}</p>
                 </div>
             </div>
         </div>
         <div class="p-4 space-y-2">
-            @if($cert->student)<p class="text-sm"><span class="text-gray-400">المتدرب:</span> <span class="font-bold text-navy">{{ $cert->student->name }}</span></p>@endif
-            <p class="text-sm"><span class="text-gray-400">تاريخ الإصدار:</span> <span class="text-navy">{{ $cert->issue_date ?? $cert->created_at?->format('Y-m-d') }}</span></p>
+            @if($cert->student)<p class="text-sm"><span class="text-gray-400">{{ $isAr ? 'المتدرب:' : 'Student:' }}</span> <span class="font-bold text-navy">{{ $cert->student->name }}</span></p>@endif
+            <p class="text-sm"><span class="text-gray-400">{{ $isAr ? 'تاريخ الإصدار:' : 'Issue Date:' }}</span> <span class="text-navy">{{ $cert->issue_date ?? $cert->created_at?->format('Y-m-d') }}</span></p>
             @if($cert->grade)
-            <p class="text-sm"><span class="text-gray-400">الدرجة:</span> <span class="font-bold text-navy">{{ $cert->grade }}</span></p>
+            <p class="text-sm"><span class="text-gray-400">{{ $isAr ? 'الدرجة:' : 'Grade:' }}</span> <span class="font-bold text-navy">{{ $cert->grade }}</span></p>
             @endif
-            <span class="inline-block px-3 py-1 rounded-lg text-xs font-bold {{ ($cert->status ?? 'active') === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">{{ ($cert->status ?? 'active') === 'active' ? 'سارية' : 'منتهية' }}</span>
+            <span class="inline-block px-3 py-1 rounded-lg text-xs font-bold {{ ($cert->status ?? 'active') === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">{{ ($cert->status ?? 'active') === 'active' ? ($isAr ? 'سارية' : 'Valid') : ($isAr ? 'منتهية' : 'Expired') }}</span>
 
             {{-- QR Code --}}
             @if($cert->serial_number)
             <div class="pt-3 border-t border-gray-50 flex flex-col items-center gap-2">
-                <p class="text-xs text-gray-400 self-start">رمز التحقق (QR)</p>
+                <p class="text-xs text-gray-400 self-start">{{ $isAr ? 'رمز التحقق (QR)' : 'Verification QR Code' }}</p>
                 <canvas id="qr-{{ $cert->id }}" class="rounded-lg"></canvas>
             </div>
             @endif
         </div>
     </div>
     @empty
-    <div class="col-span-3 text-center py-12 text-gray-400">لا يوجد شهادات بعد</div>
+    <div class="col-span-3 text-center py-12 text-gray-400">{{ $isAr ? 'لا يوجد شهادات بعد' : 'No certificates found yet' }}</div>
     @endforelse
 </div>
 @push('scripts')

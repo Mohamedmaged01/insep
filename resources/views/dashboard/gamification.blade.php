@@ -1,6 +1,7 @@
 @extends('layouts.dashboard')
-@section('title', 'INSEP PRO - النقاط والشارات')
+@section('title', 'INSEP PRO')
 @section('dashboard-content')
+@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
 <div x-data="gamificationManager()">
 
     {{-- Flash --}}
@@ -11,18 +12,18 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-black text-navy">النقاط والشارات</h1>
-            <p class="text-gray-500 text-sm">نظام المكافآت والتحفيز</p>
+            <h1 class="text-2xl font-black text-navy">{{ $isAr ? 'النقاط والشارات' : 'Points & Badges' }}</h1>
+            <p class="text-gray-500 text-sm">{{ $isAr ? 'نظام المكافآت والتحفيز' : 'Rewards & Motivation System' }}</p>
         </div>
         @if(auth()->user()->role !== 'student')
         <div class="flex gap-2">
             <button @click="showPointsModal = true" class="bg-navy hover:bg-navy-dark text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-                منح نقاط
+                {{ $isAr ? 'منح نقاط' : 'Grant Points' }}
             </button>
             <button @click="showBadgeModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-                إضافة شارة
+                {{ $isAr ? 'إضافة شارة' : 'Add Badge' }}
             </button>
         </div>
         @endif
@@ -32,12 +33,12 @@
     @if(auth()->user()->role === 'student')
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
         <div class="bg-gradient-to-br from-navy to-navy-light rounded-2xl p-6 text-white">
-            <p class="text-white/70 text-sm mb-1">نقاطي الإجمالية</p>
+            <p class="text-white/70 text-sm mb-1">{{ $isAr ? 'نقاطي الإجمالية' : 'My Total Points' }}</p>
             <p class="text-4xl font-black" style="font-family:'Roboto',sans-serif">{{ $myPoints }}</p>
-            <p class="text-white/50 text-xs mt-2">استمر في التعلم لكسب المزيد من النقاط</p>
+            <p class="text-white/50 text-xs mt-2">{{ $isAr ? 'استمر في التعلم لكسب المزيد من النقاط' : 'Keep learning to earn more points' }}</p>
         </div>
         <div class="bg-white rounded-2xl p-6 border border-gray-100">
-            <p class="text-gray-500 text-sm mb-3">شاراتي المحققة</p>
+            <p class="text-gray-500 text-sm mb-3">{{ $isAr ? 'شاراتي المحققة' : 'My Earned Badges' }}</p>
             @if($myBadges->count() > 0)
             <div class="flex flex-wrap gap-2">
                 @foreach($myBadges as $badge)
@@ -47,7 +48,7 @@
                 @endforeach
             </div>
             @else
-            <p class="text-gray-400 text-sm">لم تحصل على شارات بعد — استمر في تحقيق الإنجازات!</p>
+            <p class="text-gray-400 text-sm">{{ $isAr ? 'لم تحصل على شارات بعد — استمر في تحقيق الإنجازات!' : "You haven't earned any badges yet — keep achieving!" }}</p>
             @endif
         </div>
     </div>
@@ -58,7 +59,7 @@
         {{-- Leaderboard --}}
         <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
-                <h3 class="font-bold text-navy">لوحة المتصدرين</h3>
+                <h3 class="font-bold text-navy">{{ $isAr ? 'لوحة المتصدرين' : 'Leaderboard' }}</h3>
             </div>
             <div class="divide-y divide-gray-50">
                 @forelse($leaderboard as $i => $student)
@@ -75,11 +76,11 @@
                     </div>
                     <div class="text-left flex-shrink-0">
                         <p class="font-black text-navy text-lg" style="font-family:'Roboto',sans-serif">{{ number_format($student->total_points ?? 0) }}</p>
-                        <p class="text-xs text-gray-400">نقطة</p>
+                        <p class="text-xs text-gray-400">{{ $isAr ? 'نقطة' : 'points' }}</p>
                     </div>
                 </div>
                 @empty
-                <div class="text-center py-12 text-gray-400">لا يوجد نقاط مسجلة بعد</div>
+                <div class="text-center py-12 text-gray-400">{{ $isAr ? 'لا يوجد نقاط مسجلة بعد' : 'No points recorded yet' }}</div>
                 @endforelse
             </div>
         </div>
@@ -87,8 +88,8 @@
         {{-- Badges --}}
         <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="font-bold text-navy">الشارات المتاحة</h3>
-                <span class="text-xs text-gray-400">{{ $badges->count() }} شارة</span>
+                <h3 class="font-bold text-navy">{{ $isAr ? 'الشارات المتاحة' : 'Available Badges' }}</h3>
+                <span class="text-xs text-gray-400">{{ $badges->count() }} {{ $isAr ? 'شارة' : 'badges' }}</span>
             </div>
             <div class="p-4 space-y-3">
                 @forelse($badges as $badge)
@@ -96,14 +97,14 @@
                     <div class="text-2xl w-10 text-center">{{ $badge->icon }}</div>
                     <div class="flex-1 min-w-0">
                         <p class="font-bold text-navy text-sm">{{ $badge->name_ar }}</p>
-                        <p class="text-xs text-gray-400">{{ $badge->min_points }} نقطة للحصول عليها</p>
+                        <p class="text-xs text-gray-400">{{ $badge->min_points }} {{ $isAr ? 'نقطة للحصول عليها' : 'points to earn' }}</p>
                         @if($badge->description)
                         <p class="text-xs text-gray-500 mt-0.5">{{ $badge->description }}</p>
                         @endif
                     </div>
-                    <div class="text-xs text-gray-400 flex-shrink-0">{{ $badge->users_count }} طالب</div>
+                    <div class="text-xs text-gray-400 flex-shrink-0">{{ $badge->users_count }} {{ $isAr ? 'طالب' : 'students' }}</div>
                     @if(auth()->user()->role === 'admin')
-                    <form method="POST" action="{{ route('dashboard.gamification.badges.destroy', $badge->id) }}" onsubmit="return confirm('حذف الشارة؟')">
+                    <form method="POST" action="{{ route('dashboard.gamification.badges.destroy', $badge->id) }}" onsubmit="return confirm('{{ $isAr ? 'حذف الشارة؟' : 'Delete this badge?' }}')">
                         @csrf @method('DELETE')
                         <button type="submit" class="p-1 text-red-400 hover:text-red-600 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -112,7 +113,7 @@
                     @endif
                 </div>
                 @empty
-                <p class="text-center py-8 text-gray-400 text-sm">لا يوجد شارات بعد</p>
+                <p class="text-center py-8 text-gray-400 text-sm">{{ $isAr ? 'لا يوجد شارات بعد' : 'No badges found yet' }}</p>
                 @endforelse
             </div>
         </div>
@@ -123,29 +124,29 @@
     <div x-show="showPointsModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showPointsModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
-            <h2 class="text-xl font-black text-navy mb-6">منح نقاط لطالب</h2>
+            <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'منح نقاط لطالب' : 'Grant Points to Student' }}</h2>
             <form method="POST" action="{{ route('dashboard.gamification.points') }}" class="space-y-4">
                 @csrf
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الطالب</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الطالب' : 'Student' }}</label>
                     <select name="student_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
-                        <option value="">-- اختر الطالب --</option>
+                        <option value="">{{ $isAr ? '-- اختر الطالب --' : '-- Select Student --' }}</option>
                         @foreach($students as $st)
                         <option value="{{ $st->id }}">{{ $st->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">عدد النقاط</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'عدد النقاط' : 'Points Amount' }}</label>
                     <input type="number" name="amount" min="1" value="10" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr" required>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">السبب</label>
-                    <input type="text" name="reason" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" placeholder="مثال: إتمام الدورة، حضور ممتاز...">
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'السبب' : 'Reason' }}</label>
+                    <input type="text" name="reason" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" placeholder="{{ $isAr ? 'مثال: إتمام الدورة، حضور ممتاز...' : 'e.g. Course completion, excellent attendance...' }}">
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button type="button" @click="showPointsModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
-                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">منح النقاط</button>
+                    <button type="button" @click="showPointsModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
+                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'منح النقاط' : 'Grant Points' }}</button>
                 </div>
             </form>
         </div>
@@ -155,34 +156,34 @@
     <div x-show="showBadgeModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showBadgeModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
-            <h2 class="text-xl font-black text-navy mb-6">إضافة شارة جديدة</h2>
+            <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'إضافة شارة جديدة' : 'Add New Badge' }}</h2>
             <form method="POST" action="{{ route('dashboard.gamification.badges') }}" class="space-y-4">
                 @csrf
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">اسم الشارة (عربي)</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'اسم الشارة (عربي)' : 'Badge Name (Arabic)' }}</label>
                     <input type="text" name="badge_name_ar" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">اسم الشارة (إنجليزي)</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'اسم الشارة (إنجليزي)' : 'Badge Name (English)' }}</label>
                     <input type="text" name="badge_name_en" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">الأيقونة (إيموجي)</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الأيقونة (إيموجي)' : 'Icon (Emoji)' }}</label>
                         <input type="text" name="icon" value="⭐" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-center text-2xl">
                     </div>
                     <div>
-                        <label class="text-sm font-bold text-navy mb-2 block">الحد الأدنى للنقاط</label>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحد الأدنى للنقاط' : 'Minimum Points' }}</label>
                         <input type="number" name="min_points" value="100" min="0" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" dir="ltr">
                     </div>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">الوصف (اختياري)</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف (اختياري)' : 'Description (optional)' }}</label>
                     <input type="text" name="description" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button type="button" @click="showBadgeModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">إلغاء</button>
-                    <button type="submit" class="flex-1 bg-red-brand hover:bg-red-brand-dark text-white py-3 rounded-xl font-bold transition-colors">إضافة الشارة</button>
+                    <button type="button" @click="showBadgeModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
+                    <button type="submit" class="flex-1 bg-red-brand hover:bg-red-brand-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'إضافة الشارة' : 'Add Badge' }}</button>
                 </div>
             </form>
         </div>

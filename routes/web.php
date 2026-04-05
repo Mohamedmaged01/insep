@@ -10,6 +10,9 @@ use App\Http\Controllers\DashboardWebController;
 | Public Pages
 |--------------------------------------------------------------------------
 */
+// Public locale switch (works for both guests and authenticated users)
+Route::get('/locale/{lang}', [DashboardWebController::class, 'switchLocale'])->name('locale.switch');
+
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/courses', [PageController::class, 'courses'])->name('courses');
