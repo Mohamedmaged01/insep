@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'INSEP PRO - معهد علوم الرياضة | المنصة التعليمية والإدارية')
+@section('title', 'INSEP PRO - ' . ($isAr ? 'معهد علوم الرياضة | المنصة التعليمية والإدارية' : 'Sports Science Institute | Educational & Administrative Platform'))
 
 @section('content')
 @php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
@@ -13,11 +13,16 @@
             'https://images.unsplash.com/photo-1540747913346-19212a4b423c?auto=format&fit=crop&w=1500&q=85',
             'https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=1500&q=85',
         ];
-        $slides = [
+        $slides = $isAr ? [
             ['title' => 'ابدأ رحلتك الاحترافية في علوم الرياضة مع INSEP PRO', 'subtitle' => 'حوّل شغفك بالرياضة إلى مهنة معتمدة', 'desc' => 'انضم إلى مجتمعنا التعليمي المتميز واحصل على شهادات معتمدة دولياً تفتح لك آفاقاً جديدة في سوق العمل الرياضي.'],
             ['title' => 'تعلم، تطور، وكن مدربًا محترفًا مع INSEP PRO', 'subtitle' => 'برامج علمية… تطبيق عملي… مستقبل أقوى', 'desc' => 'مناهجنا الدراسية مصممة لدمج النظرية بالتطبيق، مما يضمن لك اكتساب المهارات العملية اللازمة للنجاح.'],
             ['title' => 'خطوتك الأولى نحو الاحتراف الرياضي تبدأ من هنا', 'subtitle' => 'علوم الرياضة بأسلوب حديث ومحتوى تطبيقي', 'desc' => 'استفد من أحدث التقنيات والأساليب التعليمية في مجال علوم الرياضة على يد نخبة من الخبراء والمتخصصين.'],
             ['title' => 'تعليم رياضي بمعايير أكاديمية وفرص حقيقية', 'subtitle' => 'استثمر في نفسك… واصنع مستقبلك الرياضي', 'desc' => 'نحن نلتزم بتقديم تعليم عالي الجودة يلبي المعايير العالمية ويؤهلك للمنافسة في سوق العمل المحلي والدولي.'],
+        ] : [
+            ['title' => 'Start Your Pro Journey in Sports Science with INSEP PRO', 'subtitle' => 'Turn your passion for sports into an accredited career', 'desc' => 'Join our outstanding educational community and earn internationally accredited certificates that open new horizons in the sports job market.'],
+            ['title' => 'Learn, Develop & Become a Pro Trainer with INSEP PRO', 'subtitle' => 'Scientific programs... practical application... stronger future', 'desc' => 'Our curricula are designed to combine theory with practice, ensuring you acquire the practical skills needed for success.'],
+            ['title' => 'Your First Step Towards Sports Professionalism Starts Here', 'subtitle' => 'Sports science with a modern approach and applied content', 'desc' => 'Benefit from the latest educational techniques and methods in sports science under the guidance of top experts and specialists.'],
+            ['title' => 'Sports Education with Academic Standards & Real Opportunities', 'subtitle' => 'Invest in yourself... and build your sports future', 'desc' => 'We are committed to providing high-quality education that meets global standards and qualifies you to compete in local and international markets.'],
         ];
     @endphp
 
@@ -48,12 +53,12 @@
             @endforeach
             <div class="flex flex-wrap gap-4">
                 <a href="{{ route('courses') }}" class="bg-red-brand hover:bg-red-brand-dark text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center gap-2 hover:shadow-xl hover:shadow-red-brand/30 hover:scale-105 transform">
-                    تصفح الدورات
+                    {{ $isAr ? 'تصفح الدورات' : 'Browse Courses' }}
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </a>
                 <a href="{{ route('login') }}" class="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 border border-white/30 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    سجل الآن
+                    {{ $isAr ? 'سجل الآن' : 'Register Now' }}
                 </a>
             </div>
         </div>
@@ -125,16 +130,20 @@
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                         <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">$ {{ number_format($course->price ?? 0) }} USD</span>
-                        <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 hover:shadow-lg">سجل الآن</a>
+                        <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 hover:shadow-lg">{{ $isAr ? 'سجل الآن' : 'Register Now' }}</a>
                     </div>
                 </div>
             </div>
             @empty
             @php
-                $fallbackCourses = [
+                $fallbackCourses = $isAr ? [
                     ['title' => 'دبلوم التدريب الرياضي المتقدم', 'cat' => 'التدريب الرياضي', 'price' => 2500, 'duration' => '120 ساعة', 'level' => 'متقدم', 'image' => 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80'],
                     ['title' => 'أساسيات العلاج الطبيعي الرياضي', 'cat' => 'العلاج الطبيعي', 'price' => 1800, 'duration' => '80 ساعة', 'level' => 'مبتدئ', 'image' => 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80'],
                     ['title' => 'التغذية الرياضية للمحترفين', 'cat' => 'التغذية الرياضية', 'price' => 1500, 'duration' => '60 ساعة', 'level' => 'متوسط', 'image' => 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80'],
+                ] : [
+                    ['title' => 'Advanced Sports Coaching Diploma', 'cat' => 'Sports Coaching', 'price' => 2500, 'duration' => '120 Hours', 'level' => 'Advanced', 'image' => 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80'],
+                    ['title' => 'Fundamentals of Sports Physiotherapy', 'cat' => 'Physiotherapy', 'price' => 1800, 'duration' => '80 Hours', 'level' => 'Beginner', 'image' => 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80'],
+                    ['title' => 'Professional Sports Nutrition', 'cat' => 'Sports Nutrition', 'price' => 1500, 'duration' => '60 Hours', 'level' => 'Intermediate', 'image' => 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80'],
                 ];
             @endphp
             @foreach($fallbackCourses as $i => $fc)
@@ -151,7 +160,7 @@
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                         <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">$ {{ number_format($fc['price']) }} USD</span>
-                        <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all">سجل الآن</a>
+                        <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all">{{ $isAr ? 'سجل الآن' : 'Register Now' }}</a>
                     </div>
                 </div>
             </div>
@@ -218,14 +227,14 @@
     <div class="container mx-auto px-4">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             @foreach([
-                ['number' => '2K',    'label' => 'شهادة معتمدة'],
-                ['number' => '+40K', 'label' => 'طالب مسجل'],
-                ['number' => '+300', 'label' => 'مدرب معتمد'],
-                ['number' => '+48',  'label' => 'دورة تدريبية'],
+                ['number' => '2K',    'label_ar' => 'شهادة معتمدة', 'label_en' => 'Accredited Certificates'],
+                ['number' => '+40K', 'label_ar' => 'طالب مسجل',    'label_en' => 'Registered Students'],
+                ['number' => '+300', 'label_ar' => 'مدرب معتمد',   'label_en' => 'Certified Trainers'],
+                ['number' => '+48',  'label_ar' => 'دورة تدريبية', 'label_en' => 'Training Courses'],
             ] as $stat)
             <div class="text-white">
                 <div class="text-4xl font-black text-red-brand mb-1" style="font-family: 'Roboto', sans-serif">{{ $stat['number'] }}</div>
-                <div class="text-sm font-medium text-white/80">{{ $stat['label'] }}</div>
+                <div class="text-sm font-medium text-white/80">{{ $isAr ? $stat['label_ar'] : $stat['label_en'] }}</div>
             </div>
             @endforeach
         </div>
@@ -246,10 +255,14 @@
                     'https://picsum.photos/seed/sport2/800/400',
                     'https://picsum.photos/seed/sport3/800/400',
                 ];
-                $newsItems = $news->count() > 0 ? $news : collect([
+                $newsItems = $news->count() > 0 ? $news : collect($isAr ? [
                     (object)['id' => 1, 'title' => 'إطلاق برنامج الدبلوم الجديد في التحليل الرياضي', 'created_at' => now(), 'description' => 'يسر معهد INSEP الإعلان عن إطلاق برنامج الدبلوم الجديد في التحليل الرياضي باستخدام التقنيات الحديثة', 'tag' => 'أخبار', 'image' => null],
                     (object)['id' => 2, 'title' => 'شراكة استراتيجية مع الاتحاد الدولي للرياضة', 'created_at' => now(), 'description' => 'وقّع المعهد اتفاقية شراكة مع الاتحاد الدولي لتبادل الخبرات وتطوير البرامج التدريبية المعتمدة', 'tag' => 'شراكات', 'image' => null],
                     (object)['id' => 3, 'title' => 'تخريج الدفعة الخامسة من برنامج التدريب الرياضي', 'created_at' => now(), 'description' => 'احتفل المعهد بتخريج أكثر من 200 متدرب من برنامج التدريب الرياضي المتقدم في حفل كبير', 'tag' => 'فعاليات', 'image' => null],
+                ] : [
+                    (object)['id' => 1, 'title' => 'Launch of New Sports Analysis Diploma', 'created_at' => now(), 'description' => 'INSEP Institute is pleased to announce the new Sports Analysis Diploma using modern techniques.', 'tag' => 'News', 'image' => null],
+                    (object)['id' => 2, 'title' => 'Strategic Partnership with International Sports Fed', 'created_at' => now(), 'description' => 'The institute signed a partnership to exchange expertise and develop accredited programs.', 'tag' => 'Partnerships', 'image' => null],
+                    (object)['id' => 3, 'title' => 'Graduation of the 5th Batch in Sports Coaching', 'created_at' => now(), 'description' => 'The institute celebrated graduating over 200 trainees from the advanced coaching program.', 'tag' => 'Events', 'image' => null],
                 ]);
             @endphp
             @foreach($newsItems as $i => $item)
@@ -258,7 +271,7 @@
                     <img src="{{ $placeholderImages[$i % 3] }}" alt="{{ $item->title }}"
                          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-                    <div class="absolute top-4 right-4 bg-red-brand text-white px-3 py-1 rounded-lg text-xs font-bold">{{ $item->tag ?? 'أخبار' }}</div>
+                    <div class="absolute top-4 right-4 bg-red-brand text-white px-3 py-1 rounded-lg text-xs font-bold">{{ $item->tag ?? ($isAr ? 'أخبار' : 'News') }}</div>
                     <div class="absolute bottom-4 right-4 text-white/80 text-sm flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         {{ $item->date ?? ($item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') : '') }}

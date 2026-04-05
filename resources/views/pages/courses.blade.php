@@ -57,7 +57,7 @@
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                         <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">$ {{ number_format($course->price ?? 0) }} USD</span>
                         <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-1">
-                            سجل الآن <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            {{ $isAr ? 'سجل الآن' : 'Register Now' }} <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
                         </a>
                     </div>
                 </div>
