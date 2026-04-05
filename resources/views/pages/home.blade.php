@@ -1,9 +1,8 @@
 @extends('layouts.app')
+@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
 @section('title', 'INSEP PRO - ' . ($isAr ? 'معهد علوم الرياضة | المنصة التعليمية والإدارية' : 'Sports Science Institute | Educational & Administrative Platform'))
 
 @section('content')
-@php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
-
 {{-- Hero Section --}}
 <section class="relative min-h-[600px] lg:min-h-[700px] overflow-hidden" x-data="{ currentSlide: 0 }" x-init="setInterval(() => currentSlide = (currentSlide + 1) % 4, 5000)">
     @php
