@@ -10,7 +10,7 @@
         $slideImages = [
             'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1500&q=85',
             'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1500&q=85',
-            'https://images.unsplash.com/photo-1540747913346-19212a4b423c?auto=format&fit=crop&w=1500&q=85',
+            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1500&q=85',
             'https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=1500&q=85',
         ];
         $slides = $isAr ? [
