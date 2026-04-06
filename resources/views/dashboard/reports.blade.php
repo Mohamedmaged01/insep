@@ -584,7 +584,7 @@
     {{-- Monthly Student Registrations --}}
     <div class="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
         <h3 class="font-bold text-navy mb-5">{{ $isAr ? 'تسجيلات المتدربين — آخر 6 أشهر' : 'Trainee Registrations — Last 6 Months' }}</h3>
-        @php $maxStudents = max(array_values($monthlyStudents) ?: [1], 1); @endphp
+        @php $maxStudents = max(max(array_values($monthlyStudents) ?: [1]), 1); @endphp
         <div class="flex items-end gap-3 h-32">
             @foreach($monthlyStudents as $month => $count)
             @php $barH = $maxStudents > 0 ? max(round(($count / $maxStudents) * 100), $count > 0 ? 5 : 0) : 0; @endphp
