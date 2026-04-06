@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\WebAuthController;
 use App\Http\Controllers\DashboardWebController;
+use App\Http\Controllers\CmsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,7 @@ Route::get('/courses', [PageController::class, 'courses'])->name('courses');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [PageController::class, 'submitContact'])->name('contact.submit');
 Route::get('/verify', [PageController::class, 'verify'])->name('verify');
+Route::get('/courses/{id}', [PageController::class, 'courseDetail'])->name('course.detail');
 
 /*
 |--------------------------------------------------------------------------
@@ -120,6 +122,13 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     // Settings
     Route::post('/settings', [DashboardWebController::class, 'updateSettings'])->name('dashboard.settings.update');
+
+    // CMS (admin only)
+    Route::get('/cms', [CmsController::class, 'index'])->name('dashboard.cms');
+    Route::post('/cms', [CmsController::class, 'update'])->name('dashboard.cms.update');
+
+    // Public course detail
+    Route::get('/courses/{id}', [DashboardWebController::class, 'courseDetail'])->name('dashboard.courses.show');
 
     // Exams CRUD
     Route::post('/exams', [DashboardWebController::class, 'storeExam'])->name('dashboard.exams.store');

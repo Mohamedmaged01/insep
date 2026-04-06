@@ -22,6 +22,7 @@
         ['key' => 'reports',      'label' => $isAr ? 'التقارير'           : 'Reports',         'icon' => 'bar-chart-3',    'route' => 'dashboard.reports'],
         ['key' => 'gamification', 'label' => $isAr ? 'النقاط والشارات'   : 'Points & Badges', 'icon' => 'award',          'route' => 'dashboard.gamification'],
         ['key' => 'settings',     'label' => $isAr ? 'الإعدادات'          : 'Settings',        'icon' => 'settings',       'route' => 'dashboard.settings'],
+        ['key' => 'cms',          'label' => $isAr ? 'محتوى الموقع'       : 'Site Content',    'icon' => 'layout',         'route' => 'dashboard.cms'],
     ];
 
     $studentMenu = [
@@ -186,6 +187,12 @@
                                 @case('briefcase')
                                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                                     <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
+                                @break
+
+                                @case('layout')
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="3" y1="9" x2="21" y2="9" />
+                                    <line x1="9" y1="21" x2="9" y2="9" />
                                 @break
                             @endswitch
                         </svg>

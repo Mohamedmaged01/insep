@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\News;
 use App\Models\ContactMessage;
 use App\Models\Certificate;
+use App\Models\SiteSetting;
 
 class PageController extends Controller
 {
@@ -14,7 +15,20 @@ class PageController extends Controller
     {
         $courses = Course::orderBy('created_at', 'desc')->limit(6)->get();
         $news = News::orderBy('created_at', 'desc')->limit(3)->get();
-        return view('pages.home', compact('courses', 'news'));
+        $stats = [
+            'students'     => SiteSetting::get('stat_students', '20000'),
+            'trainers'     => SiteSetting::get('stat_trainers', '50'),
+            'courses'      => SiteSetting::get('stat_courses', '5000'),
+            'certificates' => SiteSetting::get('stat_certificates', '2000'),
+        ];
+        return view('pages.home', compact('courses', 'news', 'stats'));
+    }
+
+    public function courseDetail($id)
+    {
+        $course = Course::findOrFail($id);
+        $related = Course::where('category', $course->category)->where('id', '!=', $id)->limit(3)->get();
+        return view('pages.course-detail', compact('course', 'related'));
     }
 
     public function about()

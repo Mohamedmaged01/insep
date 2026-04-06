@@ -111,12 +111,18 @@
             @forelse($courses as $i => $course)
             <div class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp" style="animation-delay: {{ $i * 0.1 }}s; animation-fill-mode: forwards">
                 <div class="relative h-48 overflow-hidden">
-                    <img src="{{ $course->image ?? 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    <img src="{{ $course->image ? (str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . $course->image)) : 'https://picsum.photos/seed/course' . $course->id . '/800/400' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
                     <div class="absolute top-4 right-4 bg-navy/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->category }}</div>
                     <div class="absolute top-4 left-4 bg-red-brand/90 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->level }}</div>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-lg font-bold text-navy mb-3 line-clamp-2 hover:text-red-brand transition-colors cursor-pointer">{{ $course->title }}</h3>
+                    <a href="{{ route('course.detail', $course->id) }}">
+                        <h3 class="text-lg font-bold text-navy mb-2 line-clamp-2 hover:text-red-brand transition-colors">{{ $course->title }}</h3>
+                    </a>
+                    <p class="text-xs text-gray-400 mb-3 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-red-brand flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                        {{ $isAr ? 'شهادة احترافية — فيديوهات + قراءات + اختبارات' : 'Professional Certificate — Videos + Readings + Exams' }}
+                    </p>
                     <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
                         <span class="flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -128,8 +134,11 @@
                         </span>
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">$ {{ number_format($course->price ?? 0) }} USD</span>
-                        <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 hover:shadow-lg">{{ $isAr ? 'سجل الآن' : 'Register Now' }}</a>
+                        <span class="text-xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">{{ number_format($course->price ?? 0) }} <span class="text-sm font-medium text-gray-500">USD</span></span>
+                        <div class="flex gap-2">
+                            <a href="{{ route('course.detail', $course->id) }}" class="border border-navy text-navy hover:bg-navy hover:text-white px-3 py-2 rounded-xl text-xs font-bold transition-all">{{ $isAr ? 'تفاصيل' : 'Details' }}</a>
+                            <a href="{{ route('register') }}" class="bg-navy hover:bg-navy-dark text-white px-3 py-2 rounded-xl text-xs font-bold transition-all">{{ $isAr ? 'سجل' : 'Enroll' }}</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -158,8 +167,8 @@
                         <span>{{ $fc['duration'] }}</span>
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">$ {{ number_format($fc['price']) }} USD</span>
-                        <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all">{{ $isAr ? 'سجل الآن' : 'Register Now' }}</a>
+                        <span class="text-xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">{{ number_format($fc['price']) }} <span class="text-sm font-medium text-gray-500">USD</span></span>
+                        <a href="{{ route('register') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all">{{ $isAr ? 'سجل الآن' : 'Enroll Now' }}</a>
                     </div>
                 </div>
             </div>
@@ -222,23 +231,59 @@
 </section>
 
 {{-- Statistics Bar --}}
-<section class="bg-navy py-10">
+<section class="bg-navy py-10" x-data="statsCounter()" x-intersect.once="startCounting()">
     <div class="container mx-auto px-4">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            @foreach([
-                ['number' => '2K',    'label_ar' => 'شهادة معتمدة', 'label_en' => 'Accredited Certificates'],
-                ['number' => '+40K', 'label_ar' => 'طالب مسجل',    'label_en' => 'Registered Students'],
-                ['number' => '+300', 'label_ar' => 'مدرب معتمد',   'label_en' => 'Certified Trainers'],
-                ['number' => '+48',  'label_ar' => 'دورة تدريبية', 'label_en' => 'Training Courses'],
-            ] as $stat)
-            <div class="text-white">
-                <div class="text-4xl font-black text-red-brand mb-1" style="font-family: 'Roboto', sans-serif">{{ $stat['number'] }}</div>
+            @php
+                $statsData = [
+                    ['value' => (int)($stats['students']     ?? 20000), 'label_ar' => 'طالب مسجل',    'label_en' => 'Registered Students',      'suffix' => '+'],
+                    ['value' => (int)($stats['trainers']     ?? 50),    'label_ar' => 'مدرب معتمد',   'label_en' => 'Certified Trainers',        'suffix' => '+'],
+                    ['value' => (int)($stats['courses']      ?? 5000),  'label_ar' => 'دورة تدريبية', 'label_en' => 'Training Programs',         'suffix' => '+'],
+                    ['value' => (int)($stats['certificates'] ?? 2000),  'label_ar' => 'شهادة معتمدة', 'label_en' => 'Accredited Certificates',   'suffix' => '+'],
+                ];
+            @endphp
+            @foreach($statsData as $idx => $stat)
+            <div class="text-white" x-data="{ displayed: 0 }">
+                <div class="text-4xl font-black text-red-brand mb-1" style="font-family: 'Roboto', sans-serif">
+                    <span x-text="formatNum(counts[{{ $idx }}])">0</span>{{ $stat['suffix'] }}
+                </div>
                 <div class="text-sm font-medium text-white/80">{{ $isAr ? $stat['label_ar'] : $stat['label_en'] }}</div>
             </div>
             @endforeach
         </div>
     </div>
 </section>
+<script>
+function statsCounter() {
+    return {
+        targets: [{{ implode(', ', array_column($statsData, 'value')) }}],
+        counts:  [0, 0, 0, 0],
+        started: false,
+        startCounting() {
+            if (this.started) return;
+            this.started = true;
+            const duration = 2000;
+            const steps = 60;
+            const interval = duration / steps;
+            let step = 0;
+            const timer = setInterval(() => {
+                step++;
+                const progress = step / steps;
+                const ease = 1 - Math.pow(1 - progress, 3);
+                this.counts = this.targets.map(t => Math.round(t * ease));
+                if (step >= steps) {
+                    this.counts = [...this.targets];
+                    clearInterval(timer);
+                }
+            }, interval);
+        },
+        formatNum(n) {
+            if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'K';
+            return n.toString();
+        }
+    }
+}
+</script>
 
 {{-- News Section --}}
 <section class="bg-gray-50 py-20">

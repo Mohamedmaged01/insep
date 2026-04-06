@@ -49,16 +49,27 @@
                     <div class="absolute top-4 left-4 bg-red-brand/90 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->level }}</div>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-lg font-bold text-navy mb-2 hover:text-red-brand transition-colors cursor-pointer">{{ $course->title }}</h3>
-                    <p class="text-sm text-gray-500 mb-4 line-clamp-2">{{ $course->description }}</p>
+                    <a href="{{ route('course.detail', $course->id) }}" class="block">
+                        <h3 class="text-lg font-bold text-navy mb-2 hover:text-red-brand transition-colors">{{ $course->title }}</h3>
+                    </a>
+                    <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ $course->description }}</p>
+                    <p class="text-xs text-gray-400 mb-4 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-red-brand flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                        {{ $isAr ? 'شهادة احترافية معتمدة — فيديوهات + قراءات + اختبارات' : 'Professional Accredited Certificate — Videos + Readings + Exams' }}
+                    </p>
                     <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
                         <span class="flex items-center gap-1">{{ $course->duration ?? '-' }}</span>
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span class="text-2xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">$ {{ number_format($course->price ?? 0) }} USD</span>
-                        <a href="{{ route('login') }}" class="bg-navy hover:bg-navy-dark text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-1">
-                            {{ $isAr ? 'سجل الآن' : 'Register Now' }} <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                        </a>
+                        <span class="text-xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">{{ number_format($course->price ?? 0) }} <span class="text-sm font-medium">USD</span></span>
+                        <div class="flex gap-2">
+                            <a href="{{ route('course.detail', $course->id) }}" class="border border-navy text-navy hover:bg-navy hover:text-white px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300">
+                                {{ $isAr ? 'التفاصيل' : 'Details' }}
+                            </a>
+                            <a href="{{ route('register') }}" class="bg-navy hover:bg-navy-dark text-white px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300">
+                                {{ $isAr ? 'سجل الآن' : 'Enroll' }}
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
