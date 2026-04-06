@@ -2,7 +2,7 @@
 @php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
 @section('title', $isAr ? 'إدارة محتوى الموقع' : 'Site Content Management')
 
-@section('content')
+@section('dashboard-content')
 <div class="p-6 max-w-5xl mx-auto" x-data="{ tab: 'stats' }">
     <div class="mb-8">
         <h1 class="text-2xl font-black text-navy">{{ $isAr ? 'إدارة محتوى الموقع' : 'Site Content Management' }}</h1>
