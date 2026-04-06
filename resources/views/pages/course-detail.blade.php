@@ -43,15 +43,19 @@
             {{-- Enrollment Card --}}
             <div class="bg-white rounded-2xl p-6 shadow-2xl">
                 @if($course->image)
-                <img src="{{ str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . $course->image) }}"
-                     alt="{{ $course->title }}" class="w-full h-40 object-cover rounded-xl mb-5">
+                <img src="{{ str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . ltrim($course->image, '/')) }}"
+                     alt="{{ $course->title }}" class="w-full h-40 object-cover rounded-xl mb-5"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                <div class="w-full h-40 bg-gradient-to-br from-navy to-navy-light rounded-xl mb-5 items-center justify-center" style="display:none">
+                    <svg class="w-12 h-12 text-white/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                </div>
                 @else
                 <div class="w-full h-40 bg-gradient-to-br from-navy to-navy-light rounded-xl mb-5 flex items-center justify-center">
                     <svg class="w-12 h-12 text-white/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                 </div>
                 @endif
                 <div class="text-3xl font-black text-red-brand mb-1" style="font-family: 'Roboto', sans-serif">
-                    {{ number_format($course->price ?? 0) }} <span class="text-base font-medium text-gray-500">USD</span>
+                    {{ number_format($course->price ?? 0) }} <span class="text-base font-medium text-gray-500">{{ $course->currency ?? 'USD' }}</span>
                 </div>
                 <p class="text-xs text-gray-400 mb-5">{{ $isAr ? 'شامل جميع المواد والشهادة' : 'Includes all materials and certificate' }}</p>
                 <a href="{{ route('register') }}"
@@ -214,13 +218,14 @@
             @foreach($related as $rc)
             <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 card-hover">
                 <div class="h-36 overflow-hidden">
-                    <img src="{{ $rc->image ? (str_starts_with($rc->image, 'http') ? $rc->image : asset('storage/' . $rc->image)) : 'https://picsum.photos/seed/rc' . $rc->id . '/800/400' }}"
-                         alt="{{ $rc->title }}" class="w-full h-full object-cover">
+                    <img src="{{ $rc->image ? (str_starts_with($rc->image, 'http') ? $rc->image : asset('storage/' . ltrim($rc->image, '/'))) : 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80' }}"
+                         alt="{{ $rc->title }}" class="w-full h-full object-cover"
+                         onerror="this.src='https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80'">
                 </div>
                 <div class="p-5">
                     <h3 class="font-bold text-navy mb-2 text-sm">{{ $rc->title }}</h3>
                     <div class="flex items-center justify-between mt-3">
-                        <span class="text-red-brand font-black text-sm">{{ number_format($rc->price ?? 0) }} USD</span>
+                        <span class="text-red-brand font-black text-sm">{{ number_format($rc->price ?? 0) }} {{ $rc->currency ?? 'USD' }}</span>
                         <a href="{{ route('course.detail', $rc->id) }}" class="text-xs bg-navy text-white px-3 py-1.5 rounded-lg font-bold hover:bg-navy-dark transition-colors">
                             {{ $isAr ? 'عرض' : 'View' }}
                         </a>

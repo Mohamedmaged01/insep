@@ -44,7 +44,7 @@
             @forelse($courses as $i => $course)
             <div class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp" style="animation-delay: {{ $i * 0.08 }}s; animation-fill-mode: forwards">
                 <div class="relative h-48 overflow-hidden group">
-                    <img src="{{ $course->image ? (str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . $course->image)) : 'https://picsum.photos/seed/course' . $course->id . '/800/400' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    <img src="{{ $course->image ? (str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . ltrim($course->image, '/'))) : 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80'">
                     <div class="absolute top-4 right-4 bg-navy/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->category }}</div>
                     <div class="absolute top-4 left-4 bg-red-brand/90 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->level }}</div>
                 </div>
@@ -61,7 +61,7 @@
                         <span class="flex items-center gap-1">{{ $course->duration ?? '-' }}</span>
                     </div>
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span class="text-xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">{{ number_format($course->price ?? 0) }} <span class="text-sm font-medium">USD</span></span>
+                        <span class="text-xl font-black text-red-brand" style="font-family: 'Roboto', sans-serif">{{ number_format($course->price ?? 0) }} <span class="text-sm font-medium">{{ $course->currency ?? 'USD' }}</span></span>
                         <div class="flex gap-2">
                             <a href="{{ route('course.detail', $course->id) }}" class="border border-navy text-navy hover:bg-navy hover:text-white px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300">
                                 {{ $isAr ? 'التفاصيل' : 'Details' }}
