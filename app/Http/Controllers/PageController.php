@@ -33,7 +33,8 @@ class PageController extends Controller
 
     public function about()
     {
-        return view('pages.about');
+        $settings = SiteSetting::allKeyed();
+        return view('pages.about', compact('settings'));
     }
 
     public function courses(Request $request)
@@ -57,7 +58,8 @@ class PageController extends Controller
 
     public function contact()
     {
-        return view('pages.contact');
+        $settings = SiteSetting::allKeyed();
+        return view('pages.contact', compact('settings'));
     }
 
     public function submitContact(Request $request)

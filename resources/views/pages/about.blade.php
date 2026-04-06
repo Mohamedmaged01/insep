@@ -20,6 +20,9 @@
             <div>
                 <span class="inline-block bg-red-brand/10 text-red-brand px-4 py-1.5 rounded-full text-sm font-bold mb-4">{{ $isAr ? 'قصتنا' : 'Our Story' }}</span>
                 <h2 class="text-3xl md:text-4xl font-black text-navy mb-6">{{ $isAr ? 'ريادة علوم الرياضة في المنطقة العربية' : 'Leading Sports Science Across the Arab World' }}</h2>
+                @if(!empty($settings['about_ar']) || !empty($settings['about_en']))
+                <div class="text-gray-600 leading-relaxed mb-8 text-lg whitespace-pre-line">{{ $isAr ? ($settings['about_ar'] ?? '') : ($settings['about_en'] ?? '') }}</div>
+                @else
                 <p class="text-gray-600 leading-relaxed mb-5 text-lg">
                     {{ $isAr
                         ? 'معهد INSEP PRO هو المعهد الرائد في مجال علوم الرياضة في منطقة الشرق الأوسط وشمال أفريقيا. تأسس المعهد منذ أكثر من 20 عامًا برؤية واضحة: تطوير الكوادر الرياضية العربية وفق أحدث المعايير العلمية والعالمية.'
@@ -35,6 +38,7 @@
                         ? 'منذ تأسيسنا، أطلقنا آلاف البرامج التدريبية وخرّجنا عشرات الآلاف من المتدربين في مجالات التدريب الرياضي، العلاج الطبيعي، التغذية الرياضية، والإدارة الرياضية.'
                         : 'Since our founding, we have launched thousands of training programs and graduated tens of thousands of trainees in sports coaching, physiotherapy, sports nutrition, and sports management.' }}
                 </p>
+                @endif
                 <div class="flex flex-wrap gap-4">
                     @foreach($isAr
                         ? ['اعتماد ERASMUS الأوروبي', 'مسجل في EREPS', 'أكثر من 15 دولة', 'أكثر من 20 عامًا من الخبرة']

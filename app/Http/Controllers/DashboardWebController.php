@@ -307,7 +307,7 @@ class DashboardWebController extends Controller
         $avgScore        = $totalExamsTaken > 0 ? round(ExamResult::avg('score')) : 0;
         $passedCount     = ExamResult::where('score', '>=', 60)->count();
         $passRate        = $totalExamsTaken > 0 ? round(($passedCount / $totalExamsTaken) * 100) : 0;
-        $recentExams     = ExamResult::with(['exam', 'student'])->orderBy('created_at', 'desc')->limit(20)->get();
+        $recentExams     = ExamResult::with(['exam', 'student'])->orderBy('submitted_at', 'desc')->limit(20)->get();
 
         // Trainer tab
         $instructorList = User::where('role', 'instructor')

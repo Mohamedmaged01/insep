@@ -22,47 +22,54 @@
                     <h2 class="text-2xl font-black text-navy mb-6">{{ $isAr ? 'معلومات التواصل' : 'Contact Information' }}</h2>
                     <p class="text-gray-600 mb-8">{{ $isAr ? 'يمكنك التواصل معنا من خلال أي من الطرق التالية أو عبر النموذج المرفق' : 'You can reach us through any of the following methods or via the contact form' }}</p>
                 </div>
-                @foreach([
-                    [
-                        'title_ar' => 'العنوان',           'title_en' => 'Address',
-                        'info_ar'  => '١٣ الخليفة المأمون، روكسي، مصر الجديدة',
-                        'info_en'  => '13 El-Khalifa El-Maamoun, Roxy, Heliopolis',
-                        'sub_ar'   => 'محافظة القاهرة 11757، مصر',
-                        'sub_en'   => 'Cairo Governorate 11757, Egypt',
-                        'color'    => 'bg-blue-50 text-blue-600',
-                    ],
-                    [
-                        'title_ar' => 'الهاتف',            'title_en' => 'Phone',
-                        'info_ar'  => '+20 10 33330027',  'info_en'  => '+20 10 33330027',
-                        'sub_ar'   => 'تواصل معنا عبر واتساب', 'sub_en' => 'Contact us via WhatsApp',
-                        'color'    => 'bg-green-50 text-green-600',
-                    ],
-                    [
-                        'title_ar' => 'البريد الإلكتروني', 'title_en' => 'Email',
-                        'info_ar'  => 'info@insep.net',    'info_en'  => 'info@insep.net',
-                        'sub_ar'   => 'support@insep.net', 'sub_en'   => 'support@insep.net',
-                        'color'    => 'bg-purple-50 text-purple-600',
-                    ],
-                    [
-                        'title_ar' => 'ساعات العمل',       'title_en' => 'Working Hours',
-                        'info_ar'  => 'الأحد - الخميس: 9:00 ص - 5:00 م',
-                        'info_en'  => 'Sunday – Thursday: 9:00 AM – 5:00 PM',
-                        'sub_ar'   => 'الجمعة والسبت: إجازة',
-                        'sub_en'   => 'Friday & Saturday: Closed',
-                        'color'    => 'bg-orange-50 text-orange-600',
-                    ],
-                ] as $item)
+                @php
+                    $phone1   = $settings['contact_phone1']    ?? '+20 10 33330027';
+                    $phone2   = $settings['contact_phone2']    ?? '';
+                    $phone3   = $settings['contact_phone3']    ?? '';
+                    $email    = $settings['contact_email']     ?? 'info@insep.net';
+                    $addrAr   = $settings['contact_address_ar'] ?? '١٣ الخليفة المأمون، روكسي، مصر الجديدة';
+                    $addrEn   = $settings['contact_address_en'] ?? '13 El-Khalifa El-Maamoun, Roxy, Heliopolis';
+                    $phones   = array_filter([$phone1, $phone2, $phone3]);
+                @endphp
                 <div class="flex items-start gap-4 bg-white rounded-2xl p-5 border border-gray-100 card-hover">
-                    <div class="w-12 h-12 rounded-xl {{ $item['color'] }} flex items-center justify-center flex-shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </div>
                     <div>
-                        <h3 class="font-bold text-navy mb-1">{{ $isAr ? $item['title_ar'] : $item['title_en'] }}</h3>
-                        <p class="text-gray-600 text-sm">{{ $isAr ? $item['info_ar'] : $item['info_en'] }}</p>
-                        <p class="text-gray-400 text-sm">{{ $isAr ? $item['sub_ar'] : $item['sub_en'] }}</p>
+                        <h3 class="font-bold text-navy mb-1">{{ $isAr ? 'العنوان' : 'Address' }}</h3>
+                        <p class="text-gray-600 text-sm">{{ $isAr ? $addrAr : $addrEn }}</p>
                     </div>
                 </div>
-                @endforeach
+                <div class="flex items-start gap-4 bg-white rounded-2xl p-5 border border-gray-100 card-hover">
+                    <div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-navy mb-1">{{ $isAr ? 'الهاتف' : 'Phone' }}</h3>
+                        @foreach($phones as $ph)
+                        <p class="text-gray-600 text-sm">{{ $ph }}</p>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 bg-white rounded-2xl p-5 border border-gray-100 card-hover">
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-navy mb-1">{{ $isAr ? 'البريد الإلكتروني' : 'Email' }}</h3>
+                        <p class="text-gray-600 text-sm">{{ $email }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 bg-white rounded-2xl p-5 border border-gray-100 card-hover">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-navy mb-1">{{ $isAr ? 'ساعات العمل' : 'Working Hours' }}</h3>
+                        <p class="text-gray-600 text-sm">{{ $isAr ? 'الأحد - الخميس: 9:00 ص - 5:00 م' : 'Sunday – Thursday: 9:00 AM – 5:00 PM' }}</p>
+                        <p class="text-gray-400 text-sm">{{ $isAr ? 'الجمعة والسبت: إجازة' : 'Friday & Saturday: Closed' }}</p>
+                    </div>
+                </div>
             </div>
 
             {{-- Contact Form --}}
