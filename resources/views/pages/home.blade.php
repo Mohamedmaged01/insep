@@ -233,7 +233,7 @@
 {{-- Statistics Bar --}}
 <section class="bg-navy py-10" x-data="statsCounter()" x-intersect.once="startCounting()">
     <div class="container mx-auto px-4">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div class="grid grid-cols-4 gap-6 text-center">
             @php
                 $statsData = [
                     ['value' => (int)($stats['students']     ?? 20000), 'label_ar' => 'طالب مسجل',    'label_en' => 'Registered Students',      'suffix' => '+'],
