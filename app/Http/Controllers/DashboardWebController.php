@@ -26,33 +26,95 @@ class DashboardWebController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $stats = [];
 
-        if ($user->role === 'admin') {
-            $stats = [
-                ['label' => 'إجمالي الطلاب', 'value' => User::where('role', 'student')->count(), 'color' => 'from-blue-500 to-blue-600', 'icon' => 'users'],
-                ['label' => 'الدورات النشطة', 'value' => Course::count(), 'color' => 'from-green-500 to-green-600', 'icon' => 'book'],
-                ['label' => 'الإيرادات', 'value' => number_format(Transaction::where('type', 'income')->sum('amount')) . ' ج.م', 'color' => 'from-purple-500 to-purple-600', 'icon' => 'dollar'],
-                ['label' => 'الشهادات الصادرة', 'value' => Certificate::count(), 'color' => 'from-orange-500 to-orange-600', 'icon' => 'award'],
-            ];
-        } elseif ($user->role === 'student') {
-            $totalPoints = Point::where('student_id', $user->id)->sum('amount');
-            $stats = [
-                ['label' => 'دوراتي المسجلة', 'value' => Enrollment::where('student_id', $user->id)->count(), 'color' => 'from-blue-500 to-blue-600', 'icon' => 'book'],
-                ['label' => 'الشهادات المحصلة', 'value' => Certificate::where('student_id', $user->id)->count(), 'color' => 'from-green-500 to-green-600', 'icon' => 'award'],
-                ['label' => 'نقاطي', 'value' => $totalPoints, 'color' => 'from-purple-500 to-purple-600', 'icon' => 'star'],
-                ['label' => 'المعدل العام', 'value' => '0%', 'color' => 'from-orange-500 to-orange-600', 'icon' => 'check'],
-            ];
-        } else {
-            $stats = [
-                ['label' => 'المجموعات الحالية', 'value' => Batch::where('instructor_id', $user->id)->count(), 'color' => 'from-blue-500 to-blue-600', 'icon' => 'clipboard'],
-                ['label' => 'إجمالي الطلاب', 'value' => 0, 'color' => 'from-green-500 to-green-600', 'icon' => 'users'],
-                ['label' => 'الساعات التدريبية', 'value' => 0, 'color' => 'from-purple-500 to-purple-600', 'icon' => 'clock'],
-                ['label' => 'التقييم العام', 'value' => '-', 'color' => 'from-orange-500 to-orange-600', 'icon' => 'star'],
-            ];
-        }
+        $stats = match($user->role) {
+            'admin' => [
+                ['label' => 'إجمالي المتدربين',  'value' => User::where('role', 'student')->count(),                              'color' => 'from-blue-500 to-blue-600',   'icon' => 'users'],
+                ['label' => 'الدورات النشطة',    'value' => Course::count(),                                                      'color' => 'from-green-500 to-green-600', 'icon' => 'book'],
+                ['label' => 'الإيرادات',          'value' => number_format(Transaction::where('type', 'income')->sum('amount')) . ' ج.م', 'color' => 'from-purple-500 to-purple-600', 'icon' => 'dollar'],
+                ['label' => 'الشهادات الصادرة',  'value' => Certificate::count(),                                                 'color' => 'from-orange-500 to-orange-600', 'icon' => 'award'],
+            ],
+            'student' => [
+                ['label' => 'دوراتي المسجلة',   'value' => Enrollment::where('student_id', $user->id)->count(),                  'color' => 'from-blue-500 to-blue-600',   'icon' => 'book'],
+                ['label' => 'الشهادات المحصلة', 'value' => Certificate::where('student_id', $user->id)->count(),                 'color' => 'from-green-500 to-green-600', 'icon' => 'award'],
+                ['label' => 'نقاطي',             'value' => Point::where('student_id', $user->id)->sum('amount'),                 'color' => 'from-purple-500 to-purple-600', 'icon' => 'star'],
+                ['label' => 'المعدل العام',      'value' => '0%',                                                                 'color' => 'from-orange-500 to-orange-600', 'icon' => 'check'],
+            ],
+            'instructor' => [
+                ['label' => 'مجموعاتي',          'value' => Batch::where('instructor_id', $user->id)->count(),                   'color' => 'from-blue-500 to-blue-600',   'icon' => 'clipboard'],
+                ['label' => 'الدورات التي أدرّبها','value' => Course::where('instructor_id', $user->id)->count(),                 'color' => 'from-green-500 to-green-600', 'icon' => 'book'],
+                ['label' => 'عدد المتدربين',     'value' => Enrollment::whereHas('batch', fn($q) => $q->where('instructor_id', $user->id))->count(), 'color' => 'from-purple-500 to-purple-600', 'icon' => 'users'],
+                ['label' => 'التقييم العام',     'value' => ($user->rating ?? 0) . ' / 5',                                       'color' => 'from-orange-500 to-orange-600', 'icon' => 'star'],
+            ],
+            'finance' => [
+                ['label' => 'إجمالي الإيرادات', 'value' => number_format(Transaction::where('type', 'income')->sum('amount')) . ' ج.م',  'color' => 'from-green-500 to-green-600',  'icon' => 'dollar'],
+                ['label' => 'إجمالي المصروفات', 'value' => number_format(Transaction::where('type', 'expense')->sum('amount')) . ' ج.م', 'color' => 'from-red-500 to-red-600',      'icon' => 'dollar'],
+                ['label' => 'صافي الإيراد',     'value' => number_format(Transaction::where('type', 'income')->sum('amount') - Transaction::where('type', 'expense')->sum('amount')) . ' ج.م', 'color' => 'from-blue-500 to-blue-600', 'icon' => 'dollar'],
+                ['label' => 'عدد الفواتير',     'value' => Transaction::count(),                                                  'color' => 'from-purple-500 to-purple-600', 'icon' => 'file-text'],
+            ],
+            'support' => [
+                ['label' => 'إجمالي المتدربين', 'value' => User::where('role', 'student')->count(),                               'color' => 'from-blue-500 to-blue-600',   'icon' => 'users'],
+                ['label' => 'الحسابات النشطة',  'value' => User::where('status', 'active')->count(),                              'color' => 'from-green-500 to-green-600', 'icon' => 'user-check'],
+                ['label' => 'الإشعارات المرسلة','value' => \App\Models\Notification::count(),                                    'color' => 'from-purple-500 to-purple-600', 'icon' => 'bell'],
+                ['label' => 'الدورات المتاحة',  'value' => Course::count(),                                                       'color' => 'from-orange-500 to-orange-600', 'icon' => 'book'],
+            ],
+            default => [],
+        };
 
         return view('dashboard.home', compact('stats'));
+    }
+
+    // ── General Users Management (admin) ────────────────────────────
+    public function usersManagement()
+    {
+        $users = User::orderBy('created_at', 'desc')->get();
+        $roles = User::ROLES;
+        return view('dashboard.users', compact('users', 'roles'));
+    }
+
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'name_ar'  => 'required|string|max:255',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:6',
+            'role'     => 'required|in:admin,instructor,student,finance,support',
+        ]);
+
+        User::create([
+            'name'     => $request->name_ar,
+            'name_ar'  => $request->name_ar,
+            'name_en'  => $request->name_en ?? $request->name_ar,
+            'email'    => $request->email,
+            'password' => bcrypt($request->password),
+            'phone'    => $request->phone,
+            'role'     => $request->role,
+            'status'   => 'active',
+        ]);
+        return back()->with('success', 'تم إضافة المستخدم بنجاح');
+    }
+
+    public function updateUser(Request $request, User $user)
+    {
+        $data = $request->only('name_ar', 'name_en', 'email', 'phone', 'role', 'status');
+        $data['name'] = $data['name_ar'] ?? $user->name;
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
+        }
+        if (isset($data['role']) && !array_key_exists($data['role'], User::ROLES)) {
+            return back()->with('error', 'دور غير صالح');
+        }
+        $user->update($data);
+        return back()->with('success', 'تم تحديث المستخدم بنجاح');
+    }
+
+    public function destroyUser(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'لا يمكنك حذف حسابك الخاص');
+        }
+        $user->delete();
+        return back()->with('success', 'تم حذف المستخدم بنجاح');
     }
 
     public function students()

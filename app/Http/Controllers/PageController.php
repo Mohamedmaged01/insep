@@ -80,4 +80,22 @@ class PageController extends Controller
     {
         return view('pages.verify');
     }
+
+    public function platformPolicy()
+    {
+        $settings = SiteSetting::allKeyed();
+        return view('pages.platform-policy', compact('settings'));
+    }
+
+    public function userGuide()
+    {
+        $settings = SiteSetting::allKeyed();
+        return view('pages.user-guide', compact('settings'));
+    }
+
+    public function support()
+    {
+        $settings = SiteSetting::allKeyed();
+        return view('pages.support', compact('settings'));
+    }
 }

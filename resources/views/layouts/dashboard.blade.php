@@ -1,17 +1,28 @@
 @php
     $lang = app()->getLocale();
     $user = auth()->user();
-    $isAdmin = $user && $user->role === 'admin';
-    $isStudent = $user && $user->role === 'student';
+    $isAdmin      = $user && $user->role === 'admin';
+    $isStudent    = $user && $user->role === 'student';
     $isInstructor = $user && $user->role === 'instructor';
+    $isFinance    = $user && $user->role === 'finance';
+    $isSupport    = $user && $user->role === 'support';
     $isAr = $lang === 'ar';
-    $roleName = $isAdmin ? ($isAr ? 'مدير النظام' : 'System Admin') : ($isStudent ? ($isAr ? 'طالب' : 'Student') : ($isAr ? 'مدرب' : 'Trainer'));
+
+    $roleNames = [
+        'admin'      => $isAr ? 'مدير إداري'  : 'Admin',
+        'instructor' => $isAr ? 'مدرب'         : 'Trainer',
+        'student'    => $isAr ? 'متدرب'        : 'Trainee',
+        'finance'    => $isAr ? 'محاسب'        : 'Finance',
+        'support'    => $isAr ? 'دعم فني'      : 'Support',
+    ];
+    $roleName = $roleNames[$user->role ?? ''] ?? ($isAr ? 'مستخدم' : 'User');
     $userName = $user->name ?? ($isAr ? 'مستخدم' : 'User');
     $userEmail = $user->email ?? '';
 
     $adminMenu = [
         ['key' => 'home',         'label' => $isAr ? 'الرئيسية'           : 'Home',           'icon' => 'home',           'route' => 'dashboard'],
-        ['key' => 'students',     'label' => $isAr ? 'إدارة الطلاب'       : 'Students',        'icon' => 'users',          'route' => 'dashboard.students'],
+        ['key' => 'users',        'label' => $isAr ? 'إدارة المستخدمين'  : 'Users',           'icon' => 'users',          'route' => 'dashboard.users'],
+        ['key' => 'students',     'label' => $isAr ? 'إدارة المتدربين'    : 'Trainees',        'icon' => 'users',          'route' => 'dashboard.students'],
         ['key' => 'instructors',  'label' => $isAr ? 'إدارة المدربين'     : 'Trainers',        'icon' => 'graduation-cap', 'route' => 'dashboard.instructors'],
         ['key' => 'sections',     'label' => $isAr ? 'الشعب التدريبية'    : 'Sections',        'icon' => 'grid',           'route' => 'dashboard.sections'],
         ['key' => 'courses',      'label' => $isAr ? 'إدارة الدورات'      : 'Courses',         'icon' => 'book-open',      'route' => 'dashboard.courses'],
@@ -26,24 +37,49 @@
     ];
 
     $studentMenu = [
-        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'     : 'Home',          'icon' => 'home',        'route' => 'dashboard'],
-        ['key' => 'mycourses',    'label' => $isAr ? 'دوراتي'       : 'My Courses',    'icon' => 'book-open',   'route' => 'dashboard.mycourses'],
-        ['key' => 'exams',        'label' => $isAr ? 'الاختبارات'   : 'Exams',         'icon' => 'file-text',   'route' => 'dashboard.exams'],
-        ['key' => 'certificates', 'label' => $isAr ? 'شهاداتي'     : 'My Certificates','icon' => 'award',       'route' => 'dashboard.certificates'],
-        ['key' => 'finance',      'label' => $isAr ? 'المالية'      : 'Finance',       'icon' => 'credit-card', 'route' => 'dashboard.finance'],
-        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'    : 'Notifications', 'icon' => 'bell',        'route' => 'dashboard.notifications'],
-        ['key' => 'gamification', 'label' => $isAr ? 'نقاطي وشاراتي': 'My Points',    'icon' => 'award',       'route' => 'dashboard.gamification'],
-        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي' : 'Profile',       'icon' => 'settings',    'route' => 'dashboard.settings'],
+        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'     : 'Home',           'icon' => 'home',        'route' => 'dashboard'],
+        ['key' => 'mycourses',    'label' => $isAr ? 'دوراتي'       : 'My Courses',     'icon' => 'book-open',   'route' => 'dashboard.mycourses'],
+        ['key' => 'exams',        'label' => $isAr ? 'الاختبارات'   : 'Exams',          'icon' => 'file-text',   'route' => 'dashboard.exams'],
+        ['key' => 'certificates', 'label' => $isAr ? 'شهاداتي'      : 'My Certificates','icon' => 'award',       'route' => 'dashboard.certificates'],
+        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'    : 'Notifications',  'icon' => 'bell',        'route' => 'dashboard.notifications'],
+        ['key' => 'gamification', 'label' => $isAr ? 'نقاطي وشاراتي': 'My Points',     'icon' => 'award',       'route' => 'dashboard.gamification'],
+        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي' : 'Profile',        'icon' => 'settings',   'route' => 'dashboard.settings'],
     ];
 
     $instructorMenu = [
-        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'     : 'Home',          'icon' => 'home',           'route' => 'dashboard'],
-        ['key' => 'mybatches',    'label' => $isAr ? 'مجموعاتي'    : 'My Batches',    'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
-        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'    : 'Notifications', 'icon' => 'bell',           'route' => 'dashboard.notifications'],
-        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي' : 'Profile',       'icon' => 'settings',       'route' => 'dashboard.settings'],
+        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'          : 'Home',          'icon' => 'home',           'route' => 'dashboard'],
+        ['key' => 'courses',      'label' => $isAr ? 'دوراتي'            : 'My Courses',    'icon' => 'book-open',      'route' => 'dashboard.courses'],
+        ['key' => 'batches',      'label' => $isAr ? 'مجموعاتي'         : 'My Batches',    'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
+        ['key' => 'exams',        'label' => $isAr ? 'الاختبارات'        : 'Exams',         'icon' => 'file-text',      'route' => 'dashboard.exams'],
+        ['key' => 'resources',    'label' => $isAr ? 'المحتوى التدريبي'  : 'Resources',     'icon' => 'layers',         'route' => 'dashboard.resources'],
+        ['key' => 'reports',      'label' => $isAr ? 'تقارير دوراتي'     : 'My Reports',    'icon' => 'bar-chart-3',    'route' => 'dashboard.reports'],
+        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'         : 'Notifications', 'icon' => 'bell',           'route' => 'dashboard.notifications'],
+        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي'      : 'Profile',       'icon' => 'settings',       'route' => 'dashboard.settings'],
     ];
 
-    $menuItems = $isAdmin ? $adminMenu : ($isStudent ? $studentMenu : $instructorMenu);
+    $financeMenu = [
+        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'          : 'Home',          'icon' => 'home',        'route' => 'dashboard'],
+        ['key' => 'finance',      'label' => $isAr ? 'المالية والمدفوعات' : 'Finance',       'icon' => 'dollar-sign', 'route' => 'dashboard.finance'],
+        ['key' => 'reports',      'label' => $isAr ? 'التقارير المالية'   : 'Reports',       'icon' => 'bar-chart-3', 'route' => 'dashboard.reports'],
+        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'         : 'Notifications', 'icon' => 'bell',        'route' => 'dashboard.notifications'],
+        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي'      : 'Profile',       'icon' => 'settings',    'route' => 'dashboard.settings'],
+    ];
+
+    $supportMenu = [
+        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'          : 'Home',          'icon' => 'home',           'route' => 'dashboard'],
+        ['key' => 'students',     'label' => $isAr ? 'بيانات المتدربين'  : 'Trainees',       'icon' => 'users',          'route' => 'dashboard.students'],
+        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'         : 'Notifications',  'icon' => 'bell',           'route' => 'dashboard.notifications'],
+        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي'      : 'Profile',        'icon' => 'settings',       'route' => 'dashboard.settings'],
+    ];
+
+    $menuItems = match($user->role ?? '') {
+        'admin'      => $adminMenu,
+        'student'    => $studentMenu,
+        'instructor' => $instructorMenu,
+        'finance'    => $financeMenu,
+        'support'    => $supportMenu,
+        default      => $studentMenu,
+    };
     $currentRoute = request()->route()->getName() ?? 'dashboard';
 @endphp
 <!DOCTYPE html>
@@ -129,8 +165,7 @@
                                 @break
 
                                 @case('user-check')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z M16 11l2 2 4-4" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 11l2 2 4-4"/>
                                 @break
 
                                 @case('video')

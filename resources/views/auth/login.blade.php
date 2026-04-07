@@ -207,28 +207,6 @@
                     x-text="isRegister ? '{{ $isAr ? 'تسجيل الدخول' : 'Sign In' }}' : '{{ $isAr ? 'سجل الآن' : 'Register' }}'"></button>
             </div>
 
-            {{-- Demo Credentials --}}
-            <div x-show="!isRegister" class="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
-                <div class="flex items-center gap-2 mb-3">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    <p class="text-sm text-blue-800 font-bold">{{ $isAr ? 'بيانات الدخول التجريبية' : 'Demo Credentials' }}</p>
-                </div>
-                <div class="space-y-2">
-                    <button type="button" @click="fillCredentials('admin')"
-                        class="w-full flex items-center justify-between bg-white/80 hover:bg-white rounded-xl px-4 py-2.5 text-sm transition-all border border-blue-100 hover:border-blue-300 group">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-lg bg-red-brand/10 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5 text-red-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            </div>
-                            <div class="{{ $isAr ? 'text-right' : 'text-left' }}">
-                                <span class="font-bold text-navy block text-xs">{{ $isAr ? 'المدير' : 'Admin' }}</span>
-                                <span class="text-gray-400 text-[11px]" style="font-family: 'Roboto', sans-serif">admin@insep.net</span>
-                            </div>
-                        </div>
-                        <span class="text-blue-600 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">{{ $isAr ? 'تعبئة ←' : '→ Fill' }}</span>
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -283,16 +261,7 @@ function loginPage() {
             { key: 'instructor', label: '{{ $isAr ? 'مدرب'   : 'Trainer' }}' },
             { key: 'admin',      label: '{{ $isAr ? 'مدير'   : 'Admin' }}' },
         ],
-        accounts: {
-            admin: { email: 'admin@insep.net', password: '654321@' },
-        },
-        selectRole(key) { this.selectedRole = key; },
-        fillCredentials(role) {
-            const account = this.accounts[role];
-            this.email = account.email;
-            this.password = account.password;
-            this.selectedRole = role;
-        }
+        selectRole(key) { this.selectedRole = key; }
     };
 }
 

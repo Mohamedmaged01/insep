@@ -108,18 +108,35 @@
                 {{-- Services Dropdown --}}
                 <div class="relative" @mouseenter="servicesOpen = true" @mouseleave="servicesOpen = false">
                     <button class="px-5 py-2.5 text-base text-navy hover:text-red-brand font-semibold transition-colors duration-300 flex items-center gap-1.5 rounded-lg hover:bg-gray-50">
-                        {{ $lang === 'ar' ? 'خدمات المنصة' : 'Services' }}
+                        {{ $lang === 'ar' ? 'خدمات إلكترونية' : 'Services' }}
                         <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="servicesOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                     </button>
-                    <div x-show="servicesOpen" x-cloak x-transition class="absolute top-full right-0 bg-white shadow-2xl rounded-xl py-2 w-56 border border-gray-100 z-50">
-                        <a href="{{ route('verify') }}" class="flex items-center gap-3 w-full text-right px-4 py-3 hover:bg-navy/5 text-navy transition-colors">
-                            <div class="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+                    <div x-show="servicesOpen" x-cloak x-transition class="absolute top-full right-0 bg-white shadow-2xl rounded-xl py-2 w-60 border border-gray-100 z-50">
+                        <a href="{{ route('platform-policy') }}" class="flex items-center gap-3 w-full text-right px-4 py-3 hover:bg-navy/5 text-navy transition-colors">
+                            <div class="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-3.5 h-3.5 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             </div>
-                            <span class="font-medium">{{ $lang === 'ar' ? 'استعلام الشهادات' : 'Certificates Lookup' }}</span>
+                            <span class="font-medium">{{ $lang === 'ar' ? 'سياسة المنصة' : 'Platform Policy' }}</span>
+                        </a>
+                        <a href="{{ route('user-guide') }}" class="flex items-center gap-3 w-full text-right px-4 py-3 hover:bg-navy/5 text-navy transition-colors">
+                            <div class="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-3.5 h-3.5 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                            </div>
+                            <span class="font-medium">{{ $lang === 'ar' ? 'دليل استخدام المنصة' : 'User Guide' }}</span>
+                        </a>
+                        <a href="{{ route('support') }}" class="flex items-center gap-3 w-full text-right px-4 py-3 hover:bg-navy/5 text-navy transition-colors">
+                            <div class="w-8 h-8 rounded-lg bg-navy/10 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-3.5 h-3.5 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                            </div>
+                            <span class="font-medium">{{ $lang === 'ar' ? 'الشكاوي والدعم' : 'Support' }}</span>
                         </a>
                     </div>
                 </div>
+                {{-- Certificate Lookup - direct nav item --}}
+                <a href="{{ route('verify') }}"
+                   class="px-5 py-2.5 text-base font-semibold transition-all duration-300 rounded-lg {{ request()->routeIs('verify') ? 'text-red-brand bg-red-brand/5' : 'text-navy hover:text-red-brand hover:bg-gray-50' }}">
+                    {{ $lang === 'ar' ? 'استعلام عن الشهادة' : 'Verify Certificate' }}
+                </a>
             </div>
 
             {{-- Actions --}}
@@ -149,7 +166,7 @@
                 ['label' => $lang === 'ar' ? 'الرئيسية' : 'Home', 'route' => 'home'],
                 ['label' => $lang === 'ar' ? 'من نحن' : 'About', 'route' => 'about'],
                 ['label' => $lang === 'ar' ? 'البرامج التدريبية' : 'Courses', 'route' => 'courses'],
-                ['label' => $lang === 'ar' ? 'استعلام الشهادات' : 'Verify Certificate', 'route' => 'verify'],
+                ['label' => $lang === 'ar' ? 'استعلام عن الشهادة' : 'Verify Certificate', 'route' => 'verify'],
                 ['label' => $lang === 'ar' ? 'اتصل بنا' : 'Contact', 'route' => 'contact'],
             ] as $item)
                 <a href="{{ route($item['route']) }}" class="block w-full text-right px-4 py-3 rounded-xl font-semibold transition-all {{ request()->routeIs($item['route']) ? 'bg-navy text-white' : 'text-navy hover:bg-gray-50' }}">

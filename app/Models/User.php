@@ -7,6 +7,22 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
+    // Role constants
+    const ROLE_ADMIN      = 'admin';
+    const ROLE_INSTRUCTOR = 'instructor';
+    const ROLE_STUDENT    = 'student';
+    const ROLE_FINANCE    = 'finance';
+    const ROLE_SUPPORT    = 'support';
+
+    // All valid roles
+    const ROLES = [
+        'admin'      => 'مدير إداري',
+        'instructor' => 'مدرب',
+        'student'    => 'متدرب',
+        'finance'    => 'محاسب',
+        'support'    => 'دعم فني',
+    ];
+
     protected $fillable = [
         'name', 'name_ar', 'name_en', 'email', 'password', 'phone', 'role',
         'birth_date', 'status', 'avatar', 'specialty', 'rating', 'salary',
@@ -19,6 +35,17 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'rating' => 'float',
     ];
+
+    // Role helpers
+    public function isAdmin(): bool      { return $this->role === self::ROLE_ADMIN; }
+    public function isInstructor(): bool { return $this->role === self::ROLE_INSTRUCTOR; }
+    public function isStudent(): bool    { return $this->role === self::ROLE_STUDENT; }
+    public function isFinance(): bool    { return $this->role === self::ROLE_FINANCE; }
+    public function isSupport(): bool    { return $this->role === self::ROLE_SUPPORT; }
+    public function hasRole(string ...$roles): bool { return in_array($this->role, $roles); }
+
+    // Role label (Arabic)
+    public function roleLabelAr(): string { return self::ROLES[$this->role] ?? $this->role; }
 
     // JWT
     public function getJWTIdentifier()

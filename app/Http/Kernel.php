@@ -34,6 +34,7 @@ class Kernel extends HttpKernel
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'role'     => \App\Http\Middleware\RoleMiddleware::class,
+        'web.role' => \App\Http\Middleware\WebRoleMiddleware::class,
     ];
 }

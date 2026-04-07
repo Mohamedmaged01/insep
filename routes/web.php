@@ -21,6 +21,9 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [PageController::class, 'submitContact'])->name('contact.submit');
 Route::get('/verify', [PageController::class, 'verify'])->name('verify');
 Route::get('/courses/{id}', [PageController::class, 'courseDetail'])->name('course.detail');
+Route::get('/platform-policy', [PageController::class, 'platformPolicy'])->name('platform-policy');
+Route::get('/user-guide', [PageController::class, 'userGuide'])->name('user-guide');
+Route::get('/support', [PageController::class, 'support'])->name('support');
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +48,10 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/locale/{lang}', [DashboardWebController::class, 'switchLocale'])->name('dashboard.locale');
 
     // Main sections (GET)
+    Route::get('/users', [DashboardWebController::class, 'usersManagement'])->middleware('web.role:admin')->name('dashboard.users');
+    Route::post('/users', [DashboardWebController::class, 'storeUser'])->middleware('web.role:admin')->name('dashboard.users.store');
+    Route::put('/users/{user}', [DashboardWebController::class, 'updateUser'])->middleware('web.role:admin')->name('dashboard.users.update');
+    Route::delete('/users/{user}', [DashboardWebController::class, 'destroyUser'])->middleware('web.role:admin')->name('dashboard.users.destroy');
     Route::get('/students', [DashboardWebController::class, 'students'])->name('dashboard.students');
     Route::get('/instructors', [DashboardWebController::class, 'instructors'])->name('dashboard.instructors');
     Route::get('/courses', [DashboardWebController::class, 'courses'])->name('dashboard.courses');
@@ -55,11 +62,11 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/live-sessions', [DashboardWebController::class, 'liveSessions'])->name('dashboard.live-sessions');
     Route::get('/exams', [DashboardWebController::class, 'exams'])->name('dashboard.exams');
     Route::get('/certificates', [DashboardWebController::class, 'certificates'])->name('dashboard.certificates');
-    Route::get('/finance', [DashboardWebController::class, 'finance'])->name('dashboard.finance');
+    Route::get('/finance', [DashboardWebController::class, 'finance'])->middleware('web.role:admin,finance')->name('dashboard.finance');
     Route::get('/notifications', [DashboardWebController::class, 'notifications'])->name('dashboard.notifications');
     Route::get('/sections', [DashboardWebController::class, 'sections'])->name('dashboard.sections');
-    Route::get('/reports', [DashboardWebController::class, 'reports'])->name('dashboard.reports');
-    Route::get('/reports/export', [DashboardWebController::class, 'exportReports'])->name('dashboard.reports.export');
+    Route::get('/reports', [DashboardWebController::class, 'reports'])->middleware('web.role:admin,finance')->name('dashboard.reports');
+    Route::get('/reports/export', [DashboardWebController::class, 'exportReports'])->middleware('web.role:admin,finance')->name('dashboard.reports.export');
     Route::get('/gamification', [DashboardWebController::class, 'gamification'])->name('dashboard.gamification');
     Route::get('/settings', [DashboardWebController::class, 'settings'])->name('dashboard.settings');
 
@@ -123,9 +130,9 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     // Settings
     Route::post('/settings', [DashboardWebController::class, 'updateSettings'])->name('dashboard.settings.update');
 
-    // CMS (admin only)
-    Route::get('/cms', [CmsController::class, 'index'])->name('dashboard.cms');
-    Route::post('/cms', [CmsController::class, 'update'])->name('dashboard.cms.update');
+    // CMS — admin only
+    Route::get('/cms', [CmsController::class, 'index'])->middleware('web.role:admin')->name('dashboard.cms');
+    Route::post('/cms', [CmsController::class, 'update'])->middleware('web.role:admin')->name('dashboard.cms.update');
 
     // Public course detail
     Route::get('/courses/{id}', [DashboardWebController::class, 'courseDetail'])->name('dashboard.courses.show');

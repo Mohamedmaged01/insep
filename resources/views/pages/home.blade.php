@@ -224,7 +224,7 @@
         <h2 class="text-3xl md:text-4xl font-black text-white mb-4">{{ $isAr ? 'ابدأ رحلتك المهنية اليوم' : 'Start Your Professional Journey Today' }}</h2>
         <p class="text-white/80 text-lg mb-8 max-w-2xl mx-auto">{{ $isAr ? 'انضم إلى آلاف المتدربين الذين طوروا مسيرتهم المهنية معنا في مجال علوم الرياضة' : 'Join thousands of trainees who have advanced their professional careers with us in the field of sports science' }}</p>
         <div class="flex flex-wrap justify-center gap-4">
-            <a href="{{ route('login') }}" class="bg-white text-red-brand hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 transform">{{ $isAr ? 'سجل الآن' : 'Register Now' }}</a>
+            <a href="{{ route('register') }}" class="bg-white text-red-brand hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:shadow-xl hover:scale-105 transform">{{ $isAr ? 'سجل الآن' : 'Register Now' }}</a>
             <a href="{{ route('contact') }}" class="bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 border border-white/30">{{ $isAr ? 'تواصل معنا' : 'Contact Us' }}</a>
         </div>
     </div>
@@ -295,9 +295,9 @@ function statsCounter() {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @php
                 $placeholderImages = [
-                    'https://picsum.photos/seed/sport1/800/400',
-                    'https://picsum.photos/seed/sport2/800/400',
-                    'https://picsum.photos/seed/sport3/800/400',
+                    'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=800&q=80',
                 ];
                 $newsItems = $news->count() > 0 ? $news : collect($isAr ? [
                     (object)['id' => 1, 'title' => 'إطلاق برنامج الدبلوم الجديد في التحليل الرياضي', 'created_at' => now(), 'description' => 'يسر معهد INSEP الإعلان عن إطلاق برنامج الدبلوم الجديد في التحليل الرياضي باستخدام التقنيات الحديثة', 'tag' => 'أخبار', 'image' => null],
