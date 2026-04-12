@@ -24,6 +24,7 @@ Route::get('/courses/{id}', [PageController::class, 'courseDetail'])->name('cour
 Route::get('/platform-policy', [PageController::class, 'platformPolicy'])->name('platform-policy');
 Route::get('/user-guide', [PageController::class, 'userGuide'])->name('user-guide');
 Route::get('/support', [PageController::class, 'support'])->name('support');
+Route::get('/news/{id}', [PageController::class, 'newsShow'])->name('news.show');
 
 /*
 |--------------------------------------------------------------------------

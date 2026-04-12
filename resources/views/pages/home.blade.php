@@ -310,9 +310,11 @@ function statsCounter() {
                 ]);
             @endphp
             @foreach($newsItems as $i => $item)
-            <div class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp" style="animation-delay: {{ $i * 0.15 }}s; animation-fill-mode: forwards">
+            <a href="{{ $item instanceof \App\Models\News ? route('news.show', $item->id) : '#' }}"
+               target="_blank"
+               class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp block group" style="animation-delay: {{ $i * 0.15 }}s; animation-fill-mode: forwards">
                 <div class="h-52 relative overflow-hidden">
-                    <img src="{{ $placeholderImages[$i % 3] }}" alt="{{ $item->title }}"
+                    <img src="{{ $item->image ?? $placeholderImages[$i % 3] }}" alt="{{ $item->title }}"
                          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                     <div class="absolute top-4 right-4 bg-red-brand text-white px-3 py-1 rounded-lg text-xs font-bold">{{ $item->tag ?? ($isAr ? 'أخبار' : 'News') }}</div>
@@ -322,11 +324,11 @@ function statsCounter() {
                     </div>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-lg font-bold text-navy mb-3 hover:text-red-brand transition-colors cursor-pointer line-clamp-2">{{ $item->title }}</h3>
+                    <h3 class="text-lg font-bold text-navy mb-3 group-hover:text-red-brand transition-colors line-clamp-2">{{ $item->title }}</h3>
                     <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">{{ $item->description ?? '' }}</p>
                     <span class="text-red-brand font-bold text-sm flex items-center gap-1">{{ $isAr ? 'اقرأ المزيد' : 'Read More' }} <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg></span>
                 </div>
-            </div>
+            </a>
             @endforeach
         </div>
     </div>

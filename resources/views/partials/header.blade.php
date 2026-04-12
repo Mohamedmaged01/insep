@@ -85,7 +85,7 @@
                 </div>
                 <div class="text-right">
                     <h1 class="font-black text-navy text-2xl leading-tight tracking-wide" style="font-family: 'Roboto', sans-serif">INSEP</h1>
-                    <p class="text-xs text-gray-500 font-medium">{{ $lang === 'ar' ? 'معهد علوم الرياضة' : 'Sports Science Institute' }}</p>
+                    <p class="text-xs text-gray-500 font-medium">{{ $lang === 'ar' ? 'INSEP لعلوم الرياضة' : 'Sports Science Institute' }}</p>
                 </div>
             </a>
 
@@ -96,7 +96,6 @@
                         ['key' => 'home', 'label' => $lang === 'ar' ? 'الرئيسية' : 'Home', 'route' => 'home'],
                         ['key' => 'about', 'label' => $lang === 'ar' ? 'من نحن' : 'About', 'route' => 'about'],
                         ['key' => 'courses', 'label' => $lang === 'ar' ? 'البرامج التدريبية' : 'Courses', 'route' => 'courses'],
-                        ['key' => 'contact', 'label' => $lang === 'ar' ? 'اتصل بنا' : 'Contact', 'route' => 'contact'],
                     ];
                 @endphp
                 @foreach($navItems as $item)
@@ -136,6 +135,11 @@
                 <a href="{{ route('verify') }}"
                    class="px-5 py-2.5 text-base font-semibold transition-all duration-300 rounded-lg {{ request()->routeIs('verify') ? 'text-red-brand bg-red-brand/5' : 'text-navy hover:text-red-brand hover:bg-gray-50' }}">
                     {{ $lang === 'ar' ? 'استعلام عن الشهادة' : 'Verify Certificate' }}
+                </a>
+                {{-- Contact - last nav item --}}
+                <a href="{{ route('contact') }}"
+                   class="px-5 py-2.5 text-base font-semibold transition-all duration-300 rounded-lg {{ request()->routeIs('contact') ? 'text-red-brand bg-red-brand/5' : 'text-navy hover:text-red-brand hover:bg-gray-50' }}">
+                    {{ $lang === 'ar' ? 'اتصل بنا' : 'Contact' }}
                 </a>
             </div>
 

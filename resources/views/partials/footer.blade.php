@@ -25,7 +25,7 @@
                     </div>
                     <div>
                         <h3 class="font-black text-white text-xl" style="font-family: 'Roboto', sans-serif">INSEP</h3>
-                        <p class="text-xs text-gray-400">{{ $lang === 'ar' ? 'معهد علوم الرياضة' : 'Sports Science Institute' }}</p>
+                        <p class="text-xs text-gray-400">{{ $lang === 'ar' ? 'INSEP لعلوم الرياضة' : 'Sports Science Institute' }}</p>
                     </div>
                 </div>
                 <p class="text-gray-400 leading-relaxed mb-6 text-sm">
@@ -143,7 +143,7 @@
 
     {{-- Bottom Bar --}}
     <div class="border-t border-gray-800">
-        <div class="container mx-auto px-4 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="container mx-auto px-4 py-5 pl-24 pr-20 md:pl-4 md:pr-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-gray-500 text-sm flex flex-col lg:flex-row items-center gap-2 text-center lg:text-start">
                 <span>INSEP PRO {{ date('Y') }} © Development By <a href="https://www.scadaatech.com" target="_blank" rel="noopener noreferrer" class="text-red-brand hover:text-red-brand-dark transition-colors font-bold" style="font-family: 'Roboto', sans-serif">SCADA Tech</a></span>
             </div>

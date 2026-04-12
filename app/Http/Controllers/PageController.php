@@ -98,4 +98,10 @@ class PageController extends Controller
         $settings = SiteSetting::allKeyed();
         return view('pages.support', compact('settings'));
     }
+
+    public function newsShow($id)
+    {
+        $news = \App\Models\News::findOrFail($id);
+        return view('pages.news-show', compact('news'));
+    }
 }
