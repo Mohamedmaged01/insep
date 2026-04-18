@@ -64,7 +64,7 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->enrollments_count ?? 0 }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $course->id }}, '{{ addslashes($course->title) }}', '{{ addslashes($course->description ?? '') }}', '{{ $course->category ?? '' }}', {{ $course->price ?? 0 }}, '{{ $course->currency ?? 'USD' }}', '{{ $course->duration ?? '' }}', '{{ $course->level ?? '' }}', '{{ $course->status ?? 'active' }}', {{ $course->section_id ?? 'null' }}, '{{ $course->image ?? '' }}')"
+                                <button @click="openEdit({{ $course->id }}, {{ json_encode($course->title) }}, {{ json_encode($course->description ?? '') }}, {{ json_encode($course->category ?? '') }}, {{ $course->price ?? 0 }}, {{ json_encode($course->currency ?? 'USD') }}, {{ json_encode($course->duration ?? '') }}, {{ json_encode($course->level ?? '') }}, {{ json_encode($course->status ?? 'active') }}, {{ $course->section_id ?? 'null' }}, {{ json_encode($course->image ?? '') }})"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
