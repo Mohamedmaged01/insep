@@ -8,6 +8,7 @@ use App\Models\News;
 use App\Models\ContactMessage;
 use App\Models\Certificate;
 use App\Models\SiteSetting;
+use App\Models\CommitteeMember;
 
 class PageController extends Controller
 {
@@ -103,5 +104,11 @@ class PageController extends Controller
     {
         $news = \App\Models\News::findOrFail($id);
         return view('pages.news-show', compact('news'));
+    }
+
+    public function scientificCommittee()
+    {
+        $members = CommitteeMember::orderBy('order')->get();
+        return view('pages.scientific-committee', compact('members'));
     }
 }

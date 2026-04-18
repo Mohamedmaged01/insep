@@ -93,9 +93,10 @@
             <div class="hidden lg:flex items-center gap-2">
                 @php
                     $navItems = [
-                        ['key' => 'home', 'label' => $lang === 'ar' ? 'الرئيسية' : 'Home', 'route' => 'home'],
-                        ['key' => 'about', 'label' => $lang === 'ar' ? 'من نحن' : 'About', 'route' => 'about'],
-                        ['key' => 'courses', 'label' => $lang === 'ar' ? 'البرامج التدريبية' : 'Courses', 'route' => 'courses'],
+                        ['key' => 'home',                 'label' => $lang === 'ar' ? 'الرئيسية'          : 'Home',                'route' => 'home'],
+                        ['key' => 'about',                'label' => $lang === 'ar' ? 'من نحن'             : 'About',               'route' => 'about'],
+                        ['key' => 'scientific-committee', 'label' => $lang === 'ar' ? 'اللجنة العلمية'     : 'Scientific Committee', 'route' => 'scientific-committee'],
+                        ['key' => 'courses',              'label' => $lang === 'ar' ? 'البرامج التدريبية'  : 'Courses',             'route' => 'courses'],
                     ];
                 @endphp
                 @foreach($navItems as $item)
@@ -167,11 +168,12 @@
         {{-- Mobile Menu --}}
         <div x-show="mobileMenuOpen" x-cloak x-transition class="lg:hidden bg-white border-t border-gray-100 px-4 py-4 space-y-1 shadow-xl">
             @foreach([
-                ['label' => $lang === 'ar' ? 'الرئيسية' : 'Home', 'route' => 'home'],
-                ['label' => $lang === 'ar' ? 'من نحن' : 'About', 'route' => 'about'],
-                ['label' => $lang === 'ar' ? 'البرامج التدريبية' : 'Courses', 'route' => 'courses'],
-                ['label' => $lang === 'ar' ? 'استعلام عن الشهادة' : 'Verify Certificate', 'route' => 'verify'],
-                ['label' => $lang === 'ar' ? 'اتصل بنا' : 'Contact', 'route' => 'contact'],
+                ['label' => $lang === 'ar' ? 'الرئيسية'          : 'Home',                 'route' => 'home'],
+                ['label' => $lang === 'ar' ? 'من نحن'             : 'About',                'route' => 'about'],
+                ['label' => $lang === 'ar' ? 'اللجنة العلمية'     : 'Scientific Committee', 'route' => 'scientific-committee'],
+                ['label' => $lang === 'ar' ? 'البرامج التدريبية'  : 'Courses',              'route' => 'courses'],
+                ['label' => $lang === 'ar' ? 'استعلام عن الشهادة' : 'Verify Certificate',  'route' => 'verify'],
+                ['label' => $lang === 'ar' ? 'اتصل بنا'           : 'Contact',             'route' => 'contact'],
             ] as $item)
                 <a href="{{ route($item['route']) }}" class="block w-full text-right px-4 py-3 rounded-xl font-semibold transition-all {{ request()->routeIs($item['route']) ? 'bg-navy text-white' : 'text-navy hover:bg-gray-50' }}">
                     {{ $item['label'] }}

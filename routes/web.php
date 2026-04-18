@@ -25,6 +25,7 @@ Route::get('/platform-policy', [PageController::class, 'platformPolicy'])->name(
 Route::get('/user-guide', [PageController::class, 'userGuide'])->name('user-guide');
 Route::get('/support', [PageController::class, 'support'])->name('support');
 Route::get('/news/{id}', [PageController::class, 'newsShow'])->name('news.show');
+Route::get('/scientific-committee', [PageController::class, 'scientificCommittee'])->name('scientific-committee');
 
 /*
 |--------------------------------------------------------------------------
@@ -134,6 +135,12 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     // CMS — admin only
     Route::get('/cms', [CmsController::class, 'index'])->middleware('web.role:admin')->name('dashboard.cms');
     Route::post('/cms', [CmsController::class, 'update'])->middleware('web.role:admin')->name('dashboard.cms.update');
+
+    // Scientific Committee — admin only
+    Route::get('/committee', [DashboardWebController::class, 'committeeMembers'])->middleware('web.role:admin')->name('dashboard.committee');
+    Route::post('/committee', [DashboardWebController::class, 'storeCommitteeMember'])->middleware('web.role:admin')->name('dashboard.committee.store');
+    Route::put('/committee/{committeeMember}', [DashboardWebController::class, 'updateCommitteeMember'])->middleware('web.role:admin')->name('dashboard.committee.update');
+    Route::delete('/committee/{committeeMember}', [DashboardWebController::class, 'destroyCommitteeMember'])->middleware('web.role:admin')->name('dashboard.committee.destroy');
 
     // Public course detail
     Route::get('/courses/{id}', [DashboardWebController::class, 'courseDetail'])->name('dashboard.courses.show');

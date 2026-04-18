@@ -9,14 +9,16 @@ class Course extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'title', 'description', 'category', 'price', 'currency', 'duration',
-        'level', 'image', 'status', 'rating', 'student_count', 'section_id',
+        'title', 'description', 'content', 'features', 'accreditation', 'job_opportunities',
+        'category', 'price', 'currency', 'duration', 'level', 'image', 'promo_video',
+        'status', 'is_featured', 'rating', 'student_count', 'section_id',
     ];
 
     protected $casts = [
-        'price' => 'float',
-        'rating' => 'float',
+        'price'         => 'float',
+        'rating'        => 'float',
         'student_count' => 'integer',
+        'is_featured'   => 'boolean',
     ];
 
     public function section()

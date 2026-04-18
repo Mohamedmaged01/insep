@@ -42,6 +42,7 @@
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'المستوى' : 'Level' }}</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'السعر' : 'Price' }}</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'الحالة' : 'Status' }}</th>
+                        <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'مميزة' : 'Featured' }}</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'المسجلين' : 'Enrolled' }}</th>
                         <th class="text-right text-xs font-bold text-gray-500 uppercase px-6 py-4">{{ $isAr ? 'إجراءات' : 'Actions' }}</th>
                     </tr>
@@ -61,10 +62,17 @@
                                 {{ ($course->status ?? 'active') === 'active' ? ($isAr ? 'نشطة' : 'Active') : ($isAr ? 'مخفية' : 'Hidden') }}
                             </span>
                         </td>
+                        <td class="px-6 py-4 text-center">
+                            @if($course->is_featured)
+                            <svg class="w-5 h-5 text-yellow-500 mx-auto" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            @else
+                            <span class="text-gray-300 text-xs">—</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->enrollments_count ?? 0 }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $course->id }}, {{ json_encode($course->title) }}, {{ json_encode($course->description ?? '') }}, {{ json_encode($course->category ?? '') }}, {{ $course->price ?? 0 }}, {{ json_encode($course->currency ?? 'USD') }}, {{ json_encode($course->duration ?? '') }}, {{ json_encode($course->level ?? '') }}, {{ json_encode($course->status ?? 'active') }}, {{ $course->section_id ?? 'null' }}, {{ json_encode($course->image ?? '') }})"
+                                <button @click="openEdit({{ $course->id }}, {{ json_encode($course->title) }}, {{ json_encode($course->description ?? '') }}, {{ json_encode($course->category ?? '') }}, {{ $course->price ?? 0 }}, {{ json_encode($course->currency ?? 'USD') }}, {{ json_encode($course->duration ?? '') }}, {{ json_encode($course->level ?? '') }}, {{ json_encode($course->status ?? 'active') }}, {{ $course->section_id ?? 'null' }}, {{ json_encode($course->image ?? '') }}, {{ json_encode($course->content ?? '') }}, {{ json_encode($course->features ?? '') }}, {{ json_encode($course->accreditation ?? '') }}, {{ json_encode($course->job_opportunities ?? '') }}, {{ json_encode($course->promo_video ?? '') }}, {{ $course->is_featured ? 1 : 0 }})"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -78,7 +86,7 @@
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="8" class="text-center py-12 text-gray-400">{{ $isAr ? 'لا يوجد دورات بعد' : 'No courses found yet' }}</td></tr>
+                    <tr><td colspan="10" class="text-center py-12 text-gray-400">{{ $isAr ? 'لا يوجد دورات بعد' : 'No courses found yet' }}</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -88,7 +96,7 @@
     {{-- Add Modal --}}
     <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showAddModal = false"></div>
-        <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-2xl relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'إضافة دورة جديدة' : 'Add New Course' }}</h2>
             <form method="POST" action="{{ route('dashboard.courses.store') }}" class="space-y-4" enctype="multipart/form-data">
                 @csrf
@@ -101,8 +109,28 @@
                     <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف' : 'Description' }}</label>
-                    <textarea name="description" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف المختصر' : 'Short Description' }}</label>
+                    <textarea name="description" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'محتوى الدورة (وحدات وموضوعات)' : 'Course Content (modules & topics)' }}</label>
+                    <textarea name="content" rows="4" placeholder="{{ $isAr ? 'مثال: الوحدة الأولى: المقدمة\nالوحدة الثانية: التطبيق العملي' : 'e.g. Module 1: Introduction\nModule 2: Practical Application' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'مميزات الدورة (سطر لكل ميزة)' : 'Course Features (one per line)' }}</label>
+                    <textarea name="features" rows="3" placeholder="{{ $isAr ? 'مثال: شهادة معتمدة دولياً\nمواد تدريبية متكاملة' : 'e.g. Internationally accredited certificate\nComprehensive training materials' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الاعتماد والجهة المانحة' : 'Accreditation & Issuing Body' }}</label>
+                    <textarea name="accreditation" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'فرص العمل (سطر لكل فرصة)' : 'Job Opportunities (one per line)' }}</label>
+                    <textarea name="job_opportunities" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'رابط فيديو البرومو (يوتيوب)' : 'Promo Video URL (YouTube)' }}</label>
+                    <input type="url" name="promo_video" placeholder="https://www.youtube.com/embed/..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm" dir="ltr">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الشعبة التدريبية' : 'Training Section' }}</label>
@@ -155,6 +183,10 @@
                         </select>
                     </div>
                 </div>
+                <label class="flex items-center gap-3 cursor-pointer p-3 bg-yellow-50 rounded-xl border border-yellow-200">
+                    <input type="checkbox" name="is_featured" value="1" class="w-4 h-4 accent-yellow-500">
+                    <span class="text-sm font-bold text-yellow-700">{{ $isAr ? 'دورة مميزة (تظهر في الصفحة الرئيسية بشكل مميز)' : 'Featured Course (highlighted on homepage)' }}</span>
+                </label>
                 <div class="flex gap-3 pt-4">
                     <button type="button" @click="showAddModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
                     <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'حفظ' : 'Save' }}</button>
@@ -166,7 +198,7 @@
     {{-- Edit Modal --}}
     <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showEditModal = false"></div>
-        <div class="bg-white rounded-2xl p-8 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-2xl relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'تعديل الدورة' : 'Edit Course' }}</h2>
             <form method="POST" :action="'/dashboard/courses/' + editItem.id" class="space-y-4" enctype="multipart/form-data">
                 @csrf @method('PUT')
@@ -182,8 +214,28 @@
                     <input type="text" name="title" x-model="editItem.title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف' : 'Description' }}</label>
-                    <textarea name="description" x-model="editItem.description" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف المختصر' : 'Short Description' }}</label>
+                    <textarea name="description" x-model="editItem.description" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'محتوى الدورة (وحدات وموضوعات)' : 'Course Content (modules & topics)' }}</label>
+                    <textarea name="content" x-model="editItem.content" rows="4" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'مميزات الدورة (سطر لكل ميزة)' : 'Course Features (one per line)' }}</label>
+                    <textarea name="features" x-model="editItem.features" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الاعتماد والجهة المانحة' : 'Accreditation & Issuing Body' }}</label>
+                    <textarea name="accreditation" x-model="editItem.accreditation" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'فرص العمل (سطر لكل فرصة)' : 'Job Opportunities (one per line)' }}</label>
+                    <textarea name="job_opportunities" x-model="editItem.job_opportunities" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'رابط فيديو البرومو (يوتيوب)' : 'Promo Video URL (YouTube)' }}</label>
+                    <input type="url" name="promo_video" x-model="editItem.promo_video" placeholder="https://www.youtube.com/embed/..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm" dir="ltr">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الشعبة التدريبية' : 'Training Section' }}</label>
@@ -230,13 +282,18 @@
                         <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المدة' : 'Duration' }}</label>
                         <input type="text" name="duration" x-model="editItem.duration" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
                     </div>
-                <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحالة' : 'Status' }}</label>
-                    <select name="status" x-model="editItem.status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                        <option value="active">{{ $isAr ? 'نشطة' : 'Active' }}</option>
-                        <option value="hidden">{{ $isAr ? 'مخفية' : 'Hidden' }}</option>
-                    </select>
+                    <div>
+                        <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحالة' : 'Status' }}</label>
+                        <select name="status" x-model="editItem.status" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                            <option value="active">{{ $isAr ? 'نشطة' : 'Active' }}</option>
+                            <option value="hidden">{{ $isAr ? 'مخفية' : 'Hidden' }}</option>
+                        </select>
+                    </div>
                 </div>
+                <label class="flex items-center gap-3 cursor-pointer p-3 bg-yellow-50 rounded-xl border border-yellow-200">
+                    <input type="checkbox" name="is_featured" value="1" :checked="editItem.is_featured" @change="editItem.is_featured = $event.target.checked" class="w-4 h-4 accent-yellow-500">
+                    <span class="text-sm font-bold text-yellow-700">{{ $isAr ? 'دورة مميزة (تظهر في الصفحة الرئيسية بشكل مميز)' : 'Featured Course (highlighted on homepage)' }}</span>
+                </label>
                 <div class="flex gap-3 pt-4">
                     <button type="button" @click="showEditModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
                     <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'حفظ التعديلات' : 'Save Changes' }}</button>
@@ -253,9 +310,21 @@ function coursesManager() {
         search: '',
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, title: '', description: '', category: '', price: 0, currency: 'USD', duration: '', level: '', status: 'active', section_id: '', image: '' },
-        openEdit(id, title, description, category, price, currency, duration, level, status, section_id, image) {
-            this.editItem = { id, title, description, category, price, currency: currency || 'USD', duration, level, status, section_id: section_id || '', image: image || '' };
+        editItem: {
+            id: null, title: '', description: '', content: '', features: '',
+            accreditation: '', job_opportunities: '', promo_video: '',
+            category: '', price: 0, currency: 'USD', duration: '', level: '',
+            status: 'active', section_id: '', image: '', is_featured: false
+        },
+        openEdit(id, title, description, category, price, currency, duration, level, status, section_id, image, content, features, accreditation, job_opportunities, promo_video, is_featured) {
+            this.editItem = {
+                id, title, description, category, price,
+                currency: currency || 'USD', duration, level, status,
+                section_id: section_id || '', image: image || '',
+                content: content || '', features: features || '',
+                accreditation: accreditation || '', job_opportunities: job_opportunities || '',
+                promo_video: promo_video || '', is_featured: !!is_featured
+            };
             this.showEditModal = true;
         }
     };

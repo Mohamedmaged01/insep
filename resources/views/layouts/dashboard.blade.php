@@ -34,6 +34,7 @@
         ['key' => 'gamification', 'label' => $isAr ? 'النقاط والشارات'   : 'Points & Badges', 'icon' => 'award',          'route' => 'dashboard.gamification'],
         ['key' => 'settings',     'label' => $isAr ? 'الإعدادات'          : 'Settings',        'icon' => 'settings',       'route' => 'dashboard.settings'],
         ['key' => 'cms',          'label' => $isAr ? 'محتوى الموقع'       : 'Site Content',    'icon' => 'layout',         'route' => 'dashboard.cms'],
+        ['key' => 'committee',    'label' => $isAr ? 'اللجنة العلمية'     : 'Scientific Comm.','icon' => 'users',          'route' => 'dashboard.committee'],
     ];
 
     $studentMenu = [

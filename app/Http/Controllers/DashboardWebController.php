@@ -20,6 +20,7 @@ use App\Models\Badge;
 use App\Models\Installment;
 use App\Models\Section;
 use App\Models\ExamResult;
+use App\Models\CommitteeMember;
 
 class DashboardWebController extends Controller
 {
@@ -682,18 +683,23 @@ class DashboardWebController extends Controller
     // ── Courses CRUD ───────────────────────────────────────────────
     public function storeCourse(Request $request)
     {
-        $hasCurrency = \Illuminate\Support\Facades\Schema::hasColumn('courses', 'currency');
         $data = [
-            'title'       => $request->title,
-            'description' => $request->description,
-            'category'    => $request->category,
-            'price'       => $request->price ?? 0,
-            'duration'    => $request->duration,
-            'level'       => $request->level,
-            'status'      => $request->status ?? 'active',
-            'section_id'  => $request->section_id ?: null,
+            'title'             => $request->title,
+            'description'       => $request->description,
+            'content'           => $request->content,
+            'features'          => $request->features,
+            'accreditation'     => $request->accreditation,
+            'job_opportunities' => $request->job_opportunities,
+            'category'          => $request->category,
+            'price'             => $request->price ?? 0,
+            'currency'          => $request->currency ?? 'USD',
+            'duration'          => $request->duration,
+            'level'             => $request->level,
+            'status'            => $request->status ?? 'active',
+            'is_featured'       => $request->boolean('is_featured'),
+            'promo_video'       => $request->promo_video,
+            'section_id'        => $request->section_id ?: null,
         ];
-        if ($hasCurrency) $data['currency'] = $request->currency ?? 'USD';
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('courses', 'public');
         }
@@ -703,15 +709,50 @@ class DashboardWebController extends Controller
 
     public function updateCourse(Request $request, Course $course)
     {
-        $hasCurrency = \Illuminate\Support\Facades\Schema::hasColumn('courses', 'currency');
-        $fields = ['title', 'description', 'category', 'price', 'duration', 'level', 'status', 'section_id'];
-        if ($hasCurrency) $fields[] = 'currency';
-        $data = $request->only($fields);
+        $data = $request->only([
+            'title', 'description', 'content', 'features', 'accreditation',
+            'job_opportunities', 'category', 'price', 'currency', 'duration',
+            'level', 'status', 'promo_video', 'section_id',
+        ]);
+        $data['is_featured'] = $request->boolean('is_featured');
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('courses', 'public');
         }
         $course->update($data);
         return back()->with('success', 'تم تحديث الدورة بنجاح');
+    }
+
+    // ── Committee Members CRUD ─────────────────────────────────────
+    public function committeeMembers()
+    {
+        $members = CommitteeMember::orderBy('order')->get();
+        return view('dashboard.committee', compact('members'));
+    }
+
+    public function storeCommitteeMember(Request $request)
+    {
+        $data = $request->only(['name', 'title', 'specialization', 'bio', 'order']);
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('committee', 'public');
+        }
+        CommitteeMember::create($data);
+        return back()->with('success', 'تم إضافة العضو بنجاح');
+    }
+
+    public function updateCommitteeMember(Request $request, CommitteeMember $committeeMember)
+    {
+        $data = $request->only(['name', 'title', 'specialization', 'bio', 'order']);
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('committee', 'public');
+        }
+        $committeeMember->update($data);
+        return back()->with('success', 'تم تحديث بيانات العضو بنجاح');
+    }
+
+    public function destroyCommitteeMember(CommitteeMember $committeeMember)
+    {
+        $committeeMember->delete();
+        return back()->with('success', 'تم حذف العضو بنجاح');
     }
 
     public function destroyCourse(Course $course)
