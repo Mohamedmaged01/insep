@@ -741,7 +741,7 @@ class DashboardWebController extends Controller
             'accreditation'     => $request->accreditation,
             'job_opportunities' => $request->job_opportunities,
             'category'          => $request->category,
-            'price'             => $request->price ?? 0,
+            'price'             => min((float)($request->price ?? 0), 9999999999999.99),
             'currency'          => $request->currency ?? 'USD',
             'duration'          => $request->duration,
             'level'             => $request->level,
