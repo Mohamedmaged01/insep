@@ -44,7 +44,7 @@
             @forelse($courses as $i => $course)
             <div class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp" style="animation-delay: {{ $i * 0.08 }}s; animation-fill-mode: forwards">
                 <div class="relative h-48 overflow-hidden group">
-                    <img src="{{ $course->image ? (str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . ltrim($course->image, '/'))) : 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80'">
+                    <img src="{{ $course->image ? (str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . ltrim($course->image, '/'))) : 'https://ui-avatars.com/api/?name=' . urlencode($course->title) . '&background=1B2B4B&color=fff&size=400&bold=true' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($course->title) }}&background=1B2B4B&color=fff&size=400&bold=true'">
                     <div class="absolute top-4 right-4 bg-navy/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->category }}</div>
                     <div class="absolute top-4 left-4 bg-red-brand/90 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->level }}</div>
                 </div>

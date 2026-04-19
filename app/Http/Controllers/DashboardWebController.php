@@ -325,30 +325,49 @@ class DashboardWebController extends Controller
     }
 
 
-    public function reports()
+    public function reports(Request $request)
     {
-        $incomeTotal  = Transaction::where('type', 'income')->sum('amount');
-        $expenseTotal = Transaction::where('type', 'expense')->sum('amount');
+        $from = $request->filled('from') ? \Carbon\Carbon::parse($request->input('from'))->startOfDay() : null;
+        $to   = $request->filled('to')   ? \Carbon\Carbon::parse($request->input('to'))->endOfDay()   : null;
+
+        $incomeTotal  = Transaction::where('type', 'income')
+            ->when($from, fn($q) => $q->where('created_at', '>=', $from))
+            ->when($to,   fn($q) => $q->where('created_at', '<=', $to))
+            ->sum('amount');
+        $expenseTotal = Transaction::where('type', 'expense')
+            ->when($from, fn($q) => $q->where('created_at', '>=', $from))
+            ->when($to,   fn($q) => $q->where('created_at', '<=', $to))
+            ->sum('amount');
+
         $stats = [
             'students'     => User::where('role', 'student')->count(),
             'instructors'  => User::where('role', 'instructor')->count(),
             'courses'      => Course::count(),
             'batches'      => Batch::count(),
-            'enrollments'  => Enrollment::count(),
-            'certificates' => Certificate::count(),
+            'enrollments'  => Enrollment::when($from, fn($q) => $q->where('created_at', '>=', $from))->when($to, fn($q) => $q->where('created_at', '<=', $to))->count(),
+            'certificates' => Certificate::when($from, fn($q) => $q->where('created_at', '>=', $from))->when($to, fn($q) => $q->where('created_at', '<=', $to))->count(),
             'income'       => $incomeTotal,
             'expense'      => $expenseTotal,
             'profit'       => $incomeTotal - $expenseTotal,
         ];
 
-        // Trainee tab
-        $recentStudents = User::where('role', 'student')->orderBy('created_at', 'desc')->limit(20)->get();
+        // Trainee tab — with enrollment & certificate counts
+        $recentStudents = User::where('role', 'student')
+            ->withCount(['enrollments', 'certificates'])
+            ->orderBy('created_at', 'desc')
+            ->limit(100)->get();
 
-        // Course tab
-        $topCourses = Course::withCount('enrollments')->orderByDesc('enrollments_count')->limit(20)->get();
+        // Course tab — with resource & exam counts
+        $topCourses = Course::withCount(['enrollments', 'resources', 'exams'])
+            ->orderByDesc('enrollments_count')
+            ->limit(100)->get();
 
         // Financial tab
-        $recentTransactions = Transaction::with('user')->orderBy('created_at', 'desc')->limit(20)->get();
+        $recentTransactions = Transaction::with('user')
+            ->when($from, fn($q) => $q->where('created_at', '>=', $from))
+            ->when($to,   fn($q) => $q->where('created_at', '<=', $to))
+            ->orderBy('created_at', 'desc')->limit(100)->get();
+
         $incomeByMonth = [];
         $expenseByMonth = [];
         for ($i = 5; $i >= 0; $i--) {
@@ -358,44 +377,75 @@ class DashboardWebController extends Controller
             $expenseByMonth[$label] = (int) Transaction::where('type', 'expense')->whereYear('created_at', $m->year)->whereMonth('created_at', $m->month)->sum('amount');
         }
 
+        // Installments
+        $installmentTotal   = Installment::sum('total_amount');
+        $installmentPaid    = Installment::sum('paid_amount');
+        $installmentPending = max(0, $installmentTotal - $installmentPaid);
+        $recentInstallments = Installment::with(['student', 'course'])->orderBy('due_date')->limit(50)->get();
+
         // Attendance tab
         $totalAttendance  = Attendance::count();
         $presentCount     = Attendance::where('status', 'present')->count();
         $absentCount      = Attendance::where('status', 'absent')->count();
         $attendanceRate   = $totalAttendance > 0 ? round(($presentCount / $totalAttendance) * 100) : 0;
-        $recentAttendance = Attendance::with(['student', 'batch'])->orderBy('created_at', 'desc')->limit(20)->get();
+        $recentAttendance = Attendance::with(['student', 'batch'])->orderBy('created_at', 'desc')->limit(100)->get();
 
         // Exam/Assessment tab
         $totalExamsTaken = ExamResult::count();
         $avgScore        = $totalExamsTaken > 0 ? round(ExamResult::avg('score')) : 0;
         $passedCount     = ExamResult::where('score', '>=', 60)->count();
         $passRate        = $totalExamsTaken > 0 ? round(($passedCount / $totalExamsTaken) * 100) : 0;
-        $recentExams     = ExamResult::with(['exam', 'student'])->orderBy('submitted_at', 'desc')->limit(20)->get();
+        $recentExams     = ExamResult::with(['exam', 'student'])->orderBy('submitted_at', 'desc')->limit(100)->get();
 
-        // Trainer tab
-        $instructorList = User::where('role', 'instructor')
-            ->leftJoin(\DB::raw('(SELECT instructor_id, COUNT(*) as batch_count FROM batches GROUP BY instructor_id) as bc'), 'users.id', '=', 'bc.instructor_id')
-            ->select('users.*', \DB::raw('COALESCE(bc.batch_count, 0) as batch_count'))
-            ->orderByDesc('batch_count')
-            ->limit(20)
-            ->get();
+        // Trainer tab — with student count and pass rate
+        $instructorList = User::where('role', 'instructor')->get()->map(function ($instructor) {
+            $batchIds              = Batch::where('instructor_id', $instructor->id)->pluck('id');
+            $courseIds             = Batch::whereIn('id', $batchIds)->pluck('course_id')->unique();
+            $instructor->batch_count   = $batchIds->count();
+            $instructor->student_count = Enrollment::whereIn('batch_id', $batchIds)->distinct('student_id')->count('student_id');
+            $results = ExamResult::whereHas('exam', fn($q) => $q->whereIn('course_id', $courseIds))->get();
+            $instructor->pass_rate = $results->count() > 0 ? round($results->where('score', '>=', 60)->count() / $results->count() * 100) : 0;
+            return $instructor;
+        })->sortByDesc('batch_count');
 
-        // KPI / trends tab
-        $monthlyStudents = [];
-        for ($i = 5; $i >= 0; $i--) {
+        // KPI / trends — 12 months
+        $monthlyStudents    = [];
+        $monthlyEnrollments = [];
+        for ($i = 11; $i >= 0; $i--) {
             $m = now()->subMonths($i);
-            $monthlyStudents[$m->format('M Y')] = User::where('role', 'student')->whereYear('created_at', $m->year)->whereMonth('created_at', $m->month)->count();
+            $label = $m->format('M Y');
+            $monthlyStudents[$label]    = User::where('role', 'student')->whereYear('created_at', $m->year)->whereMonth('created_at', $m->month)->count();
+            $monthlyEnrollments[$label] = Enrollment::whereYear('created_at', $m->year)->whereMonth('created_at', $m->month)->count();
         }
-        $completionRate = $stats['enrollments'] > 0 ? round(($stats['certificates'] / $stats['enrollments']) * 100) : 0;
 
-        // Existing alias for backward compat
+        $totalEnrollments  = Enrollment::count();
+        $dropoutCount      = Enrollment::whereIn('status', ['dropped', 'cancelled'])->count();
+        $dropoutRate       = $totalEnrollments > 0 ? round(($dropoutCount / $totalEnrollments) * 100) : 0;
+        $retainedStudents  = Enrollment::select('student_id')->groupBy('student_id')->havingRaw('COUNT(*) > 1')->count();
+        $retentionRate     = $stats['students'] > 0 ? round(($retainedStudents / $stats['students']) * 100) : 0;
+        $completionRate    = $totalEnrollments > 0 ? round(($stats['certificates'] / $totalEnrollments) * 100) : 0;
+
+        // Platform / administrative stats
+        $activeStudents     = User::where('role', 'student')->where('status', 'active')->count();
+        $inactiveStudents   = $stats['students'] - $activeStudents;
+        $totalDownloads     = Resource::sum('downloads');
+        $totalNotifications = Notification::count();
+        $totalLiveSessions  = LiveSession::count();
+        $totalPoints        = Point::sum('amount');
+        $totalResources     = Resource::count();
+
         $recentCourses = $topCourses;
 
         return view('dashboard.reports', compact(
             'stats', 'recentStudents', 'recentCourses', 'recentTransactions',
             'topCourses', 'totalAttendance', 'presentCount', 'absentCount', 'attendanceRate', 'recentAttendance',
             'totalExamsTaken', 'avgScore', 'passRate', 'recentExams',
-            'instructorList', 'monthlyStudents', 'incomeByMonth', 'expenseByMonth', 'completionRate'
+            'instructorList', 'monthlyStudents', 'incomeByMonth', 'expenseByMonth', 'completionRate',
+            'dropoutCount', 'dropoutRate', 'retentionRate', 'retainedStudents',
+            'installmentTotal', 'installmentPaid', 'installmentPending', 'recentInstallments',
+            'totalDownloads', 'totalNotifications', 'totalLiveSessions', 'totalPoints',
+            'activeStudents', 'inactiveStudents', 'monthlyEnrollments', 'totalResources',
+            'from', 'to'
         ));
     }
 

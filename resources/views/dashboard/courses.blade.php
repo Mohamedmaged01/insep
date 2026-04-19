@@ -206,7 +206,7 @@
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'صورة الدورة (اتركها فارغة للإبقاء على الحالية)' : 'Course Image (leave blank to keep current)' }}</label>
                     <input type="file" name="image" accept="image/*" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 focus:border-navy transition-colors text-sm text-gray-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-navy file:text-white file:text-xs file:font-bold">
                     <template x-if="editItem.image">
-                        <img :src="editItem.image" class="mt-2 h-20 rounded-xl object-cover" alt="{{ $isAr ? 'صورة الدورة' : 'Course Image' }}">
+                        <img :src="editItem.image.startsWith('http') ? editItem.image : '/storage/' + editItem.image" class="mt-2 h-20 rounded-xl object-cover" alt="{{ $isAr ? 'صورة الدورة' : 'Course Image' }}">
                     </template>
                 </div>
                 <div>
