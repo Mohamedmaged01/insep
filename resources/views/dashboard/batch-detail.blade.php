@@ -211,38 +211,65 @@
     {{-- Upload Resource Modal --}}
     <div x-show="showResourceModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showResourceModal = false"></div>
-        <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
-            <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'رفع ملف جديد' : 'Upload New File' }}</h2>
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl" x-data="{ uploadMode: 'file' }">
+            <h2 class="text-xl font-black text-navy mb-4">{{ $isAr ? 'إضافة محتوى' : 'Add Content' }}</h2>
+
+            {{-- Toggle --}}
+            <div class="flex bg-gray-100 rounded-xl p-1 mb-5">
+                <button type="button" @click="uploadMode = 'file'" :class="uploadMode === 'file' ? 'bg-white shadow text-navy' : 'text-gray-500'" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                    {{ $isAr ? 'رفع ملف' : 'Upload File' }}
+                </button>
+                <button type="button" @click="uploadMode = 'link'" :class="uploadMode === 'link' ? 'bg-white shadow text-navy' : 'text-gray-500'" class="flex-1 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    {{ $isAr ? 'رابط فيديو' : 'Video Link' }}
+                </button>
+            </div>
+
             <form method="POST" action="{{ route('dashboard.resources.store') }}" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <input type="hidden" name="batch_id" value="{{ $batch->id }}">
                 <input type="hidden" name="course_id" value="{{ $batch->course_id }}">
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'عنوان الملف' : 'File Title' }}</label>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'العنوان' : 'Title' }}</label>
                     <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'نوع المحتوى' : 'Content Type' }}</label>
-                    <select name="type" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
-                        <option value="PDF">PDF</option>
-                        <option value="Video">{{ $isAr ? 'فيديو' : 'Video' }}</option>
-                        <option value="Word">Word</option>
-                        <option value="Excel">Excel</option>
-                        <option value="PowerPoint">PowerPoint</option>
-                        <option value="Other">{{ $isAr ? 'أخرى' : 'Other' }}</option>
+                    <select name="type" x-model="uploadMode === 'link' ? 'VideoLink' : undefined" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <option value="PDF" x-show="uploadMode === 'file'">PDF</option>
+                        <option value="Video" x-show="uploadMode === 'file'">{{ $isAr ? 'فيديو' : 'Video' }}</option>
+                        <option value="Word" x-show="uploadMode === 'file'">Word</option>
+                        <option value="Excel" x-show="uploadMode === 'file'">Excel</option>
+                        <option value="PowerPoint" x-show="uploadMode === 'file'">PowerPoint</option>
+                        <option value="Other" x-show="uploadMode === 'file'">{{ $isAr ? 'أخرى' : 'Other' }}</option>
+                        <option value="VideoLink" x-show="uploadMode === 'link'" selected>{{ $isAr ? 'رابط فيديو' : 'Video Link' }}</option>
+                        <option value="YouTube" x-show="uploadMode === 'link'">YouTube</option>
+                        <option value="Vimeo" x-show="uploadMode === 'link'">Vimeo</option>
+                        <option value="ExternalLink" x-show="uploadMode === 'link'">{{ $isAr ? 'رابط خارجي' : 'External Link' }}</option>
                     </select>
                 </div>
-                <div>
+
+                {{-- File upload --}}
+                <div x-show="uploadMode === 'file'">
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الملف' : 'File' }}</label>
                     <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-navy hover:bg-navy/5 transition-colors">
                         <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-                        <span class="text-sm text-gray-500">{{ $isAr ? 'اضغط لاختيار ملف' : 'Click to select a file' }}</span>
-                        <input type="file" name="file" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp4,.mov,.avi,.zip,.rar">
+                        <span class="text-sm text-gray-500" x-ref="fileLabel">{{ $isAr ? 'اضغط لاختيار ملف' : 'Click to select a file' }}</span>
+                        <input type="file" name="file" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp4,.mov,.avi,.zip,.rar" @change="$refs.fileLabel.textContent = $event.target.files[0]?.name || '{{ $isAr ? 'اضغط لاختيار ملف' : 'Click to select a file' }}'">
                     </label>
                 </div>
+
+                {{-- Link input --}}
+                <div x-show="uploadMode === 'link'">
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'رابط الفيديو' : 'Video URL' }}</label>
+                    <input type="url" name="file_url" placeholder="https://www.youtube.com/watch?v=..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors font-mono text-sm" dir="ltr" :required="uploadMode === 'link'">
+                    <p class="text-xs text-gray-400 mt-1.5">{{ $isAr ? 'يدعم: YouTube، Vimeo، أو أي رابط فيديو مباشر' : 'Supports: YouTube, Vimeo, or any direct video link' }}</p>
+                </div>
+
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showResourceModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
-                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'رفع' : 'Upload' }}</button>
+                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'حفظ' : 'Save' }}</button>
                 </div>
             </form>
         </div>

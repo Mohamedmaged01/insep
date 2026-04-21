@@ -59,6 +59,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/courses', [DashboardWebController::class, 'courses'])->name('dashboard.courses');
     Route::get('/batches', [DashboardWebController::class, 'batches'])->name('dashboard.batches');
     Route::get('/mycourses', [DashboardWebController::class, 'myCourses'])->name('dashboard.mycourses');
+    Route::get('/mycourses/{enrollment}', [DashboardWebController::class, 'myCourseDetail'])->name('dashboard.mycourses.detail');
     Route::get('/attendance', [DashboardWebController::class, 'attendance'])->name('dashboard.attendance');
     Route::get('/resources', [DashboardWebController::class, 'resources'])->name('dashboard.resources');
     Route::get('/live-sessions', [DashboardWebController::class, 'liveSessions'])->name('dashboard.live-sessions');

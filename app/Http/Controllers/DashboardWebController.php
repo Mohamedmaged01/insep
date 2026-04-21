@@ -43,7 +43,7 @@ class DashboardWebController extends Controller
             ],
             'instructor' => [
                 ['label' => 'مجموعاتي',          'value' => Batch::where('instructor_id', $user->id)->count(),                   'color' => 'from-blue-500 to-blue-600',   'icon' => 'clipboard'],
-                ['label' => 'الدورات التي أدرّبها','value' => Course::where('instructor_id', $user->id)->count(),                 'color' => 'from-green-500 to-green-600', 'icon' => 'book'],
+                ['label' => 'الدورات التي أدرّبها','value' => Course::whereHas('batches', fn($q) => $q->where('instructor_id', $user->id))->count(), 'color' => 'from-green-500 to-green-600', 'icon' => 'book'],
                 ['label' => 'عدد المتدربين',     'value' => Enrollment::whereHas('batch', fn($q) => $q->where('instructor_id', $user->id))->count(), 'color' => 'from-purple-500 to-purple-600', 'icon' => 'users'],
                 ['label' => 'التقييم العام',     'value' => ($user->rating ?? 0) . ' / 5',                                       'color' => 'from-orange-500 to-orange-600', 'icon' => 'star'],
             ],
@@ -214,8 +214,28 @@ class DashboardWebController extends Controller
 
     public function myCourses()
     {
-        $enrollments = Enrollment::where('student_id', auth()->id())->with('course', 'batch')->get();
+        $enrollments = Enrollment::where('student_id', auth()->id())
+            ->with(['course', 'batch.resources'])
+            ->get();
         return view('dashboard.mycourses', compact('enrollments'));
+    }
+
+    public function myCourseDetail(Enrollment $enrollment)
+    {
+        abort_if($enrollment->student_id !== auth()->id(), 403);
+
+        $enrollment->load([
+            'course',
+            'batch.resources',
+            'batch.liveSessions',
+            'batch.instructor',
+        ]);
+
+        $certificate = Certificate::where('student_id', auth()->id())
+            ->where('course_id', $enrollment->course_id)
+            ->first();
+
+        return view('dashboard.mycourse-detail', compact('enrollment', 'certificate'));
     }
 
     public function attendance()
@@ -667,6 +687,11 @@ class DashboardWebController extends Controller
     // ── Students CRUD ──────────────────────────────────────────────
     public function storeStudent(Request $request)
     {
+        $request->validate([
+            'email' => 'required|email|unique:users,email',
+        ], [
+            'email.unique' => 'هذا البريد الإلكتروني مستخدم بالفعل من قِبل مستخدم آخر (طالب أو مدرب).',
+        ]);
         User::create([
             'name'     => $request->name_ar ?: $request->name,
             'name_ar'  => $request->name_ar,
@@ -682,6 +707,11 @@ class DashboardWebController extends Controller
 
     public function updateStudent(Request $request, User $user)
     {
+        $request->validate([
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+        ], [
+            'email.unique' => 'هذا البريد الإلكتروني مستخدم بالفعل من قِبل مستخدم آخر.',
+        ]);
         $data = $request->only(['name_ar', 'name_en', 'email', 'phone', 'status']);
         if ($request->filled('name_ar')) {
             $data['name'] = $request->name_ar;
@@ -702,6 +732,11 @@ class DashboardWebController extends Controller
     // ── Instructors CRUD ───────────────────────────────────────────
     public function storeInstructor(Request $request)
     {
+        $request->validate([
+            'email' => 'required|email|unique:users,email',
+        ], [
+            'email.unique' => 'هذا البريد الإلكتروني مستخدم بالفعل من قِبل مستخدم آخر (طالب أو مدرب).',
+        ]);
         User::create([
             'name'      => $request->name,
             'email'     => $request->email,
@@ -716,6 +751,11 @@ class DashboardWebController extends Controller
 
     public function updateInstructor(Request $request, User $user)
     {
+        $request->validate([
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+        ], [
+            'email.unique' => 'هذا البريد الإلكتروني مستخدم بالفعل من قِبل مستخدم آخر.',
+        ]);
         $data = $request->only(['name', 'email', 'phone', 'specialty', 'status']);
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request->password);

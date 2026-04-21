@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Resource;
+use App\Models\LiveSession;
 
 class Batch extends Model
 {
@@ -37,5 +39,15 @@ class Batch extends Model
     public function attendanceRecords()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function resources()
+    {
+        return $this->hasMany(Resource::class);
+    }
+
+    public function liveSessions()
+    {
+        return $this->hasMany(LiveSession::class);
     }
 }
