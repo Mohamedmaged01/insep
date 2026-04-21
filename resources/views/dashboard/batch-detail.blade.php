@@ -14,6 +14,12 @@
         <a href="{{ route('dashboard.batches') }}" class="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-500">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         </a>
+        @if($batch->course?->image)
+        <div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+            <img src="{{ str_starts_with($batch->course->image, 'http') ? $batch->course->image : asset('storage/' . ltrim($batch->course->image, '/')) }}"
+                 class="w-full h-full object-cover" alt="">
+        </div>
+        @endif
         <div>
             <h1 class="text-2xl font-black text-navy">{{ $batch->name }}</h1>
             <p class="text-gray-500 text-sm">{{ $batch->course->title ?? '-' }} &bull; {{ $batch->instructor->name ?? '-' }}</p>
@@ -58,10 +64,12 @@
         <div x-show="tab === 'students'" class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-navy">{{ $isAr ? 'الطلاب المسجلون' : 'Enrolled Students' }}</h3>
+                @if(auth()->user()->role !== 'instructor')
                 <button @click="showEnrollModal = true" class="bg-navy text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-navy-dark transition-colors flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     {{ $isAr ? 'إضافة طالب' : 'Add Student' }}
                 </button>
+                @endif
             </div>
             @if($batch->enrollments->count() > 0)
             <div class="space-y-3">
@@ -96,12 +104,14 @@
                             title="{{ $isAr ? 'عرض الشهادة' : 'View Certificate' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path stroke-linecap="round" d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
                         </button>
+                        @if(auth()->user()->role !== 'instructor')
                         <form method="POST" action="{{ route('dashboard.batches.unenroll', [$batch->id, $enr->id]) }}" onsubmit="return confirm('{{ $isAr ? 'إزالة الطالب من المجموعة؟' : 'Remove student from batch?' }}')">
                             @csrf @method('DELETE')
                             <button type="submit" class="p-1.5 hover:bg-red-50 rounded-lg text-red-500 transition-colors" title="{{ $isAr ? 'إزالة' : 'Remove' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                         </form>
+                        @endif
                     </div>
                 </div>
                 @endforeach
@@ -275,7 +285,8 @@
         </div>
     </div>
 
-    {{-- Enroll Student Modal --}}
+    {{-- Enroll Student Modal (admin only) --}}
+    @if(auth()->user()->role !== 'instructor')
     <div x-show="showEnrollModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showEnrollModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
@@ -300,6 +311,7 @@
             </form>
         </div>
     </div>
+    @endif
 
     {{-- Certificate Modal --}}
     <div x-show="showCertModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>

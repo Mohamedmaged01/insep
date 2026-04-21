@@ -132,7 +132,13 @@ class DashboardWebController extends Controller
 
     public function courses()
     {
-        $courses = Course::with('section')->withCount('enrollments')->orderBy('created_at', 'desc')->get();
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            $courseIds = Batch::where('instructor_id', $user->id)->pluck('course_id')->unique();
+            $courses = Course::with('section')->withCount('enrollments')->whereIn('id', $courseIds)->orderBy('created_at', 'desc')->get();
+        } else {
+            $courses = Course::with('section')->withCount('enrollments')->orderBy('created_at', 'desc')->get();
+        }
         $sections = Section::orderBy('id', 'desc')->get();
         return view('dashboard.courses', compact('courses', 'sections'));
     }
@@ -172,7 +178,12 @@ class DashboardWebController extends Controller
 
     public function batches()
     {
-        $batches = Batch::with(['course', 'instructor'])->orderBy('id', 'desc')->get();
+        $user = auth()->user();
+        $query = Batch::with(['course', 'instructor'])->orderBy('id', 'desc');
+        if ($user->role === 'instructor') {
+            $query->where('instructor_id', $user->id);
+        }
+        $batches = $query->get();
         $courses = Course::all();
         $instructors = User::where('role', 'instructor')->get();
         return view('dashboard.batches', compact('batches', 'courses', 'instructors'));
@@ -180,6 +191,10 @@ class DashboardWebController extends Controller
 
     public function batchDetail(Batch $batch)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            abort_if($batch->instructor_id !== $user->id, 403);
+        }
         $batch->load(['course', 'instructor', 'enrollments.student']);
         $resources = Resource::where('batch_id', $batch->id)->orderBy('id', 'desc')->get();
         $liveSessions = LiveSession::where('batch_id', $batch->id)->orderBy('scheduled_at', 'desc')->get();
@@ -194,6 +209,7 @@ class DashboardWebController extends Controller
 
     public function enrollStudent(Request $request, Batch $batch)
     {
+        abort_if(auth()->user()->role === 'instructor', 403);
         $exists = Enrollment::where('student_id', $request->student_id)->where('batch_id', $batch->id)->exists();
         if (!$exists) {
             Enrollment::create([
@@ -208,6 +224,7 @@ class DashboardWebController extends Controller
 
     public function unenrollStudent(Batch $batch, Enrollment $enrollment)
     {
+        abort_if(auth()->user()->role === 'instructor', 403);
         $enrollment->delete();
         return back()->with('success', 'تم إزالة الطالب من المجموعة بنجاح');
     }
@@ -246,6 +263,10 @@ class DashboardWebController extends Controller
 
     public function attendanceBatch(Batch $batch)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            abort_if($batch->instructor_id !== $user->id, 403);
+        }
         $batch->load(['course', 'enrollments.student']);
         $dates = Attendance::where('batch_id', $batch->id)->select('date')->distinct()->orderBy('date', 'desc')->pluck('date');
         $selectedDate = request('date', $dates->first() ?? date('Y-m-d'));
@@ -256,6 +277,10 @@ class DashboardWebController extends Controller
 
     public function storeAttendance(Request $request, Batch $batch)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            abort_if($batch->instructor_id !== $user->id, 403);
+        }
         $date = $request->date ?? date('Y-m-d');
         $statuses = $request->statuses ?? [];
         $notes = $request->notes ?? [];
@@ -270,24 +295,58 @@ class DashboardWebController extends Controller
 
     public function resources()
     {
-        $resources = Resource::with('course')->orderBy('created_at', 'desc')->get();
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            $batchIds = Batch::where('instructor_id', $user->id)->pluck('id');
+            $resources = Resource::with('course')->whereIn('batch_id', $batchIds)->orderBy('created_at', 'desc')->get();
+            $batches = Batch::with('course')->where('instructor_id', $user->id)->get();
+        } else {
+            $resources = Resource::with('course')->orderBy('created_at', 'desc')->get();
+            $batches = Batch::with('course')->get();
+        }
         $courses = Course::all();
-        $batches = Batch::with('course')->get();
         return view('dashboard.resources', compact('resources', 'courses', 'batches'));
     }
 
     public function liveSessions()
     {
-        $sessions = LiveSession::with('batch')->orderBy('scheduled_at', 'desc')->get();
-        $batches = Batch::with('course')->orderBy('id', 'desc')->get();
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            $sessions = LiveSession::with('batch')->where('instructor_id', $user->id)->orderBy('scheduled_at', 'desc')->get();
+            $batches = Batch::with('course')->where('instructor_id', $user->id)->orderBy('id', 'desc')->get();
+        } else {
+            $sessions = LiveSession::with('batch')->orderBy('scheduled_at', 'desc')->get();
+            $batches = Batch::with('course')->orderBy('id', 'desc')->get();
+        }
         return view('dashboard.live-sessions', compact('sessions', 'batches'));
     }
 
     public function exams()
     {
-        $exams = Exam::with('course')->orderBy('created_at', 'desc')->get();
+        $user = auth()->user();
+        $batchFilter = request('batch');
+
+        if ($user->role === 'instructor') {
+            $myBatchIds = Batch::where('instructor_id', $user->id)->pluck('id');
+            $query = Exam::with(['course', 'batch'])->whereIn('batch_id', $myBatchIds);
+            $batches = Batch::with('course')->whereIn('id', $myBatchIds)->orderBy('id', 'desc')->get();
+        } elseif ($user->role === 'student') {
+            $myBatchIds = Enrollment::where('student_id', $user->id)->pluck('batch_id');
+            $query = Exam::with(['course', 'batch'])->whereIn('batch_id', $myBatchIds);
+            $batches = collect();
+        } else {
+            $query = Exam::with(['course', 'batch']);
+            $batches = Batch::with('course')->orderBy('id', 'desc')->get();
+        }
+
+        if ($batchFilter) {
+            $query->where('batch_id', $batchFilter);
+        }
+
+        $exams = $query->orderBy('created_at', 'desc')->get();
         $courses = Course::all();
-        return view('dashboard.exams', compact('exams', 'courses'));
+        $activeBatch = $batchFilter ? Batch::find($batchFilter) : null;
+        return view('dashboard.exams', compact('exams', 'courses', 'batches', 'activeBatch'));
     }
 
     public function certificates()
@@ -295,6 +354,10 @@ class DashboardWebController extends Controller
         $user = auth()->user();
         if ($user->role === 'student') {
             $certificates = Certificate::where('student_id', $user->id)->with('course')->get();
+        } elseif ($user->role === 'instructor') {
+            $batchIds = Batch::where('instructor_id', $user->id)->pluck('id');
+            $studentIds = Enrollment::whereIn('batch_id', $batchIds)->pluck('student_id')->unique();
+            $certificates = Certificate::with(['student', 'course'])->whereIn('student_id', $studentIds)->orderBy('created_at', 'desc')->get();
         } else {
             $certificates = Certificate::with(['student', 'course'])->orderBy('created_at', 'desc')->get();
         }
@@ -854,6 +917,7 @@ class DashboardWebController extends Controller
     // ── Batches CRUD ───────────────────────────────────────────────
     public function storeBatch(Request $request)
     {
+        abort_if(auth()->user()->role === 'instructor', 403);
         Batch::create([
             'name'          => $request->name,
             'course_id'     => $request->course_id,
@@ -881,6 +945,13 @@ class DashboardWebController extends Controller
     // ── Resources CRUD ─────────────────────────────────────────────
     public function storeResource(Request $request)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor' && $request->batch_id) {
+            abort_if(
+                !Batch::where('id', $request->batch_id)->where('instructor_id', $user->id)->exists(),
+                403
+            );
+        }
         $fileUrl = $request->file_url;
         if ($request->hasFile('file')) {
             $path = $request->file('file')->store('resources', 'public');
@@ -905,6 +976,11 @@ class DashboardWebController extends Controller
 
     public function destroyResource(Resource $resource)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            $ownBatchIds = Batch::where('instructor_id', $user->id)->pluck('id');
+            abort_if(!$ownBatchIds->contains($resource->batch_id), 403);
+        }
         $resource->delete();
         return back()->with('success', 'تم حذف المحتوى بنجاح');
     }
@@ -1007,9 +1083,22 @@ class DashboardWebController extends Controller
     // ── Exams CRUD ─────────────────────────────────────────────────
     public function storeExam(Request $request)
     {
+        $user = auth()->user();
+        $batchId = $request->batch_id ?: null;
+
+        if ($user->role === 'instructor' && $batchId) {
+            abort_if(!Batch::where('id', $batchId)->where('instructor_id', $user->id)->exists(), 403);
+        }
+
+        $courseId = $request->course_id;
+        if ($batchId && !$courseId) {
+            $courseId = Batch::find($batchId)?->course_id;
+        }
+
         Exam::create([
             'title'     => $request->title,
-            'course_id' => $request->course_id,
+            'course_id' => $courseId,
+            'batch_id'  => $batchId,
             'type'      => $request->type ?? 'quiz',
             'questions' => $request->questions ?? 30,
             'duration'  => $request->duration,
@@ -1022,7 +1111,16 @@ class DashboardWebController extends Controller
 
     public function updateExam(Request $request, Exam $exam)
     {
-        $exam->update($request->only(['title', 'course_id', 'type', 'questions', 'duration', 'attempts', 'status', 'exam_link']));
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            abort_if($exam->batch_id && !Batch::where('id', $exam->batch_id)->where('instructor_id', $user->id)->exists(), 403);
+        }
+
+        $data = $request->only(['title', 'batch_id', 'course_id', 'type', 'questions', 'duration', 'attempts', 'status', 'exam_link']);
+        if (!empty($data['batch_id']) && empty($data['course_id'])) {
+            $data['course_id'] = Batch::find($data['batch_id'])?->course_id;
+        }
+        $exam->update($data);
         return back()->with('success', 'تم تحديث الاختبار بنجاح');
     }
 
@@ -1035,6 +1133,13 @@ class DashboardWebController extends Controller
     // ── Live Sessions CRUD ─────────────────────────────────────────
     public function storeLiveSession(Request $request)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor' && $request->batch_id) {
+            abort_if(
+                !Batch::where('id', $request->batch_id)->where('instructor_id', $user->id)->exists(),
+                403
+            );
+        }
         LiveSession::create([
             'title'         => $request->title,
             'live_url'      => $request->live_url,
@@ -1048,12 +1153,20 @@ class DashboardWebController extends Controller
 
     public function updateLiveSession(Request $request, LiveSession $liveSession)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            abort_if($liveSession->instructor_id !== $user->id, 403);
+        }
         $liveSession->update($request->only(['title', 'live_url', 'batch_id', 'scheduled_at', 'status']));
         return back()->with('success', 'تم تحديث جلسة البث بنجاح');
     }
 
     public function destroyLiveSession(LiveSession $liveSession)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            abort_if($liveSession->instructor_id !== $user->id, 403);
+        }
         $liveSession->delete();
         return back()->with('success', 'تم حذف جلسة البث بنجاح');
     }

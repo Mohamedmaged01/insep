@@ -12,13 +12,15 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-            <h1 class="text-2xl font-black text-navy">{{ $isAr ? 'إدارة الدورات' : 'Manage Courses' }}</h1>
+            <h1 class="text-2xl font-black text-navy">{{ auth()->user()->role === 'instructor' ? ($isAr ? 'دوراتي' : 'My Courses') : ($isAr ? 'إدارة الدورات' : 'Manage Courses') }}</h1>
             <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $courses->count() }} {{ $isAr ? 'دورة' : 'courses' }}</p>
         </div>
+        @if(auth()->user()->role !== 'instructor')
         <button @click="showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             {{ $isAr ? 'إضافة دورة' : 'Add Course' }}
         </button>
+        @endif
     </div>
 
     {{-- Search --}}
@@ -52,7 +54,19 @@
                     <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
                         x-show="!search || '{{ addslashes($course->title) }} {{ $course->category }}'.toLowerCase().includes(search.toLowerCase())">
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $i + 1 }}</td>
-                        <td class="px-6 py-4 font-bold text-navy text-sm">{{ $course->title }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                @if($course->image)
+                                <img src="{{ str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . ltrim($course->image, '/')) }}"
+                                     class="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-gray-100" alt="">
+                                @else
+                                <div class="w-10 h-10 rounded-xl bg-navy/10 flex-shrink-0 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-navy/30" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                </div>
+                                @endif
+                                <span class="font-bold text-navy text-sm">{{ $course->title }}</span>
+                            </div>
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->section->name_ar ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->category ?? '-' }}</td>
                         <td class="px-6 py-4"><span class="px-3 py-1 rounded-lg text-xs font-bold bg-navy/10 text-navy">{{ $course->level ?? '-' }}</span></td>
@@ -72,6 +86,7 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->enrollments_count ?? 0 }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
+                                @if(auth()->user()->role !== 'instructor')
                                 <button @click="openEdit({{ $course->id }}, {{ json_encode($course->title) }}, {{ json_encode($course->description ?? '') }}, {{ json_encode($course->category ?? '') }}, {{ $course->price ?? 0 }}, {{ json_encode($course->currency ?? 'USD') }}, {{ json_encode($course->duration ?? '') }}, {{ json_encode($course->level ?? '') }}, {{ json_encode($course->status ?? 'active') }}, {{ $course->section_id ?? 'null' }}, {{ json_encode($course->image ?? '') }}, {{ json_encode($course->content ?? '') }}, {{ json_encode($course->features ?? '') }}, {{ json_encode($course->accreditation ?? '') }}, {{ json_encode($course->job_opportunities ?? '') }}, {{ json_encode($course->promo_video ?? '') }}, {{ $course->is_featured ? 1 : 0 }})"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -82,6 +97,9 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                                     </button>
                                 </form>
+                                @else
+                                <a href="{{ route('dashboard.batches') }}" class="px-3 py-1.5 bg-navy/10 hover:bg-navy/20 text-navy rounded-lg text-xs font-bold transition-colors">{{ $isAr ? 'المجموعات' : 'Batches' }}</a>
+                                @endif
                             </div>
                         </td>
                     </tr>

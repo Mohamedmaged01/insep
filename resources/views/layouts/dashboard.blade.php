@@ -48,14 +48,14 @@
     ];
 
     $instructorMenu = [
-        ['key' => 'home',         'label' => $isAr ? 'الرئيسية'          : 'Home',          'icon' => 'home',           'route' => 'dashboard'],
-        ['key' => 'courses',      'label' => $isAr ? 'دوراتي'            : 'My Courses',    'icon' => 'book-open',      'route' => 'dashboard.courses'],
-        ['key' => 'batches',      'label' => $isAr ? 'مجموعاتي'         : 'My Batches',    'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
-        ['key' => 'exams',        'label' => $isAr ? 'الاختبارات'        : 'Exams',         'icon' => 'file-text',      'route' => 'dashboard.exams'],
-        ['key' => 'resources',    'label' => $isAr ? 'المحتوى التدريبي'  : 'Resources',     'icon' => 'layers',         'route' => 'dashboard.resources'],
-        ['key' => 'reports',      'label' => $isAr ? 'تقارير دوراتي'     : 'My Reports',    'icon' => 'bar-chart-3',    'route' => 'dashboard.reports'],
-        ['key' => 'notifications','label' => $isAr ? 'الإشعارات'         : 'Notifications', 'icon' => 'bell',           'route' => 'dashboard.notifications'],
-        ['key' => 'settings',     'label' => $isAr ? 'الملف الشخصي'      : 'Profile',       'icon' => 'settings',       'route' => 'dashboard.settings'],
+        ['key' => 'home',          'label' => $isAr ? 'الرئيسية'          : 'Home',          'icon' => 'home',           'route' => 'dashboard'],
+        ['key' => 'batches',       'label' => $isAr ? 'مجموعاتي'          : 'My Batches',    'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
+        ['key' => 'resources',     'label' => $isAr ? 'الحقيبة التدريبية' : 'Training Bag',  'icon' => 'layers',         'route' => 'dashboard.resources'],
+        ['key' => 'live-sessions', 'label' => $isAr ? 'جلسات البث'        : 'Live Sessions', 'icon' => 'video',          'route' => 'dashboard.live-sessions'],
+        ['key' => 'exams',         'label' => $isAr ? 'الاختبارات'        : 'Exams',         'icon' => 'file-text',      'route' => 'dashboard.exams'],
+        ['key' => 'certificates',  'label' => $isAr ? 'شهادات متدربي'     : 'Trainee Certs', 'icon' => 'award',          'route' => 'dashboard.certificates'],
+        ['key' => 'notifications', 'label' => $isAr ? 'الإشعارات'         : 'Notifications', 'icon' => 'bell',           'route' => 'dashboard.notifications'],
+        ['key' => 'settings',      'label' => $isAr ? 'الملف الشخصي'      : 'Profile',       'icon' => 'settings',       'route' => 'dashboard.settings'],
     ];
 
     $financeMenu = [
