@@ -65,6 +65,15 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/live-sessions', [DashboardWebController::class, 'liveSessions'])->name('dashboard.live-sessions');
     Route::get('/exams', [DashboardWebController::class, 'exams'])->name('dashboard.exams');
     Route::get('/certificates', [DashboardWebController::class, 'certificates'])->name('dashboard.certificates');
+    Route::post('/certificates', [DashboardWebController::class, 'storeCertificate'])->name('dashboard.certificates.store');
+    Route::delete('/certificates/{id}', [DashboardWebController::class, 'destroyCertificate'])->name('dashboard.certificates.destroy');
+    Route::get('/certificates/{id}/download', [DashboardWebController::class, 'downloadCertificate'])->name('dashboard.certificates.download');
+    Route::post('/certificates/bulk', [DashboardWebController::class, 'bulkUploadCertificates'])->name('dashboard.certificates.bulk');
+
+    // Certificate requests
+    Route::get('/certificate-requests', [DashboardWebController::class, 'certificateRequests'])->name('dashboard.certificate-requests');
+    Route::post('/certificate-requests', [DashboardWebController::class, 'storeCertificateRequest'])->name('dashboard.certificate-requests.store');
+    Route::patch('/certificate-requests/{id}', [DashboardWebController::class, 'updateCertificateRequest'])->name('dashboard.certificate-requests.update');
     Route::get('/finance', [DashboardWebController::class, 'finance'])->middleware('web.role:admin,finance')->name('dashboard.finance');
     Route::get('/notifications', [DashboardWebController::class, 'notifications'])->name('dashboard.notifications');
     Route::get('/sections', [DashboardWebController::class, 'sections'])->name('dashboard.sections');

@@ -21,6 +21,9 @@ use App\Models\Installment;
 use App\Models\Section;
 use App\Models\ExamResult;
 use App\Models\CommitteeMember;
+use App\Models\CertificateRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardWebController extends Controller
 {
@@ -351,17 +354,278 @@ class DashboardWebController extends Controller
 
     public function certificates()
     {
-        $user = auth()->user();
+        $user   = auth()->user();
+        abort_if($user->role === 'instructor', 403);
+
+        $search  = request('q');
+        $status  = request('status');
+        $type    = request('type');
+        $from    = request('from');
+        $to      = request('to');
+
         if ($user->role === 'student') {
-            $certificates = Certificate::where('student_id', $user->id)->with('course')->get();
-        } elseif ($user->role === 'instructor') {
-            $batchIds = Batch::where('instructor_id', $user->id)->pluck('id');
-            $studentIds = Enrollment::whereIn('batch_id', $batchIds)->pluck('student_id')->unique();
-            $certificates = Certificate::with(['student', 'course'])->whereIn('student_id', $studentIds)->orderBy('created_at', 'desc')->get();
+            $query = Certificate::with(['course', 'batch'])->where('student_id', $user->id);
+            $batches         = collect();
+            $students        = collect();
+            $courses         = collect();
+            $pendingRequests = 0;
         } else {
-            $certificates = Certificate::with(['student', 'course'])->orderBy('created_at', 'desc')->get();
+            $query = Certificate::with(['student', 'course', 'batch']);
+            $batches         = Batch::with('course')->orderBy('id', 'desc')->get();
+            $students        = User::where('role', 'student')->orderBy('name')->get();
+            $courses         = Course::orderBy('title')->get();
+            $pendingRequests = CertificateRequest::where('status', 'pending')->count();
         }
-        return view('dashboard.certificates', compact('certificates'));
+
+        $query->when($search, fn($q) => $q->where(fn($q2) =>
+            $q2->whereHas('student', fn($s) => $s->where('name', 'like', "%$search%")
+                                                   ->orWhere('email', 'like', "%$search%"))
+               ->orWhere('serial_number', 'like', "%$search%")
+               ->orWhereHas('course', fn($c) => $c->where('title', 'like', "%$search%"))
+        ))
+        ->when($status, fn($q) => $q->where('status', $status))
+        ->when($type,   fn($q) => $q->where('type', $type))
+        ->when($from,   fn($q) => $q->where('created_at', '>=', $from))
+        ->when($to,     fn($q) => $q->where('created_at', '<=', $to . ' 23:59:59'));
+
+        $certificates = $query->orderBy('created_at', 'desc')->get();
+
+        return view('dashboard.certificates', compact(
+            'certificates', 'batches', 'students', 'courses', 'pendingRequests'
+        ));
+    }
+
+    public function storeCertificate(Request $request)
+    {
+        $user = auth()->user();
+        abort_if($user->role === 'student', 403);
+
+        $serial  = 'CERT-' . strtoupper(uniqid());
+        $fileUrl = null;
+
+        if ($request->hasFile('certificate_file')) {
+            $path    = $request->file('certificate_file')->store('certificates', 'public');
+            $fileUrl = Storage::url($path);
+        }
+
+        $cert = Certificate::create([
+            'serial_number' => $serial,
+            'student_id'    => $request->student_id,
+            'course_id'     => $request->course_id,
+            'batch_id'      => $request->batch_id ?: null,
+            'title'         => $request->title ?: 'شهادة إتمام الدورة',
+            'issue_date'    => $request->issue_date ?: now()->toDateString(),
+            'grade'         => $request->grade ?: null,
+            'status'        => 'active',
+            'file_url'      => $fileUrl,
+            'type'          => $fileUrl ? 'manual' : 'auto',
+            'created_by'    => $user->id,
+        ]);
+
+        if (!$fileUrl && $request->generate_pdf) {
+            $this->generateAndStoreCertificatePdf($cert);
+        }
+
+        return back()->with('success', 'تم إصدار الشهادة بنجاح');
+    }
+
+    public function destroyCertificate($id)
+    {
+        abort_if(auth()->user()->role !== 'admin', 403);
+        $cert = Certificate::findOrFail($id);
+        $cert->update(['status' => 'revoked']);
+        return back()->with('success', 'تم إلغاء الشهادة');
+    }
+
+    public function downloadCertificate($id)
+    {
+        $user = auth()->user();
+        $cert = Certificate::with(['student', 'course', 'batch'])->findOrFail($id);
+
+        if ($user->role === 'student') {
+            abort_if($cert->student_id !== $user->id, 403);
+        }
+
+        if ($cert->file_url) {
+            $path = str_replace('/storage/', '', parse_url($cert->file_url, PHP_URL_PATH));
+            $fullPath = Storage::disk('public')->path($path);
+            if (file_exists($fullPath)) {
+                return response()->download($fullPath, 'certificate-' . $cert->serial_number . '.pdf');
+            }
+            return redirect($cert->file_url);
+        }
+
+        return $this->generateCertificatePdfResponse($cert);
+    }
+
+    private function generateCertificatePdfResponse(Certificate $cert)
+    {
+        $pdf = Pdf::loadView('certificates.template', [
+            'certificate' => $cert,
+            'student'     => $cert->student,
+            'course'      => $cert->course,
+            'batch'       => $cert->batch,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('certificate-' . $cert->serial_number . '.pdf');
+    }
+
+    private function generateAndStoreCertificatePdf(Certificate $cert)
+    {
+        $cert->load(['student', 'course', 'batch']);
+        $pdf  = Pdf::loadView('certificates.template', [
+            'certificate' => $cert,
+            'student'     => $cert->student,
+            'course'      => $cert->course,
+            'batch'       => $cert->batch,
+        ])->setPaper('a4', 'landscape');
+
+        $filename = 'certificates/' . $cert->serial_number . '.pdf';
+        Storage::disk('public')->put($filename, $pdf->output());
+        $cert->update(['file_url' => Storage::url($filename)]);
+    }
+
+    public function bulkUploadCertificates(Request $request)
+    {
+        abort_if(auth()->user()->role === 'student', 403);
+
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls',
+            'zip_file'   => 'required|file|mimes:zip',
+        ]);
+
+        $rows    = Excel::toArray([], $request->file('excel_file'))[0];
+        $headers = array_map('strtolower', array_map('trim', $rows[0]));
+
+        $emailIdx    = array_search('user_email',         $headers);
+        $courseIdx   = array_search('course_id',          $headers);
+        $batchIdx    = array_search('batch_id',           $headers);
+        $codeIdx     = array_search('certificate_code',   $headers);
+        $fileNameIdx = array_search('file_name',          $headers);
+
+        $tempDir = sys_get_temp_dir() . '/cert_bulk_' . uniqid();
+        mkdir($tempDir);
+
+        $zip = new \ZipArchive();
+        if ($zip->open($request->file('zip_file')->getRealPath()) === true) {
+            $zip->extractTo($tempDir);
+            $zip->close();
+        }
+
+        $imported = 0;
+        foreach (array_slice($rows, 1) as $row) {
+            if (empty($row[$emailIdx])) continue;
+
+            $student  = User::where('email', trim($row[$emailIdx]))->first();
+            if (!$student) continue;
+
+            $serial   = $codeIdx !== false && !empty($row[$codeIdx])
+                ? trim($row[$codeIdx])
+                : 'CERT-' . strtoupper(uniqid());
+
+            $fileUrl  = null;
+            if ($fileNameIdx !== false && !empty($row[$fileNameIdx])) {
+                $srcFile = $tempDir . '/' . trim($row[$fileNameIdx]);
+                if (file_exists($srcFile)) {
+                    $destPath = 'certificates/' . $serial . '_' . basename($srcFile);
+                    Storage::disk('public')->put($destPath, file_get_contents($srcFile));
+                    $fileUrl  = Storage::url($destPath);
+                }
+            }
+
+            Certificate::create([
+                'serial_number' => $serial,
+                'student_id'    => $student->id,
+                'course_id'     => $row[$courseIdx] ?? null,
+                'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? $row[$batchIdx] : null,
+                'title'         => 'شهادة إتمام الدورة',
+                'issue_date'    => now()->toDateString(),
+                'status'        => 'active',
+                'file_url'      => $fileUrl,
+                'type'          => 'bulk',
+                'created_by'    => auth()->id(),
+            ]);
+            $imported++;
+        }
+
+        array_map('unlink', glob($tempDir . '/*'));
+        rmdir($tempDir);
+
+        return back()->with('success', "تم استيراد {$imported} شهادة بنجاح");
+    }
+
+    public function certificateRequests()
+    {
+        $user = auth()->user();
+        abort_if($user->role === 'student', 403);
+
+        $statusFilter = request('status');
+
+        $query = CertificateRequest::with(['student', 'course', 'batch']);
+
+        if ($user->role === 'instructor') {
+            $myBatchIds = Batch::where('instructor_id', $user->id)->pluck('id');
+            $query->whereIn('batch_id', $myBatchIds);
+        }
+
+        $query->when($statusFilter, fn($q) => $q->where('status', $statusFilter));
+
+        $requests = $query->orderBy('created_at', 'desc')->get();
+
+        return view('dashboard.certificate-requests', compact('requests', 'statusFilter'));
+    }
+
+    public function storeCertificateRequest(Request $request)
+    {
+        $user = auth()->user();
+        abort_if(!$user->isStudent(), 403);
+
+        $alreadyPending = CertificateRequest::where('user_id', $user->id)
+            ->where('course_id', $request->course_id)
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($alreadyPending) {
+            return back()->with('info', 'لديك طلب معلق بالفعل لهذه الدورة');
+        }
+
+        CertificateRequest::create([
+            'user_id'   => $user->id,
+            'course_id' => $request->course_id,
+            'batch_id'  => $request->batch_id ?: null,
+            'status'    => 'pending',
+            'notes'     => $request->notes ?: null,
+        ]);
+
+        return back()->with('success', 'تم إرسال طلب الشهادة بنجاح');
+    }
+
+    public function updateCertificateRequest($id, Request $request)
+    {
+        $user = auth()->user();
+        abort_if($user->role === 'student', 403);
+
+        $req = CertificateRequest::findOrFail($id);
+        $req->update(['status' => $request->status]);
+
+        if ($request->status === 'approved') {
+            $serial = 'CERT-' . strtoupper(uniqid());
+            $cert   = Certificate::create([
+                'serial_number' => $serial,
+                'student_id'    => $req->user_id,
+                'course_id'     => $req->course_id,
+                'batch_id'      => $req->batch_id,
+                'title'         => 'شهادة إتمام الدورة',
+                'issue_date'    => now()->toDateString(),
+                'status'        => 'active',
+                'type'          => 'auto',
+                'created_by'    => $user->id,
+            ]);
+            $this->generateAndStoreCertificatePdf($cert);
+        }
+
+        $msg = $request->status === 'approved' ? 'تمت الموافقة وإصدار الشهادة' : 'تم رفض الطلب';
+        return back()->with('success', $msg);
     }
 
     public function finance()

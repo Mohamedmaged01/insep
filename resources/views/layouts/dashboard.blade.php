@@ -27,7 +27,8 @@
         ['key' => 'sections',     'label' => $isAr ? 'الشعب التدريبية'    : 'Sections',        'icon' => 'grid',           'route' => 'dashboard.sections'],
         ['key' => 'courses',      'label' => $isAr ? 'إدارة الدورات'      : 'Courses',         'icon' => 'book-open',      'route' => 'dashboard.courses'],
         ['key' => 'batches',      'label' => $isAr ? 'المجموعات التدريبية': 'Batches',         'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
-        ['key' => 'certificates', 'label' => $isAr ? 'الشهادات'           : 'Certificates',    'icon' => 'award',          'route' => 'dashboard.certificates'],
+        ['key' => 'certificates',         'label' => $isAr ? 'الشهادات'        : 'Certificates',    'icon' => 'award',  'route' => 'dashboard.certificates'],
+        ['key' => 'certificate-requests', 'label' => $isAr ? 'طلبات الشهادات' : 'Cert Requests',  'icon' => 'inbox',  'route' => 'dashboard.certificate-requests'],
         ['key' => 'finance',      'label' => $isAr ? 'المالية'            : 'Finance',         'icon' => 'dollar-sign',    'route' => 'dashboard.finance'],
         ['key' => 'notifications','label' => $isAr ? 'الإشعارات'          : 'Notifications',   'icon' => 'bell',           'route' => 'dashboard.notifications'],
         ['key' => 'reports',      'label' => $isAr ? 'التقارير'           : 'Reports',         'icon' => 'bar-chart-3',    'route' => 'dashboard.reports'],
@@ -53,7 +54,6 @@
         ['key' => 'resources',     'label' => $isAr ? 'الحقيبة التدريبية' : 'Training Bag',  'icon' => 'layers',         'route' => 'dashboard.resources'],
         ['key' => 'live-sessions', 'label' => $isAr ? 'جلسات البث'        : 'Live Sessions', 'icon' => 'video',          'route' => 'dashboard.live-sessions'],
         ['key' => 'exams',         'label' => $isAr ? 'الاختبارات'        : 'Exams',         'icon' => 'file-text',      'route' => 'dashboard.exams'],
-        ['key' => 'certificates',  'label' => $isAr ? 'شهادات متدربي'     : 'Trainee Certs', 'icon' => 'award',          'route' => 'dashboard.certificates'],
         ['key' => 'notifications', 'label' => $isAr ? 'الإشعارات'         : 'Notifications', 'icon' => 'bell',           'route' => 'dashboard.notifications'],
         ['key' => 'settings',      'label' => $isAr ? 'الملف الشخصي'      : 'Profile',       'icon' => 'settings',       'route' => 'dashboard.settings'],
     ];
