@@ -22,6 +22,7 @@ use App\Models\Section;
 use App\Models\ExamResult;
 use App\Models\CommitteeMember;
 use App\Models\CertificateRequest;
+use App\Exports\CertificateTemplateExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -558,6 +559,101 @@ class DashboardWebController extends Controller
         rmdir($tempDir);
 
         return back()->with('success', "تم استيراد {$imported} شهادة بنجاح");
+    }
+
+    // ── Certificate Excel import (no ZIP required) ──────────────────
+    public function downloadCertificateTemplate()
+    {
+        abort_if(auth()->user()->role === 'student', 403);
+        return Excel::download(new CertificateTemplateExport(), 'certificates-template.xlsx');
+    }
+
+    public function importCertificates(Request $request)
+    {
+        abort_if(auth()->user()->role === 'student', 403);
+
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        $rows    = Excel::toArray([], $request->file('excel_file'))[0];
+        $headers = array_map('strtolower', array_map('trim', $rows[0]));
+
+        $emailIdx  = array_search('student_email',    $headers);
+        $courseIdx = array_search('course_id',         $headers);
+        $batchIdx  = array_search('batch_id',          $headers);
+        $titleIdx  = array_search('title',             $headers);
+        $dateIdx   = array_search('issue_date',        $headers);
+        $gradeIdx  = array_search('grade',             $headers);
+        $codeIdx   = array_search('certificate_code',  $headers);
+
+        if ($emailIdx === false || $courseIdx === false) {
+            return back()->withErrors(['excel_file' => 'الملف يجب أن يحتوي على عمودَي student_email و course_id على الأقل']);
+        }
+
+        $imported     = 0;
+        $skipped      = 0;
+        $importErrors = [];
+
+        foreach (array_slice($rows, 1) as $i => $row) {
+            $rowNum = $i + 2;
+
+            if (empty($row[$emailIdx])) {
+                $skipped++;
+                continue;
+            }
+
+            $student = User::where('email', trim($row[$emailIdx]))->first();
+            if (!$student) {
+                $importErrors[] = "صف {$rowNum}: البريد \"{$row[$emailIdx]}\" غير مسجّل في النظام";
+                $skipped++;
+                continue;
+            }
+
+            $courseId = $row[$courseIdx] ?? null;
+            if (!$courseId || !Course::find($courseId)) {
+                $importErrors[] = "صف {$rowNum}: معرّف الدورة \"{$courseId}\" غير موجود";
+                $skipped++;
+                continue;
+            }
+
+            $serial = ($codeIdx !== false && !empty($row[$codeIdx]))
+                ? trim($row[$codeIdx])
+                : 'CERT-' . strtoupper(uniqid());
+
+            // Skip if this serial already exists
+            if (Certificate::where('serial_number', $serial)->exists()) {
+                $importErrors[] = "صف {$rowNum}: رقم الشهادة \"{$serial}\" مستخدم مسبقاً";
+                $skipped++;
+                continue;
+            }
+
+            $cert = Certificate::create([
+                'serial_number' => $serial,
+                'student_id'    => $student->id,
+                'course_id'     => $courseId,
+                'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? $row[$batchIdx] : null,
+                'title'         => ($titleIdx !== false && !empty($row[$titleIdx])) ? trim($row[$titleIdx]) : 'شهادة إتمام الدورة',
+                'issue_date'    => ($dateIdx  !== false && !empty($row[$dateIdx]))  ? $row[$dateIdx]        : now()->toDateString(),
+                'grade'         => ($gradeIdx !== false && !empty($row[$gradeIdx])) ? trim($row[$gradeIdx]) : null,
+                'status'        => 'active',
+                'type'          => 'import',
+                'created_by'    => auth()->id(),
+            ]);
+
+            $this->generateAndStoreCertificatePdf($cert);
+
+            $imported++;
+        }
+
+        $message = "تم استيراد {$imported} شهادة بنجاح";
+        if ($skipped > 0) {
+            $message .= "، تم تخطي {$skipped} صف";
+        }
+
+        return back()
+            ->with('success', $message)
+            ->with('import_errors', $importErrors);
     }
 
     public function certificateRequests()

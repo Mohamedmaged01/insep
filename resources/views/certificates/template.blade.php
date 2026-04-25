@@ -93,6 +93,7 @@
   }
   .meta div { text-align: center; }
   .meta .label { font-size: 10px; color: #999; margin-bottom: 2px; }
+  .serial { font-size: 13px; font-family: monospace; color: #1a3a5c; letter-spacing: 1px; }
   .seal {
     width: 70px;
     height: 70px;
@@ -133,7 +134,7 @@
   <div class="meta">
     <div>
       <div class="label">رقم الشهادة / Serial No.</div>
-      <strong>{{ $certificate->serial_number }}</strong>
+      <span class="serial">{{ $certificate->serial_number }}</span>
     </div>
     <div>
       <div class="seal">INSEP</div>
