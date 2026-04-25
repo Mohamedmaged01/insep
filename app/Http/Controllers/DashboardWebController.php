@@ -300,8 +300,14 @@ class DashboardWebController extends Controller
     {
         $user = auth()->user();
         if ($user->role === 'instructor') {
-            $batchIds = Batch::where('instructor_id', $user->id)->pluck('id');
-            $resources = Resource::with('course')->whereIn('batch_id', $batchIds)->orderBy('created_at', 'desc')->get();
+            $batchIds  = Batch::where('instructor_id', $user->id)->pluck('id');
+            $courseIds = Batch::where('instructor_id', $user->id)->pluck('course_id')->filter()->unique();
+            $resources = Resource::with('course')
+                ->where(function ($q) use ($batchIds, $courseIds) {
+                    $q->whereIn('batch_id', $batchIds)
+                      ->orWhereIn('course_id', $courseIds);
+                })
+                ->orderBy('created_at', 'desc')->get();
             $batches = Batch::with('course')->where('instructor_id', $user->id)->get();
         } else {
             $resources = Resource::with('course')->orderBy('created_at', 'desc')->get();
@@ -691,7 +697,7 @@ class DashboardWebController extends Controller
             'instructors'  => User::where('role', 'instructor')->count(),
             'courses'      => Course::count(),
             'batches'      => Batch::count(),
-            'enrollments'  => Enrollment::when($from, fn($q) => $q->where('created_at', '>=', $from))->when($to, fn($q) => $q->where('created_at', '<=', $to))->count(),
+            'enrollments'  => Enrollment::when($from, fn($q) => $q->where('enrolled_at', '>=', $from))->when($to, fn($q) => $q->where('enrolled_at', '<=', $to))->count(),
             'certificates' => Certificate::when($from, fn($q) => $q->where('created_at', '>=', $from))->when($to, fn($q) => $q->where('created_at', '<=', $to))->count(),
             'income'       => $incomeTotal,
             'expense'      => $expenseTotal,
@@ -762,7 +768,7 @@ class DashboardWebController extends Controller
             $m = now()->subMonths($i);
             $label = $m->format('M Y');
             $monthlyStudents[$label]    = User::where('role', 'student')->whereYear('created_at', $m->year)->whereMonth('created_at', $m->month)->count();
-            $monthlyEnrollments[$label] = Enrollment::whereYear('created_at', $m->year)->whereMonth('created_at', $m->month)->count();
+            $monthlyEnrollments[$label] = Enrollment::whereYear('enrolled_at', $m->year)->whereMonth('enrolled_at', $m->month)->count();
         }
 
         $totalEnrollments  = Enrollment::count();
@@ -1249,6 +1255,15 @@ class DashboardWebController extends Controller
 
     public function updateResource(Request $request, Resource $resource)
     {
+        $user = auth()->user();
+        if ($user->role === 'instructor') {
+            $ownBatchIds  = Batch::where('instructor_id', $user->id)->pluck('id');
+            $ownCourseIds = Batch::where('instructor_id', $user->id)->pluck('course_id')->filter()->unique();
+            abort_if(
+                !$ownBatchIds->contains($resource->batch_id) && !$ownCourseIds->contains($resource->course_id),
+                403
+            );
+        }
         $resource->update($request->only(['title', 'type', 'file_url', 'course_id', 'batch_id']));
         return back()->with('success', 'تم تحديث المحتوى بنجاح');
     }
@@ -1257,8 +1272,12 @@ class DashboardWebController extends Controller
     {
         $user = auth()->user();
         if ($user->role === 'instructor') {
-            $ownBatchIds = Batch::where('instructor_id', $user->id)->pluck('id');
-            abort_if(!$ownBatchIds->contains($resource->batch_id), 403);
+            $ownBatchIds  = Batch::where('instructor_id', $user->id)->pluck('id');
+            $ownCourseIds = Batch::where('instructor_id', $user->id)->pluck('course_id')->filter()->unique();
+            abort_if(
+                !$ownBatchIds->contains($resource->batch_id) && !$ownCourseIds->contains($resource->course_id),
+                403
+            );
         }
         $resource->delete();
         return back()->with('success', 'تم حذف المحتوى بنجاح');

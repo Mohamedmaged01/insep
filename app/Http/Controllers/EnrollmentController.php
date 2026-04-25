@@ -12,8 +12,8 @@ class EnrollmentController extends Controller
         $query = Enrollment::with(['course', 'batch', 'student', 'batch.instructor']);
 
         if ($request->studentId) $query->where('student_id', $request->studentId);
-        if ($request->courseId) $query->where('course_id', $request->courseId);
-        if ($request->batchId) $query->where('batch_id', $request->batchId);
+        if ($request->courseId)  $query->where('course_id', $request->courseId);
+        if ($request->batchId)   $query->where('batch_id', $request->batchId);
 
         return response()->json($query->orderBy('enrolled_at', 'desc')->get());
     }
@@ -36,6 +36,9 @@ class EnrollmentController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Only admins may modify enrollment records
+        abort_if($request->user()->role !== 'admin', 403);
+
         Enrollment::where('id', $id)->update($request->all());
         $enrollment = Enrollment::with(['course', 'batch'])->find($id);
         return response()->json($enrollment);
