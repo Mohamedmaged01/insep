@@ -1178,6 +1178,21 @@ class DashboardWebController extends Controller
         return back()->with('success', 'تم حذف الدورة بنجاح');
     }
 
+    public function toggleCourseFeatured(Course $course)
+    {
+        abort_if(auth()->user()->role === 'student', 403);
+        $course->update(['is_featured' => !$course->is_featured]);
+        $msg = $course->is_featured
+            ? ($this->isAr() ? 'تم تمييز الدورة' : 'Course marked as featured')
+            : ($this->isAr() ? 'تم إلغاء تمييز الدورة' : 'Course removed from featured');
+        return back()->with('success', $msg);
+    }
+
+    private function isAr(): bool
+    {
+        return app()->getLocale() === 'ar';
+    }
+
     // ── Batches CRUD ───────────────────────────────────────────────
     public function storeBatch(Request $request)
     {

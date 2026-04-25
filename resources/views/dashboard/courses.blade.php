@@ -77,10 +77,21 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-center">
-                            @if($course->is_featured)
-                            <svg class="w-5 h-5 text-yellow-500 mx-auto" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            @if(auth()->user()->role !== 'instructor')
+                            <form method="POST" action="{{ route('dashboard.courses.toggle-featured', $course) }}">
+                                @csrf @method('PATCH')
+                                <button type="submit"
+                                    title="{{ $course->is_featured ? ($isAr ? 'إلغاء التمييز' : 'Remove from featured') : ($isAr ? 'تمييز الدورة' : 'Mark as featured') }}"
+                                    class="mx-auto transition-colors {{ $course->is_featured ? 'text-yellow-400 hover:text-gray-300' : 'text-gray-300 hover:text-yellow-400' }}">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                </button>
+                            </form>
                             @else
-                            <span class="text-gray-300 text-xs">—</span>
+                                @if($course->is_featured)
+                                <svg class="w-5 h-5 text-yellow-400 mx-auto" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                @else
+                                <span class="text-gray-300 text-xs">—</span>
+                                @endif
                             @endif
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->enrollments_count ?? 0 }}</td>

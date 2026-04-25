@@ -14,7 +14,15 @@ class PageController extends Controller
 {
     public function home()
     {
-        $courses = Course::orderBy('created_at', 'desc')->limit(6)->get();
+        $courses = Course::where('is_featured', true)->orderBy('created_at', 'desc')->get();
+        if ($courses->count() < 6) {
+            $ids = $courses->pluck('id');
+            $extra = Course::whereNotIn('id', $ids)
+                ->orderBy('created_at', 'desc')
+                ->limit(6 - $courses->count())
+                ->get();
+            $courses = $courses->concat($extra);
+        }
         $news = News::orderBy('created_at', 'desc')->limit(3)->get();
         $stats = [
             'students'     => SiteSetting::get('stat_students', '20000'),

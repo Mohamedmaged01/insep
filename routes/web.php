@@ -96,6 +96,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('/courses', [DashboardWebController::class, 'storeCourse'])->name('dashboard.courses.store');
     Route::put('/courses/{course}', [DashboardWebController::class, 'updateCourse'])->name('dashboard.courses.update');
     Route::delete('/courses/{course}', [DashboardWebController::class, 'destroyCourse'])->name('dashboard.courses.destroy');
+    Route::patch('/courses/{course}/toggle-featured', [DashboardWebController::class, 'toggleCourseFeatured'])->name('dashboard.courses.toggle-featured');
 
     // Batches CRUD + Detail
     Route::post('/batches', [DashboardWebController::class, 'storeBatch'])->name('dashboard.batches.store');
