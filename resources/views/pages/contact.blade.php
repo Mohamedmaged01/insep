@@ -60,6 +60,17 @@
                         <p class="text-gray-600 text-sm">{{ $email }}</p>
                     </div>
                 </div>
+                <a href="https://wa.me/966555698722" target="_blank" rel="noopener"
+                   class="flex items-start gap-4 bg-white rounded-2xl p-5 border border-gray-100 card-hover transition hover:border-green-200">
+                    <div class="w-12 h-12 rounded-xl bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12a11.93 11.93 0 0 0 1.64 6.08L0 24l6.08-1.6A12 12 0 0 0 12 24c6.63 0 12-5.37 12-12a11.93 11.93 0 0 0-3.48-8.52ZM12 21.94a9.94 9.94 0 0 1-5.06-1.38l-.36-.22-3.73.98.99-3.63-.24-.38A9.94 9.94 0 0 1 2.06 12C2.06 6.48 6.48 2.06 12 2.06S21.94 6.48 21.94 12 17.52 21.94 12 21.94Zm5.44-7.45c-.3-.15-1.77-.87-2.04-.97s-.47-.15-.67.15-.77.97-.94 1.17-.35.22-.65.07a8.14 8.14 0 0 1-2.39-1.48 9 9 0 0 1-1.65-2.06c-.17-.3 0-.46.13-.61s.3-.35.45-.52a2 2 0 0 0 .3-.5.55.55 0 0 0-.02-.52c-.07-.15-.67-1.62-.92-2.22s-.49-.5-.67-.51h-.57a1.1 1.1 0 0 0-.8.37 3.36 3.36 0 0 0-1.05 2.5 5.84 5.84 0 0 0 1.22 3.1c.15.2 2.1 3.2 5.08 4.49a17.2 17.2 0 0 0 1.7.63 4.08 4.08 0 0 0 1.87.12c.57-.09 1.77-.72 2.02-1.42s.25-1.3.17-1.42-.27-.2-.57-.35Z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-navy mb-1">{{ $isAr ? 'واتساب' : 'WhatsApp' }}</h3>
+                        <p class="text-gray-600 text-sm" dir="ltr">+966 55 569 8722</p>
+                        <p class="text-green-600 text-xs font-semibold mt-1">{{ $isAr ? 'راسلنا الآن ←' : 'Message us now →' }}</p>
+                    </div>
+                </a>
                 <div class="flex items-start gap-4 bg-white rounded-2xl p-5 border border-gray-100 card-hover">
                     <div class="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -148,13 +159,44 @@
             </div>
         </div>
 
-        {{-- Map --}}
-        <div class="mt-12 rounded-2xl overflow-hidden border border-gray-200 shadow-sm" style="height:380px">
-            <iframe
-                src="https://maps.google.com/maps?q=13+El+Khalifa+El+Maamoun+Roxy+Heliopolis+Cairo+Egypt&output=embed&z=16"
-                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade">
-            </iframe>
+        {{-- Maps --}}
+        <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {{-- Location 1: Heliopolis --}}
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <h3 class="font-bold text-navy text-sm">{{ $isAr ? '١٣ الخليفة المأمون، روكسي، مصر الجديدة' : '13 El-Khalifa El-Maamoun, Roxy, Heliopolis' }}</h3>
+                </div>
+                <div class="rounded-2xl overflow-hidden border border-gray-200 shadow-sm" style="height:320px">
+                    <iframe
+                        src="https://maps.google.com/maps?q=13+El+Khalifa+El+Maamoun+Roxy+Heliopolis+Cairo+Egypt&output=embed&z=16"
+                        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+
+            {{-- Location 2: shared pin --}}
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <h3 class="font-bold text-navy text-sm">{{ $isAr ? 'المملكة العربية السعودية' : 'Saudi Arabia (KSA)' }}</h3>
+                </div>
+                <div class="rounded-2xl overflow-hidden border border-gray-200 shadow-sm" style="height:320px">
+                    <iframe
+                        src="https://maps.google.com/maps?q=30.0902680,31.3112296&output=embed&z=17"
+                        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <a href="https://maps.app.goo.gl/DcpKg6Pydyt2Vvg28" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-navy text-white text-xs font-semibold hover:bg-navy/90 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        {{ $isAr ? 'فتح في خرائط جوجل' : 'Open in Google Maps' }}
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </section>
