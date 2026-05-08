@@ -257,9 +257,9 @@ function loginPage() {
         email: '',
         password: '',
         roles: [
-            { key: 'student',    label: '{{ $isAr ? 'طالب'   : 'Student' }}' },
-            { key: 'instructor', label: '{{ $isAr ? 'مدرب'   : 'Trainer' }}' },
-            { key: 'admin',      label: '{{ $isAr ? 'مدير'   : 'Admin' }}' },
+            { key: 'student',    label: '{{ $isAr ? 'متدرب'   : 'Trainee' }}' },
+            { key: 'instructor', label: '{{ $isAr ? 'مدرب'    : 'Trainer' }}' },
+            { key: 'admin',      label: '{{ $isAr ? 'إدارة'   : 'Admin' }}' },
         ],
         selectRole(key) { this.selectedRole = key; }
     };

@@ -77,15 +77,16 @@ class DashboardWebController extends Controller
         $roles = $actor->isSuperAdmin()
             ? User::ROLES
             : collect(User::ROLES)->except('super_admin')->all();
-        $roleCounts = User::selectRaw('role, count(*) as cnt')->groupBy('role')->pluck('cnt', 'role');
-        return view('dashboard.users', compact('users', 'roles', 'roleCounts'));
+        $roleCounts  = User::selectRaw('role, count(*) as cnt')->groupBy('role')->pluck('cnt', 'role');
+        $ownerEmail  = env('OWNER_EMAIL', '');
+        return view('dashboard.users', compact('users', 'roles', 'roleCounts', 'ownerEmail'));
     }
 
     public function resetUserPassword(Request $request, User $user)
     {
         abort_if(!auth()->user()->isSuperAdmin(), 403);
 
-        if ($user->email === config('app.owner_email')) {
+        if ($user->email === env('OWNER_EMAIL', '')) {
             return back()->with('error', 'هذا الحساب محمي ولا يمكن تغيير كلمة مروره');
         }
 
@@ -125,7 +126,7 @@ class DashboardWebController extends Controller
     {
         $actor = auth()->user();
 
-        if ($user->email === config('app.owner_email')) {
+        if ($user->email === env('OWNER_EMAIL', '')) {
             return back()->with('error', 'هذا الحساب محمي ولا يمكن تعديله');
         }
 
@@ -157,7 +158,7 @@ class DashboardWebController extends Controller
     {
         $actor = auth()->user();
 
-        if ($user->email === config('app.owner_email')) {
+        if ($user->email === env('OWNER_EMAIL', '')) {
             return back()->with('error', 'هذا الحساب محمي ولا يمكن حذفه');
         }
 

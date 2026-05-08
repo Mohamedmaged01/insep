@@ -77,7 +77,7 @@
                 <tbody class="divide-y divide-gray-50">
                     @forelse($users as $u)
                     @php
-                        $isOwner = $u->email === config('app.owner_email');
+                        $isOwner = $u->email === $ownerEmail;
                         $isProtected = ($u->isSuperAdmin() && !$isSuperAdmin) || $isOwner;
                     @endphp
                     <tr class="hover:bg-gray-50 transition-colors {{ $isOwner ? 'bg-yellow-50/60' : ($u->isSuperAdmin() ? 'bg-yellow-50/40' : '') }}">
