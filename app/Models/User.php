@@ -8,19 +8,23 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class User extends Authenticatable implements JWTSubject
 {
     // Role constants
-    const ROLE_ADMIN      = 'admin';
-    const ROLE_INSTRUCTOR = 'instructor';
-    const ROLE_STUDENT    = 'student';
-    const ROLE_FINANCE    = 'finance';
-    const ROLE_SUPPORT    = 'support';
+    const ROLE_SUPER_ADMIN = 'super_admin';
+    const ROLE_ADMIN       = 'admin';
+    const ROLE_SUPERVISOR  = 'supervisor';
+    const ROLE_INSTRUCTOR  = 'instructor';
+    const ROLE_STUDENT     = 'student';
+    const ROLE_FINANCE     = 'finance';
+    const ROLE_SUPPORT     = 'support';
 
     // All valid roles
     const ROLES = [
-        'admin'      => 'مدير إداري',
-        'instructor' => 'مدرب',
-        'student'    => 'متدرب',
-        'finance'    => 'محاسب',
-        'support'    => 'دعم فني',
+        'super_admin' => 'سوبر أدمن',
+        'admin'       => 'مدير إداري',
+        'supervisor'  => 'مشرف تدريب',
+        'instructor'  => 'مدرب',
+        'student'     => 'متدرب',
+        'finance'     => 'محاسب',
+        'support'     => 'دعم فني',
     ];
 
     protected $fillable = [
@@ -37,12 +41,15 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     // Role helpers
-    public function isAdmin(): bool      { return $this->role === self::ROLE_ADMIN; }
-    public function isInstructor(): bool { return $this->role === self::ROLE_INSTRUCTOR; }
-    public function isStudent(): bool    { return $this->role === self::ROLE_STUDENT; }
-    public function isFinance(): bool    { return $this->role === self::ROLE_FINANCE; }
-    public function isSupport(): bool    { return $this->role === self::ROLE_SUPPORT; }
+    public function isSuperAdmin(): bool  { return $this->role === self::ROLE_SUPER_ADMIN; }
+    public function isAdmin(): bool       { return $this->role === self::ROLE_ADMIN; }
+    public function isSupervisor(): bool  { return $this->role === self::ROLE_SUPERVISOR; }
+    public function isInstructor(): bool  { return $this->role === self::ROLE_INSTRUCTOR; }
+    public function isStudent(): bool     { return $this->role === self::ROLE_STUDENT; }
+    public function isFinance(): bool     { return $this->role === self::ROLE_FINANCE; }
+    public function isSupport(): bool     { return $this->role === self::ROLE_SUPPORT; }
     public function hasRole(string ...$roles): bool { return in_array($this->role, $roles); }
+    public function isAdminOrAbove(): bool { return in_array($this->role, ['admin', 'super_admin']); }
 
     // Role label (Arabic)
     public function roleLabelAr(): string { return self::ROLES[$this->role] ?? $this->role; }

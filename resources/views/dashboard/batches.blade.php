@@ -13,7 +13,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-black text-navy">{{ auth()->user()->role === 'instructor' ? ($isAr ? 'مجموعاتي' : 'My Batches') : ($isAr ? 'المجموعات التدريبية' : 'Training Batches') }}</h1>
-            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $batches->count() }} {{ $isAr ? 'مجموعة' : 'batches' }}</p>
+            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $batches->total() }} {{ $isAr ? 'مجموعة' : 'batches' }}</p>
         </div>
         @if(auth()->user()->role !== 'instructor')
         <button @click="showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
@@ -113,6 +113,11 @@
                 </tbody>
             </table>
         </div>
+        @if($batches->hasPages())
+        <div class="px-6 py-4 border-t border-gray-100">
+            {{ $batches->links() }}
+        </div>
+        @endif
     </div>
 
     {{-- Add Modal (admin only) --}}

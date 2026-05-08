@@ -69,21 +69,43 @@ class DashboardWebController extends Controller
         return view('dashboard.home', compact('stats'));
     }
 
-    // ── General Users Management (admin) ────────────────────────────
+    // ── General Users Management (admin / super_admin) ──────────────
     public function usersManagement()
     {
-        $users = User::orderBy('created_at', 'desc')->get();
-        $roles = User::ROLES;
-        return view('dashboard.users', compact('users', 'roles'));
+        $actor = auth()->user();
+        $users = User::orderBy('created_at', 'desc')->paginate(20);
+        $roles = $actor->isSuperAdmin()
+            ? User::ROLES
+            : collect(User::ROLES)->except('super_admin')->all();
+        $roleCounts = User::selectRaw('role, count(*) as cnt')->groupBy('role')->pluck('cnt', 'role');
+        return view('dashboard.users', compact('users', 'roles', 'roleCounts'));
+    }
+
+    public function resetUserPassword(Request $request, User $user)
+    {
+        abort_if(!auth()->user()->isSuperAdmin(), 403);
+
+        if ($user->email === config('app.owner_email')) {
+            return back()->with('error', 'هذا الحساب محمي ولا يمكن تغيير كلمة مروره');
+        }
+
+        $request->validate(['password' => 'required|min:6']);
+        $user->update(['password' => bcrypt($request->password)]);
+        return back()->with('success', 'تم تغيير كلمة المرور بنجاح');
     }
 
     public function storeUser(Request $request)
     {
+        $actor      = auth()->user();
+        $allowedIn  = $actor->isSuperAdmin()
+            ? implode(',', array_keys(User::ROLES))
+            : 'admin,supervisor,instructor,student,finance,support';
+
         $request->validate([
             'name_ar'  => 'required|string|max:255',
             'email'    => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'role'     => 'required|in:admin,instructor,student,finance,support',
+            'role'     => 'required|in:' . $allowedIn,
         ]);
 
         User::create([
@@ -101,22 +123,49 @@ class DashboardWebController extends Controller
 
     public function updateUser(Request $request, User $user)
     {
-        $data = $request->only('name_ar', 'name_en', 'email', 'phone', 'role', 'status');
+        $actor = auth()->user();
+
+        if ($user->email === config('app.owner_email')) {
+            return back()->with('error', 'هذا الحساب محمي ولا يمكن تعديله');
+        }
+
+        $data  = $request->only('name_ar', 'name_en', 'email', 'phone', 'role', 'status');
         $data['name'] = $data['name_ar'] ?? $user->name;
+
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request->password);
         }
-        if (isset($data['role']) && !array_key_exists($data['role'], User::ROLES)) {
-            return back()->with('error', 'دور غير صالح');
+
+        if (isset($data['role'])) {
+            if (!array_key_exists($data['role'], User::ROLES)) {
+                return back()->with('error', 'دور غير صالح');
+            }
+            if ($data['role'] === 'super_admin' && !$actor->isSuperAdmin()) {
+                return back()->with('error', 'ليس لديك صلاحية لتعيين هذا الدور');
+            }
         }
+
+        if ($user->isSuperAdmin() && !$actor->isSuperAdmin()) {
+            return back()->with('error', 'ليس لديك صلاحية لتعديل هذا الحساب');
+        }
+
         $user->update($data);
         return back()->with('success', 'تم تحديث المستخدم بنجاح');
     }
 
     public function destroyUser(User $user)
     {
-        if ($user->id === auth()->id()) {
+        $actor = auth()->user();
+
+        if ($user->email === config('app.owner_email')) {
+            return back()->with('error', 'هذا الحساب محمي ولا يمكن حذفه');
+        }
+
+        if ($user->id === $actor->id) {
             return back()->with('error', 'لا يمكنك حذف حسابك الخاص');
+        }
+        if ($user->isSuperAdmin() && !$actor->isSuperAdmin()) {
+            return back()->with('error', 'ليس لديك صلاحية لحذف هذا الحساب');
         }
         $user->delete();
         return back()->with('success', 'تم حذف المستخدم بنجاح');
@@ -124,13 +173,13 @@ class DashboardWebController extends Controller
 
     public function students()
     {
-        $students = User::where('role', 'student')->orderBy('created_at', 'desc')->get();
+        $students = User::where('role', 'student')->orderBy('created_at', 'desc')->paginate(20);
         return view('dashboard.students', compact('students'));
     }
 
     public function instructors()
     {
-        $instructors = User::where('role', 'instructor')->orderBy('created_at', 'desc')->get();
+        $instructors = User::where('role', 'instructor')->orderBy('created_at', 'desc')->paginate(20);
         return view('dashboard.instructors', compact('instructors'));
     }
 
@@ -139,9 +188,9 @@ class DashboardWebController extends Controller
         $user = auth()->user();
         if ($user->role === 'instructor') {
             $courseIds = Batch::where('instructor_id', $user->id)->pluck('course_id')->unique();
-            $courses = Course::with('section')->withCount('enrollments')->whereIn('id', $courseIds)->orderBy('created_at', 'desc')->get();
+            $courses = Course::with('section')->withCount('enrollments')->whereIn('id', $courseIds)->orderBy('created_at', 'desc')->paginate(15);
         } else {
-            $courses = Course::with('section')->withCount('enrollments')->orderBy('created_at', 'desc')->get();
+            $courses = Course::with('section')->withCount('enrollments')->orderBy('created_at', 'desc')->paginate(15);
         }
         $sections = Section::orderBy('id', 'desc')->get();
         return view('dashboard.courses', compact('courses', 'sections'));
@@ -150,7 +199,7 @@ class DashboardWebController extends Controller
     // ── Sections CRUD ──────────────────────────────────────────────
     public function sections()
     {
-        $sections = Section::withCount('courses')->orderBy('id', 'desc')->get();
+        $sections = Section::withCount('courses')->orderBy('id', 'desc')->paginate(20);
         return view('dashboard.sections', compact('sections'));
     }
 
@@ -187,7 +236,7 @@ class DashboardWebController extends Controller
         if ($user->role === 'instructor') {
             $query->where('instructor_id', $user->id);
         }
-        $batches = $query->get();
+        $batches = $query->paginate(15);
         $courses = Course::all();
         $instructors = User::where('role', 'instructor')->get();
         return view('dashboard.batches', compact('batches', 'courses', 'instructors'));
@@ -308,10 +357,10 @@ class DashboardWebController extends Controller
                     $q->whereIn('batch_id', $batchIds)
                       ->orWhereIn('course_id', $courseIds);
                 })
-                ->orderBy('created_at', 'desc')->get();
+                ->orderBy('created_at', 'desc')->paginate(20);
             $batches = Batch::with('course')->where('instructor_id', $user->id)->get();
         } else {
-            $resources = Resource::with('course')->orderBy('created_at', 'desc')->get();
+            $resources = Resource::with('course')->orderBy('created_at', 'desc')->paginate(20);
             $batches = Batch::with('course')->get();
         }
         $courses = Course::all();
@@ -322,10 +371,10 @@ class DashboardWebController extends Controller
     {
         $user = auth()->user();
         if ($user->role === 'instructor') {
-            $sessions = LiveSession::with('batch')->where('instructor_id', $user->id)->orderBy('scheduled_at', 'desc')->get();
+            $sessions = LiveSession::with('batch')->where('instructor_id', $user->id)->orderBy('scheduled_at', 'desc')->paginate(20);
             $batches = Batch::with('course')->where('instructor_id', $user->id)->orderBy('id', 'desc')->get();
         } else {
-            $sessions = LiveSession::with('batch')->orderBy('scheduled_at', 'desc')->get();
+            $sessions = LiveSession::with('batch')->orderBy('scheduled_at', 'desc')->paginate(20);
             $batches = Batch::with('course')->orderBy('id', 'desc')->get();
         }
         return view('dashboard.live-sessions', compact('sessions', 'batches'));
@@ -353,7 +402,7 @@ class DashboardWebController extends Controller
             $query->where('batch_id', $batchFilter);
         }
 
-        $exams = $query->orderBy('created_at', 'desc')->get();
+        $exams = $query->orderBy('created_at', 'desc')->paginate(20);
         $courses = Course::all();
         $activeBatch = $batchFilter ? Batch::find($batchFilter) : null;
         return view('dashboard.exams', compact('exams', 'courses', 'batches', 'activeBatch'));
@@ -395,7 +444,7 @@ class DashboardWebController extends Controller
         ->when($from,   fn($q) => $q->where('created_at', '>=', $from))
         ->when($to,     fn($q) => $q->where('created_at', '<=', $to . ' 23:59:59'));
 
-        $certificates = $query->orderBy('created_at', 'desc')->get();
+        $certificates = $query->orderBy('created_at', 'desc')->paginate(20);
 
         return view('dashboard.certificates', compact(
             'certificates', 'batches', 'students', 'courses', 'pendingRequests'
@@ -672,7 +721,7 @@ class DashboardWebController extends Controller
 
         $query->when($statusFilter, fn($q) => $q->where('status', $statusFilter));
 
-        $requests = $query->orderBy('created_at', 'desc')->get();
+        $requests = $query->orderBy('created_at', 'desc')->paginate(20);
 
         return view('dashboard.certificate-requests', compact('requests', 'statusFilter'));
     }
@@ -734,16 +783,20 @@ class DashboardWebController extends Controller
     {
         $user = auth()->user();
         if ($user->role === 'admin') {
-            $transactions = Transaction::with('user')->orderBy('created_at', 'desc')->get();
-            $installments  = Installment::with(['student', 'course', 'batch'])->orderBy('created_at', 'desc')->get();
+            $transactions = Transaction::with('user')->orderBy('created_at', 'desc')->paginate(20, ['*'], 'trans_page');
+            $installments  = Installment::with(['student', 'course', 'batch'])->orderBy('created_at', 'desc')->paginate(20, ['*'], 'install_page');
+            $summary = [
+                'income'  => Transaction::where('type', 'income')->sum('amount'),
+                'expense' => Transaction::where('type', 'expense')->sum('amount'),
+            ];
         } else {
-            $transactions = Transaction::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
-            $installments  = Installment::where('student_id', $user->id)->with(['course', 'batch'])->orderBy('created_at', 'desc')->get();
+            $transactions = Transaction::where('user_id', $user->id)->orderBy('created_at', 'desc')->paginate(20, ['*'], 'trans_page');
+            $installments  = Installment::where('student_id', $user->id)->with(['course', 'batch'])->orderBy('created_at', 'desc')->paginate(20, ['*'], 'install_page');
+            $summary = [
+                'income'  => Transaction::where('user_id', $user->id)->where('type', 'income')->sum('amount'),
+                'expense' => Transaction::where('user_id', $user->id)->where('type', 'expense')->sum('amount'),
+            ];
         }
-        $summary = [
-            'income'  => $transactions->where('type', 'income')->sum('amount'),
-            'expense' => $transactions->where('type', 'expense')->sum('amount'),
-        ];
         $students = User::where('role', 'student')->get();
         $courses  = Course::all();
         $batches  = Batch::with('course')->get();
@@ -754,7 +807,7 @@ class DashboardWebController extends Controller
     {
         $user = auth()->user();
         if ($user->role === 'student') {
-            $notifications = Notification::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+            $notifications = Notification::where('user_id', $user->id)->orderBy('created_at', 'desc')->paginate(20);
             $batches = collect();
         } elseif ($user->role === 'instructor') {
             // Only batches this instructor teaches
@@ -764,10 +817,10 @@ class DashboardWebController extends Controller
             $studentIds = Enrollment::whereIn('batch_id', $batchIds)->pluck('student_id')->unique();
             $notifications = Notification::with('user')
                 ->whereIn('user_id', $studentIds)
-                ->orderBy('created_at', 'desc')->get();
+                ->orderBy('created_at', 'desc')->paginate(20);
         } else {
             // Admin sees everything
-            $notifications = Notification::with('user')->orderBy('created_at', 'desc')->get();
+            $notifications = Notification::with('user')->orderBy('created_at', 'desc')->paginate(20);
             $batches = Batch::with('course')->orderBy('id', 'desc')->get();
         }
         return view('dashboard.notifications', compact('notifications', 'batches'));

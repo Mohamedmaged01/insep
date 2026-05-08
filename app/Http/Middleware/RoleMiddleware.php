@@ -16,6 +16,11 @@ class RoleMiddleware
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
+        // super_admin bypasses all role restrictions
+        if ($user->role === 'super_admin') {
+            return $next($request);
+        }
+
         if (!in_array($user->role, $roles)) {
             return response()->json(['message' => 'Forbidden'], 403);
         }

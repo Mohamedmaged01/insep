@@ -125,6 +125,11 @@
                     </tbody>
                 </table>
             </div>
+            @if($transactions->hasPages())
+            <div class="px-6 py-4 border-t border-gray-100">
+                {{ $transactions->appends(array_merge(request()->query(), ['install_page' => $installments->currentPage()]))->links() }}
+            </div>
+            @endif
         </div>
     </div>
 
@@ -189,6 +194,11 @@
                     </tbody>
                 </table>
             </div>
+            @if($installments->hasPages())
+            <div class="px-6 py-4 border-t border-gray-100">
+                {{ $installments->appends(array_merge(request()->query(), ['trans_page' => $transactions->currentPage()]))->links() }}
+            </div>
+            @endif
         </div>
     </div>
 

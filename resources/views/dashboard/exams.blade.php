@@ -19,7 +19,7 @@
                     {{ $isAr ? 'الاختبارات' : 'Exams' }}
                 @endif
             </h1>
-            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $exams->count() }} {{ $isAr ? 'اختبار' : 'exams' }}</p>
+            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $exams->total() }} {{ $isAr ? 'اختبار' : 'exams' }}</p>
         </div>
         <div class="flex items-center gap-3">
             @if($activeBatch)
@@ -122,6 +122,11 @@
                 </tbody>
             </table>
         </div>
+        @if($exams->hasPages())
+        <div class="px-6 py-4 border-t border-gray-100">
+            {{ $exams->appends(request()->query())->links() }}
+        </div>
+        @endif
     </div>
 
     {{-- Add Modal --}}

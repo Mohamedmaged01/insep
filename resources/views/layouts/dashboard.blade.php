@@ -1,7 +1,9 @@
-@php
+﻿@php
     $lang = app()->getLocale();
     $user = auth()->user();
     $isAdmin      = $user && $user->role === 'admin';
+    $isSuperAdmin = $user && $user->role === 'super_admin';
+    $isSupervisor = $user && $user->role === 'supervisor';
     $isStudent    = $user && $user->role === 'student';
     $isInstructor = $user && $user->role === 'instructor';
     $isFinance    = $user && $user->role === 'finance';
@@ -9,11 +11,13 @@
     $isAr = $lang === 'ar';
 
     $roleNames = [
-        'admin'      => $isAr ? 'مدير إداري'  : 'Admin',
-        'instructor' => $isAr ? 'مدرب'         : 'Trainer',
-        'student'    => $isAr ? 'متدرب'        : 'Trainee',
-        'finance'    => $isAr ? 'محاسب'        : 'Finance',
-        'support'    => $isAr ? 'دعم فني'      : 'Support',
+        'super_admin' => $isAr ? 'سوبر أدمن'    : 'Super Admin',
+        'admin'       => $isAr ? 'مدير إداري'   : 'Admin',
+        'supervisor'  => $isAr ? 'مشرف تدريب'   : 'Supervisor',
+        'instructor'  => $isAr ? 'مدرب'          : 'Trainer',
+        'student'     => $isAr ? 'متدرب'         : 'Trainee',
+        'finance'     => $isAr ? 'محاسب'         : 'Finance',
+        'support'     => $isAr ? 'دعم فني'       : 'Support',
     ];
     $roleName = $roleNames[$user->role ?? ''] ?? ($isAr ? 'مستخدم' : 'User');
     $userName = $user->name ?? ($isAr ? 'مستخدم' : 'User');
@@ -38,6 +42,22 @@
         ['key' => 'committee',    'label' => $isAr ? 'اللجنة العلمية'     : 'Scientific Comm.','icon' => 'users',          'route' => 'dashboard.committee'],
     ];
 
+    $supervisorMenu = [
+        ['key' => 'home',                 'label' => $isAr ? 'الرئيسية'           : 'Home',              'icon' => 'home',           'route' => 'dashboard'],
+        ['key' => 'students',             'label' => $isAr ? 'إدارة المتدربين'    : 'Trainees',          'icon' => 'users',          'route' => 'dashboard.students'],
+        ['key' => 'instructors',          'label' => $isAr ? 'إدارة المدربين'     : 'Trainers',          'icon' => 'graduation-cap', 'route' => 'dashboard.instructors'],
+        ['key' => 'sections',             'label' => $isAr ? 'الشعب التدريبية'    : 'Sections',          'icon' => 'grid',           'route' => 'dashboard.sections'],
+        ['key' => 'courses',              'label' => $isAr ? 'إدارة الدورات'      : 'Courses',           'icon' => 'book-open',      'route' => 'dashboard.courses'],
+        ['key' => 'batches',              'label' => $isAr ? 'المجموعات التدريبية': 'Batches',           'icon' => 'clipboard-list', 'route' => 'dashboard.batches'],
+        ['key' => 'certificates',         'label' => $isAr ? 'الشهادات'           : 'Certificates',      'icon' => 'award',          'route' => 'dashboard.certificates'],
+        ['key' => 'certificate-requests', 'label' => $isAr ? 'طلبات الشهادات'    : 'Cert Requests',     'icon' => 'inbox',          'route' => 'dashboard.certificate-requests'],
+        ['key' => 'notifications',        'label' => $isAr ? 'الإشعارات'          : 'Notifications',     'icon' => 'bell',           'route' => 'dashboard.notifications'],
+        ['key' => 'reports',              'label' => $isAr ? 'التقارير'           : 'Reports',           'icon' => 'bar-chart-3',    'route' => 'dashboard.reports'],
+        ['key' => 'gamification',         'label' => $isAr ? 'النقاط والشارات'   : 'Points & Badges',   'icon' => 'award',          'route' => 'dashboard.gamification'],
+        ['key' => 'cms',                  'label' => $isAr ? 'محتوى الموقع'       : 'Site Content',      'icon' => 'layout',         'route' => 'dashboard.cms'],
+        ['key' => 'committee',            'label' => $isAr ? 'اللجنة العلمية'     : 'Scientific Comm.',  'icon' => 'users',          'route' => 'dashboard.committee'],
+        ['key' => 'settings',             'label' => $isAr ? 'الإعدادات'          : 'Settings',          'icon' => 'settings',       'route' => 'dashboard.settings'],
+    ];
     $studentMenu = [
         ['key' => 'home',         'label' => $isAr ? 'الرئيسية'     : 'Home',           'icon' => 'home',        'route' => 'dashboard'],
         ['key' => 'mycourses',    'label' => $isAr ? 'دوراتي'       : 'My Courses',     'icon' => 'book-open',   'route' => 'dashboard.mycourses'],
@@ -74,12 +94,14 @@
     ];
 
     $menuItems = match($user->role ?? '') {
-        'admin'      => $adminMenu,
-        'student'    => $studentMenu,
-        'instructor' => $instructorMenu,
-        'finance'    => $financeMenu,
-        'support'    => $supportMenu,
-        default      => $studentMenu,
+        'super_admin' => $adminMenu,
+        'admin'       => $adminMenu,
+        'supervisor'  => $supervisorMenu,
+        'student'     => $studentMenu,
+        'instructor'  => $instructorMenu,
+        'finance'     => $financeMenu,
+        'support'     => $supportMenu,
+        default       => $studentMenu,
     };
     $currentRoute = request()->route()->getName() ?? 'dashboard';
 @endphp

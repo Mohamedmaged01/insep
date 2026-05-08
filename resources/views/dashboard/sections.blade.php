@@ -13,7 +13,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-black text-navy">{{ $isAr ? 'الشعب التدريبية' : 'Training Sections' }}</h1>
-            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $sections->count() }} {{ $isAr ? 'شعبة' : 'sections' }}</p>
+            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $sections->total() }} {{ $isAr ? 'شعبة' : 'sections' }}</p>
         </div>
         <button @click="showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -68,6 +68,11 @@
         </div>
         @endforelse
     </div>
+    @if($sections->hasPages())
+    <div class="mt-6">
+        {{ $sections->links() }}
+    </div>
+    @endif
 
     {{-- Add Modal --}}
     <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>

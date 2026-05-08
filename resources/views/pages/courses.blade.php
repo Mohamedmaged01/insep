@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        <p class="text-gray-500 mb-6">{{ $isAr ? 'عرض' : 'Showing' }} {{ $courses->count() }} {{ $isAr ? 'دورة' : 'courses' }}</p>
+        <p class="text-gray-500 mb-6">{{ $isAr ? 'عرض' : 'Showing' }} {{ $courses->firstItem() ?? 0 }}–{{ $courses->lastItem() ?? 0 }} {{ $isAr ? 'من' : 'of' }} {{ $courses->total() }} {{ $isAr ? 'دورة' : 'courses' }}</p>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($courses as $i => $course)
@@ -81,6 +81,11 @@
             </div>
             @endforelse
         </div>
+        @if($courses->hasPages())
+        <div class="mt-10 flex justify-center">
+            {{ $courses->appends(request()->query())->links() }}
+        </div>
+        @endif
     </div>
 </section>
 @endsection

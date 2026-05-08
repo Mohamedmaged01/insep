@@ -99,5 +99,10 @@
             </tbody>
         </table>
     </div>
+    @if($requests->hasPages())
+    <div class="px-6 py-4 border-t border-gray-100">
+        {{ $requests->appends(request()->query())->links() }}
+    </div>
+    @endif
 </div>
 @endsection

@@ -13,7 +13,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-black text-navy">{{ auth()->user()->role === 'instructor' ? ($isAr ? 'دوراتي' : 'My Courses') : ($isAr ? 'إدارة الدورات' : 'Manage Courses') }}</h1>
-            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $courses->count() }} {{ $isAr ? 'دورة' : 'courses' }}</p>
+            <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $courses->total() }} {{ $isAr ? 'دورة' : 'courses' }}</p>
         </div>
         @if(auth()->user()->role !== 'instructor')
         <button @click="showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
@@ -120,6 +120,11 @@
                 </tbody>
             </table>
         </div>
+        @if($courses->hasPages())
+        <div class="px-6 py-4 border-t border-gray-100">
+            {{ $courses->links() }}
+        </div>
+        @endif
     </div>
 
     {{-- Add Modal --}}

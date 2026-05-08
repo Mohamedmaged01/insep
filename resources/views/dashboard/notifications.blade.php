@@ -16,7 +16,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-black text-navy">{{ $isAr ? 'الإشعارات' : 'Notifications' }}</h1>
-            <p class="text-gray-500 text-sm">{{ $notifications->count() }} {{ $isAr ? 'إشعار' : 'notifications' }}</p>
+            <p class="text-gray-500 text-sm">{{ $notifications->total() }} {{ $isAr ? 'إشعار' : 'notifications' }}</p>
         </div>
         @if(auth()->user()->role !== 'student')
         <button @click="showSendModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
@@ -59,6 +59,11 @@
         <div class="text-center py-12 text-gray-400">{{ $isAr ? 'لا يوجد إشعارات' : 'No notifications found' }}</div>
         @endforelse
     </div>
+    @if($notifications->hasPages())
+    <div class="mt-6">
+        {{ $notifications->links() }}
+    </div>
+    @endif
 
     {{-- Send Notification Modal (Admin/Instructor only) --}}
     @if(auth()->user()->role !== 'student')

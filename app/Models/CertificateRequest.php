@@ -13,9 +13,11 @@ class CertificateRequest extends Model
     ];
 
     protected $casts = [
-        'user_id'   => 'integer',
-        'course_id' => 'integer',
-        'batch_id'  => 'integer',
+        'user_id'    => 'integer',
+        'course_id'  => 'integer',
+        'batch_id'   => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function student()

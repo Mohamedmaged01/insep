@@ -54,6 +54,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('/users', [DashboardWebController::class, 'storeUser'])->middleware('web.role:admin')->name('dashboard.users.store');
     Route::put('/users/{user}', [DashboardWebController::class, 'updateUser'])->middleware('web.role:admin')->name('dashboard.users.update');
     Route::delete('/users/{user}', [DashboardWebController::class, 'destroyUser'])->middleware('web.role:admin')->name('dashboard.users.destroy');
+    Route::post('/users/{user}/reset-password', [DashboardWebController::class, 'resetUserPassword'])->middleware('web.role:admin')->name('dashboard.users.reset-password');
     Route::get('/students', [DashboardWebController::class, 'students'])->name('dashboard.students');
     Route::get('/instructors', [DashboardWebController::class, 'instructors'])->name('dashboard.instructors');
     Route::get('/courses', [DashboardWebController::class, 'courses'])->name('dashboard.courses');
@@ -79,8 +80,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/finance', [DashboardWebController::class, 'finance'])->middleware('web.role:admin,finance')->name('dashboard.finance');
     Route::get('/notifications', [DashboardWebController::class, 'notifications'])->name('dashboard.notifications');
     Route::get('/sections', [DashboardWebController::class, 'sections'])->name('dashboard.sections');
-    Route::get('/reports', [DashboardWebController::class, 'reports'])->middleware('web.role:admin,finance')->name('dashboard.reports');
-    Route::get('/reports/export', [DashboardWebController::class, 'exportReports'])->middleware('web.role:admin,finance')->name('dashboard.reports.export');
+    Route::get('/reports', [DashboardWebController::class, 'reports'])->middleware('web.role:admin,finance,supervisor')->name('dashboard.reports');
+    Route::get('/reports/export', [DashboardWebController::class, 'exportReports'])->middleware('web.role:admin,finance,supervisor')->name('dashboard.reports.export');
     Route::get('/gamification', [DashboardWebController::class, 'gamification'])->name('dashboard.gamification');
     Route::get('/settings', [DashboardWebController::class, 'settings'])->name('dashboard.settings');
 
@@ -145,15 +146,15 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     // Settings
     Route::post('/settings', [DashboardWebController::class, 'updateSettings'])->name('dashboard.settings.update');
 
-    // CMS — admin only
-    Route::get('/cms', [CmsController::class, 'index'])->middleware('web.role:admin')->name('dashboard.cms');
-    Route::post('/cms', [CmsController::class, 'update'])->middleware('web.role:admin')->name('dashboard.cms.update');
+    // CMS — admin + supervisor
+    Route::get('/cms', [CmsController::class, 'index'])->middleware('web.role:admin,supervisor')->name('dashboard.cms');
+    Route::post('/cms', [CmsController::class, 'update'])->middleware('web.role:admin,supervisor')->name('dashboard.cms.update');
 
-    // Scientific Committee — admin only
-    Route::get('/committee', [DashboardWebController::class, 'committeeMembers'])->middleware('web.role:admin')->name('dashboard.committee');
-    Route::post('/committee', [DashboardWebController::class, 'storeCommitteeMember'])->middleware('web.role:admin')->name('dashboard.committee.store');
-    Route::put('/committee/{committeeMember}', [DashboardWebController::class, 'updateCommitteeMember'])->middleware('web.role:admin')->name('dashboard.committee.update');
-    Route::delete('/committee/{committeeMember}', [DashboardWebController::class, 'destroyCommitteeMember'])->middleware('web.role:admin')->name('dashboard.committee.destroy');
+    // Scientific Committee — admin + supervisor
+    Route::get('/committee', [DashboardWebController::class, 'committeeMembers'])->middleware('web.role:admin,supervisor')->name('dashboard.committee');
+    Route::post('/committee', [DashboardWebController::class, 'storeCommitteeMember'])->middleware('web.role:admin,supervisor')->name('dashboard.committee.store');
+    Route::put('/committee/{committeeMember}', [DashboardWebController::class, 'updateCommitteeMember'])->middleware('web.role:admin,supervisor')->name('dashboard.committee.update');
+    Route::delete('/committee/{committeeMember}', [DashboardWebController::class, 'destroyCommitteeMember'])->middleware('web.role:admin,supervisor')->name('dashboard.committee.destroy');
 
     // Public course detail
     Route::get('/courses/{id}', [DashboardWebController::class, 'courseDetail'])->name('dashboard.courses.show');

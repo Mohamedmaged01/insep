@@ -61,7 +61,7 @@ class PageController extends Controller
                   ->orWhere('description', 'like', "%{$request->search}%");
             });
         }
-        $courses = $query->orderBy('created_at', 'desc')->get();
+        $courses = $query->orderBy('created_at', 'desc')->paginate(12);
         return view('pages.courses', compact('courses'));
     }
 

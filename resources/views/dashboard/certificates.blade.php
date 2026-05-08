@@ -147,6 +147,11 @@
             </tbody>
         </table>
     </div>
+    @if($certificates->hasPages())
+    <div class="px-6 py-4 border-t border-gray-100">
+        {{ $certificates->appends(request()->query())->links() }}
+    </div>
+    @endif
 </div>
 
 {{-- ====== ISSUE CERTIFICATE MODAL ====== --}}

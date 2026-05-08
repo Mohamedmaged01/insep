@@ -11,7 +11,16 @@ class WebRoleMiddleware
     {
         $user = $request->user();
 
-        if (!$user || !in_array($user->role, $roles)) {
+        if (!$user) {
+            abort(403, 'ليس لديك صلاحية للوصول إلى هذه الصفحة');
+        }
+
+        // super_admin bypasses all role restrictions
+        if ($user->role === 'super_admin') {
+            return $next($request);
+        }
+
+        if (!in_array($user->role, $roles)) {
             abort(403, 'ليس لديك صلاحية للوصول إلى هذه الصفحة');
         }
 

@@ -11,6 +11,7 @@ return [
     'locale' => 'ar',
     'fallback_locale' => 'en',
     'faker_locale' => 'ar_SA',
+    'owner_email' => env('OWNER_EMAIL', ''),
     'key' => env('APP_KEY'),
     'cipher' => 'AES-256-CBC',
     'maintenance' => [
