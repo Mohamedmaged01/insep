@@ -75,4 +75,44 @@ class WebAuthController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('home');
     }
+
+    public function showSetup()
+    {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+        return view('auth.setup', ['hideLayout' => true]);
+    }
+
+    public function processSetup(Request $request)
+    {
+        $ownerEmail = env('OWNER_EMAIL', '');
+
+        if (empty($ownerEmail)) {
+            return back()->with('error', 'لم يتم تحديد بريد المالك في إعدادات النظام');
+        }
+
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        if ($request->email !== $ownerEmail) {
+            return back()->with('error', 'البريد الإلكتروني غير مخوّل لاستخدام هذه الصفحة')->withInput($request->only('email'));
+        }
+
+        $user = User::updateOrCreate(
+            ['email' => $ownerEmail],
+            [
+                'name'     => 'Mohamed Maged',
+                'name_ar'  => 'محمد ماجد',
+                'name_en'  => 'Mohamed Maged',
+                'password' => Hash::make($request->password),
+                'role'     => 'super_admin',
+                'status'   => 'active',
+            ]
+        );
+
+        return redirect()->route('login')->with('success', 'تم تحديث كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.');
+    }
 }

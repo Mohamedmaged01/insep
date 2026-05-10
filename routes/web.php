@@ -37,6 +37,8 @@ Route::post('/login', [WebAuthController::class, 'login']);
 Route::get('/register', [WebAuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [WebAuthController::class, 'register']);
 Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
+Route::get('/setup', [WebAuthController::class, 'showSetup'])->name('setup');
+Route::post('/setup', [WebAuthController::class, 'processSetup']);
 
 /*
 |--------------------------------------------------------------------------
