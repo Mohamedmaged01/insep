@@ -98,6 +98,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::delete('/instructors/{user}', [DashboardWebController::class, 'destroyInstructor'])->name('dashboard.instructors.destroy');
 
     // Courses CRUD
+    Route::post('/courses/home-order', [DashboardWebController::class, 'updateHomeOrder'])->middleware('web.role:admin')->name('dashboard.courses.home-order');
     Route::post('/courses', [DashboardWebController::class, 'storeCourse'])->name('dashboard.courses.store');
     Route::put('/courses/{course}', [DashboardWebController::class, 'updateCourse'])->name('dashboard.courses.update');
     Route::delete('/courses/{course}', [DashboardWebController::class, 'destroyCourse'])->name('dashboard.courses.destroy');

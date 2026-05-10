@@ -194,7 +194,19 @@ class DashboardWebController extends Controller
             $courses = Course::with('section')->withCount('enrollments')->orderBy('created_at', 'desc')->paginate(15);
         }
         $sections = Section::orderBy('id', 'desc')->get();
-        return view('dashboard.courses', compact('courses', 'sections'));
+        $featuredCourses    = Course::where('is_featured', true)->orderBy('home_order', 'asc')->orderBy('created_at', 'desc')->get(['id', 'title', 'image', 'home_order']);
+        $nonFeaturedCourses = Course::where('is_featured', false)->orderBy('created_at', 'desc')->get(['id', 'title', 'image']);
+        return view('dashboard.courses', compact('courses', 'sections', 'featuredCourses', 'nonFeaturedCourses'));
+    }
+
+    public function updateHomeOrder(Request $request)
+    {
+        abort_if(!auth()->user()->isAdminOrAbove(), 403);
+        $ids = $request->input('order', []);
+        foreach ($ids as $position => $id) {
+            Course::where('id', (int) $id)->update(['home_order' => $position + 1]);
+        }
+        return back()->with('success', $this->isAr() ? 'تم حفظ ترتيب الصفحة الرئيسية' : 'Home page order saved');
     }
 
     // ── Sections CRUD ──────────────────────────────────────────────

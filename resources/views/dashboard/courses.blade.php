@@ -23,6 +23,27 @@
         @endif
     </div>
 
+    {{-- Tabs --}}
+    @if(auth()->user()->role !== 'instructor')
+    <div class="flex gap-2 mb-6">
+        <button @click="tab = 'all'"
+            :class="tab === 'all' ? 'bg-navy text-white' : 'bg-white text-gray-500 border border-gray-200 hover:border-navy hover:text-navy'"
+            class="px-5 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            {{ $isAr ? 'جميع الدورات' : 'All Courses' }}
+        </button>
+        <button @click="tab = 'home'"
+            :class="tab === 'home' ? 'bg-yellow-500 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:border-yellow-400 hover:text-yellow-600'"
+            class="px-5 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            {{ $isAr ? 'الصفحة الرئيسية' : 'Home Page' }}
+        </button>
+    </div>
+    @endif
+
+    {{-- All Courses Tab --}}
+    <div x-show="tab === 'all'">
+
     {{-- Search --}}
     <div class="bg-white rounded-2xl p-4 mb-6 border border-gray-100">
         <div class="relative">
@@ -126,6 +147,104 @@
         </div>
         @endif
     </div>
+
+    </div>{{-- end tab=all --}}
+
+    {{-- Home Page Tab --}}
+    @if(auth()->user()->role !== 'instructor')
+    <div x-show="tab === 'home'" x-cloak>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {{-- Featured (draggable) --}}
+            <div class="bg-white rounded-2xl border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-black text-navy text-base">{{ $isAr ? 'دورات الصفحة الرئيسية' : 'Home Page Courses' }}</h3>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ $isAr ? 'اسحب لتغيير الترتيب' : 'Drag to reorder' }}</p>
+                    </div>
+                    <span class="text-xs font-bold px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-lg">
+                        <span x-text="featuredList.length"></span> {{ $isAr ? 'دورة' : 'courses' }}
+                    </span>
+                </div>
+
+                <form method="POST" action="{{ route('dashboard.courses.home-order') }}" @submit.prevent="submitOrder($event)">
+                    @csrf
+                    <div id="featured-order-inputs"></div>
+                    <div class="space-y-2 mb-4" x-ref="featuredList">
+                        <template x-if="featuredList.length === 0">
+                            <div class="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-xl">
+                                {{ $isAr ? 'لا توجد دورات مميزة بعد' : 'No featured courses yet' }}
+                            </div>
+                        </template>
+                        <template x-for="(course, index) in featuredList" :key="course.id">
+                            <div
+                                draggable="true"
+                                @dragstart="dragStart(index)"
+                                @dragover.prevent="dragOver(index)"
+                                @dragend="dragEnd()"
+                                :class="dragIndex === index ? 'opacity-50 scale-95' : 'opacity-100'"
+                                class="flex items-center gap-3 p-3 bg-gray-50 hover:bg-yellow-50 border border-gray-200 hover:border-yellow-300 rounded-xl cursor-grab active:cursor-grabbing transition-all select-none">
+                                <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M9 5a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2zM9 11a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2zM9 17a1 1 0 110-2 1 1 0 010 2zm6 0a1 1 0 110-2 1 1 0 010 2z"/></svg>
+                                <span class="w-6 h-6 rounded-lg bg-yellow-100 text-yellow-700 text-xs font-black flex items-center justify-center flex-shrink-0" x-text="index + 1"></span>
+                                <div class="w-8 h-8 rounded-lg bg-navy/10 flex-shrink-0 overflow-hidden">
+                                    <template x-if="course.image">
+                                        <img :src="course.image.startsWith('http') ? course.image : '/storage/' + course.image" class="w-full h-full object-cover" alt="">
+                                    </template>
+                                </div>
+                                <span class="flex-1 text-sm font-bold text-navy truncate" x-text="course.title"></span>
+                                <form :action="'/dashboard/courses/' + course.id + '/toggle-featured'" method="POST" class="flex-shrink-0">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="p-1 text-gray-300 hover:text-red-400 transition-colors" title="{{ $isAr ? 'إزالة من الرئيسية' : 'Remove from home' }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </template>
+                    </div>
+                    <button type="submit"
+                        x-show="featuredList.length > 0"
+                        class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        {{ $isAr ? 'حفظ الترتيب' : 'Save Order' }}
+                    </button>
+                </form>
+            </div>
+
+            {{-- Non-featured (add to home) --}}
+            <div class="bg-white rounded-2xl border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-black text-navy text-base">{{ $isAr ? 'دورات أخرى' : 'Other Courses' }}</h3>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ $isAr ? 'اضغط + لإضافة دورة للرئيسية' : 'Press + to add to home page' }}</p>
+                    </div>
+                </div>
+                <div class="space-y-2 max-h-[480px] overflow-y-auto">
+                    @forelse($nonFeaturedCourses as $nc)
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                        <div class="w-8 h-8 rounded-lg bg-navy/10 flex-shrink-0 overflow-hidden">
+                            @if($nc->image)
+                            <img src="{{ str_starts_with($nc->image, 'http') ? $nc->image : asset('storage/' . ltrim($nc->image, '/')) }}" class="w-full h-full object-cover" alt="">
+                            @endif
+                        </div>
+                        <span class="flex-1 text-sm font-bold text-navy truncate">{{ $nc->title }}</span>
+                        <form action="{{ route('dashboard.courses.toggle-featured', $nc) }}" method="POST" class="flex-shrink-0">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="w-7 h-7 bg-yellow-100 hover:bg-yellow-500 text-yellow-600 hover:text-white rounded-lg flex items-center justify-center transition-all" title="{{ $isAr ? 'إضافة للرئيسية' : 'Add to home' }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                    @empty
+                    <div class="text-center py-8 text-gray-400 text-sm">
+                        {{ $isAr ? 'جميع الدورات مضافة للصفحة الرئيسية' : 'All courses are on the home page' }}
+                    </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Add Modal --}}
     <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
@@ -342,6 +461,7 @@
 function coursesManager() {
     return {
         search: '',
+        tab: 'all',
         showAddModal: false,
         showEditModal: false,
         editItem: {
@@ -349,6 +469,29 @@ function coursesManager() {
             accreditation: '', job_opportunities: '', promo_video: '',
             category: '', price: 0, currency: 'USD', duration: '', level: '',
             status: 'active', section_id: '', image: '', is_featured: false
+        },
+        featuredList: @json($featuredCourses->map(fn($c) => ['id' => $c->id, 'title' => $c->title, 'image' => $c->image ?? ''])),
+        dragIndex: null,
+        dragStart(index) { this.dragIndex = index; },
+        dragOver(index) {
+            if (this.dragIndex === null || this.dragIndex === index) return;
+            const [item] = this.featuredList.splice(this.dragIndex, 1);
+            this.featuredList.splice(index, 0, item);
+            this.dragIndex = index;
+        },
+        dragEnd() { this.dragIndex = null; },
+        submitOrder(event) {
+            const form = event.target;
+            const container = form.querySelector('#featured-order-inputs');
+            container.innerHTML = '';
+            this.featuredList.forEach((course, i) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `order[${i}]`;
+                input.value = course.id;
+                container.appendChild(input);
+            });
+            form.submit();
         },
         openEdit(id, title, description, category, price, currency, duration, level, status, section_id, image, content, features, accreditation, job_opportunities, promo_video, is_featured) {
             this.editItem = {

@@ -11,7 +11,7 @@ class Course extends Model
     protected $fillable = [
         'title', 'description', 'content', 'features', 'accreditation', 'job_opportunities',
         'category', 'price', 'currency', 'duration', 'level', 'image', 'promo_video',
-        'status', 'is_featured', 'rating', 'student_count', 'section_id',
+        'status', 'is_featured', 'home_order', 'rating', 'student_count', 'section_id',
     ];
 
     protected $casts = [
@@ -19,6 +19,7 @@ class Course extends Model
         'rating'        => 'float',
         'student_count' => 'integer',
         'is_featured'   => 'boolean',
+        'home_order'    => 'integer',
     ];
 
     public function section()

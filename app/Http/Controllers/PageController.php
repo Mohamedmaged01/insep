@@ -14,7 +14,7 @@ class PageController extends Controller
 {
     public function home()
     {
-        $courses = Course::where('is_featured', true)->orderBy('created_at', 'desc')->get();
+        $courses = Course::where('is_featured', true)->orderBy('home_order', 'asc')->orderBy('created_at', 'desc')->get();
         if ($courses->count() < 6) {
             $ids = $courses->pluck('id');
             $extra = Course::whereNotIn('id', $ids)
