@@ -71,7 +71,19 @@
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
                                 @if(auth()->user()->isAdminOrAbove())
-                                <button @click="openCert({{ $student->id }}, '{{ addslashes($student->name_ar ?? $student->name) }}', @json($student->enrollments->map(fn($e) => ['course_id' => $e->course_id, 'batch_id' => $e->batch_id, 'course_title' => $e->course?->title ?? '', 'batch_name' => $e->batch?->name ?? ''])))"
+                                @php
+                                    $enrollData = $student->enrollments->map(fn($e) => [
+                                        'course_id'    => $e->course_id,
+                                        'batch_id'     => $e->batch_id,
+                                        'course_title' => $e->course?->title ?? '',
+                                        'batch_name'   => $e->batch?->name ?? '',
+                                    ])->values()->toJson();
+                                @endphp
+                                <button
+                                    data-sid="{{ $student->id }}"
+                                    data-sname="{{ addslashes($student->name_ar ?? $student->name) }}"
+                                    data-enrollments="{{ htmlspecialchars($enrollData, ENT_QUOTES) }}"
+                                    @click="openCert($el.dataset.sid, $el.dataset.sname, JSON.parse($el.dataset.enrollments))"
                                     class="p-2 hover:bg-green-50 rounded-lg transition-colors text-green-600" title="{{ $isAr ? 'إصدار شهادة' : 'Issue Certificate' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
                                 </button>
