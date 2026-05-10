@@ -174,8 +174,13 @@ class DashboardWebController extends Controller
 
     public function students()
     {
-        $students = User::where('role', 'student')->orderBy('created_at', 'desc')->paginate(20);
-        return view('dashboard.students', compact('students'));
+        $students = User::where('role', 'student')
+            ->with(['enrollments' => fn($q) => $q->with(['course:id,title', 'batch:id,name'])])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        $courses = Course::orderBy('title')->get(['id', 'title']);
+        $batches = Batch::with('course:id,title')->orderBy('id', 'desc')->get(['id', 'name', 'course_id']);
+        return view('dashboard.students', compact('students', 'courses', 'batches'));
     }
 
     public function instructors()

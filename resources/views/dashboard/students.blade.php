@@ -2,7 +2,7 @@
 @section('title', 'INSEP PRO')
 @section('dashboard-content')
 @php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
-<div x-data="studentsManager()">
+<div x-data="studentsManager()" @keydown.escape.window="showAddModal=false; showEditModal=false; showCertModal=false">
 
     {{-- Flash --}}
     @if(session('success'))
@@ -70,6 +70,12 @@
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
+                                @if(auth()->user()->isAdminOrAbove())
+                                <button @click="openCert({{ $student->id }}, '{{ addslashes($student->name_ar ?? $student->name) }}', @json($student->enrollments->map(fn($e) => ['course_id' => $e->course_id, 'batch_id' => $e->batch_id, 'course_title' => $e->course?->title ?? '', 'batch_name' => $e->batch?->name ?? ''])))"
+                                    class="p-2 hover:bg-green-50 rounded-lg transition-colors text-green-600" title="{{ $isAr ? 'إصدار شهادة' : 'Issue Certificate' }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                                </button>
+                                @endif
                                 <form method="POST" action="{{ route('dashboard.students.destroy', $student->id) }}" onsubmit="return confirm('{{ $isAr ? 'هل أنت متأكد من حذف هذا الطالب؟' : 'Are you sure you want to delete this student?' }}')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500" title="{{ $isAr ? 'حذف' : 'Delete' }}">
@@ -147,6 +153,115 @@
         </div>
     </div>
 
+    {{-- Issue Certificate Modal --}}
+    @if(auth()->user()->isAdminOrAbove())
+    <div x-show="showCertModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showCertModal = false"></div>
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-black text-navy">{{ $isAr ? 'إصدار شهادة' : 'Issue Certificate' }}</h2>
+                <button @click="showCertModal = false" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form method="POST" action="{{ route('dashboard.certificates.store') }}" enctype="multipart/form-data" class="space-y-4">
+                @csrf
+                <input type="hidden" name="student_id" :value="certStudent.id">
+                {{-- Student (read-only display) --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'المتدرب' : 'Student' }}</label>
+                    <div class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-gray-50 text-navy font-semibold" x-text="certStudent.name"></div>
+                </div>
+                {{-- Course dropdown — only enrolled courses --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'الدورة *' : 'Course *' }}</label>
+                    <select name="course_id" x-model="certStudent.selectedCourseId" required
+                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
+                        <option value="">— {{ $isAr ? 'اختر الدورة' : 'Select Course' }} —</option>
+                        <template x-if="certStudent.enrollments.length > 0">
+                            <template x-for="enr in certStudent.enrollments" :key="enr.course_id">
+                                <option :value="enr.course_id" x-text="enr.course_title"></option>
+                            </template>
+                        </template>
+                        <template x-if="certStudent.enrollments.length === 0">
+                            @foreach($courses as $c)
+                            <option value="{{ $c->id }}">{{ $c->title }}</option>
+                            @endforeach
+                        </template>
+                    </select>
+                    <p x-show="certStudent.enrollments.length === 0" class="text-xs text-amber-600 mt-1">{{ $isAr ? 'هذا الطالب غير مسجل في أي دورة — يمكنك اختيار أي دورة' : 'Student has no enrollments — any course can be selected' }}</p>
+                </div>
+                {{-- Batch dropdown — filtered to selected course --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'المجموعة (اختياري)' : 'Batch (optional)' }}</label>
+                    <select name="batch_id" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
+                        <option value="">—</option>
+                        <template x-if="certStudent.enrollments.length > 0">
+                            <template x-for="enr in certStudent.enrollments.filter(e => !certStudent.selectedCourseId || e.course_id == certStudent.selectedCourseId)" :key="enr.batch_id">
+                                <option :value="enr.batch_id" x-text="enr.batch_name || '—'"></option>
+                            </template>
+                        </template>
+                        <template x-if="certStudent.enrollments.length === 0">
+                            @foreach($batches as $b)
+                            <option value="{{ $b->id }}">{{ $b->name }} ({{ $b->course?->title }})</option>
+                            @endforeach
+                        </template>
+                    </select>
+                </div>
+                {{-- Title & Grade --}}
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'عنوان الشهادة' : 'Certificate Title' }}</label>
+                        <input name="title" placeholder="{{ $isAr ? 'شهادة إتمام الدورة' : 'Certificate of Completion' }}"
+                            class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'التقدير' : 'Grade' }}</label>
+                        <input name="grade" placeholder="{{ $isAr ? 'مثلاً: ممتاز' : 'e.g. Excellent' }}"
+                            class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
+                    </div>
+                </div>
+                {{-- Issue Date --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'تاريخ الإصدار' : 'Issue Date' }}</label>
+                    <input name="issue_date" type="date" value="{{ now()->toDateString() }}"
+                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
+                </div>
+                {{-- File upload / auto-generate toggle --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-2">{{ $isAr ? 'ملف الشهادة' : 'Certificate File' }}</label>
+                    <div class="flex gap-2 mb-3">
+                        <button type="button" @click="certUploadMode='upload'"
+                            :class="certUploadMode==='upload' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                            {{ $isAr ? 'رفع PDF' : 'Upload PDF' }}
+                        </button>
+                        <button type="button" @click="certUploadMode='generate'"
+                            :class="certUploadMode==='generate' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600'"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                            {{ $isAr ? 'توليد تلقائي' : 'Auto Generate' }}
+                        </button>
+                    </div>
+                    <div x-show="certUploadMode==='upload'">
+                        <input name="certificate_file" type="file" accept=".pdf,.jpg,.png"
+                            class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
+                    </div>
+                    <div x-show="certUploadMode==='generate'" class="text-xs text-gray-400 py-1">
+                        <input type="hidden" name="generate_pdf" value="1">
+                        {{ $isAr ? 'سيتم توليد شهادة PDF تلقائياً من البيانات المدخلة.' : 'A PDF certificate will be auto-generated from the entered data.' }}
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" @click="showCertModal = false" class="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition">{{ $isAr ? 'إصدار الشهادة' : 'Issue Certificate' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
     {{-- Edit Modal --}}
     <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showEditModal = false"></div>
@@ -217,10 +332,18 @@ function studentsManager() {
         search: '',
         showAddModal: false,
         showEditModal: false,
+        showCertModal: false,
         editItem: { id: null, name_ar: '', name_en: '', email: '', phone: '', status: 'active' },
+        certStudent: { id: null, name: '', enrollments: [], selectedCourseId: '' },
+        certUploadMode: 'generate',
         openEdit(id, name_ar, name_en, email, phone, status) {
             this.editItem = { id, name_ar, name_en, email, phone, status };
             this.showEditModal = true;
+        },
+        openCert(id, name, enrollments) {
+            this.certStudent = { id, name, enrollments, selectedCourseId: enrollments.length === 1 ? enrollments[0].course_id : '' };
+            this.certUploadMode = 'generate';
+            this.showCertModal = true;
         }
     };
 }
