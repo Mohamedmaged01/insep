@@ -453,6 +453,8 @@ class DashboardWebController extends Controller
 
         $query->when($search, fn($q) => $q->where(fn($q2) =>
             $q2->whereHas('student', fn($s) => $s->where('name', 'like', "%$search%")
+                                                   ->orWhere('name_ar', 'like', "%$search%")
+                                                   ->orWhere('name_en', 'like', "%$search%")
                                                    ->orWhere('email', 'like', "%$search%"))
                ->orWhere('serial_number', 'like', "%$search%")
                ->orWhereHas('course', fn($c) => $c->where('title', 'like', "%$search%"))
@@ -474,7 +476,6 @@ class DashboardWebController extends Controller
         $user = auth()->user();
         abort_if($user->role === 'student', 403);
 
-        $serial  = 'CERT-' . strtoupper(uniqid());
         $fileUrl = null;
 
         if ($request->hasFile('certificate_file')) {
@@ -483,7 +484,7 @@ class DashboardWebController extends Controller
         }
 
         $cert = Certificate::create([
-            'serial_number' => $serial,
+            'serial_number' => 'TEMP-' . uniqid(),
             'student_id'    => $request->student_id,
             'course_id'     => $request->course_id,
             'batch_id'      => $request->batch_id ?: null,
@@ -495,6 +496,7 @@ class DashboardWebController extends Controller
             'type'          => $fileUrl ? 'manual' : 'auto',
             'created_by'    => $user->id,
         ]);
+        $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
 
         if (!$fileUrl && $request->generate_pdf) {
             $this->generateAndStoreCertificatePdf($cert);
@@ -530,6 +532,11 @@ class DashboardWebController extends Controller
         }
 
         return $this->generateCertificatePdfResponse($cert);
+    }
+
+    private function formatSerial(int $id): string
+    {
+        return 'INSEP-' . date('Y') . '-' . str_pad($id, 6, '0', STR_PAD_LEFT);
     }
 
     private function generateCertificatePdfResponse(Certificate $cert)
@@ -593,22 +600,21 @@ class DashboardWebController extends Controller
             $student  = User::where('email', trim($row[$emailIdx]))->first();
             if (!$student) continue;
 
-            $serial   = $codeIdx !== false && !empty($row[$codeIdx])
-                ? trim($row[$codeIdx])
-                : 'CERT-' . strtoupper(uniqid());
+            $customSerial = ($codeIdx !== false && !empty($row[$codeIdx])) ? trim($row[$codeIdx]) : null;
+            $tempRef      = uniqid();
 
-            $fileUrl  = null;
+            $fileUrl = null;
             if ($fileNameIdx !== false && !empty($row[$fileNameIdx])) {
                 $srcFile = $tempDir . '/' . trim($row[$fileNameIdx]);
                 if (file_exists($srcFile)) {
-                    $destPath = 'certificates/' . $serial . '_' . basename($srcFile);
+                    $destPath = 'certificates/' . $tempRef . '_' . basename($srcFile);
                     Storage::disk('public')->put($destPath, file_get_contents($srcFile));
                     $fileUrl  = Storage::url($destPath);
                 }
             }
 
-            Certificate::create([
-                'serial_number' => $serial,
+            $cert = Certificate::create([
+                'serial_number' => $customSerial ?? ('TEMP-' . $tempRef),
                 'student_id'    => $student->id,
                 'course_id'     => $row[$courseIdx] ?? null,
                 'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? $row[$batchIdx] : null,
@@ -619,6 +625,9 @@ class DashboardWebController extends Controller
                 'type'          => 'bulk',
                 'created_by'    => auth()->id(),
             ]);
+            if (!$customSerial) {
+                $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
+            }
             $imported++;
         }
 
@@ -684,19 +693,17 @@ class DashboardWebController extends Controller
                 continue;
             }
 
-            $serial = ($codeIdx !== false && !empty($row[$codeIdx]))
-                ? trim($row[$codeIdx])
-                : 'CERT-' . strtoupper(uniqid());
+            $customSerial = ($codeIdx !== false && !empty($row[$codeIdx])) ? trim($row[$codeIdx]) : null;
 
-            // Skip if this serial already exists
-            if (Certificate::where('serial_number', $serial)->exists()) {
-                $importErrors[] = "صف {$rowNum}: رقم الشهادة \"{$serial}\" مستخدم مسبقاً";
+            // Skip if a custom serial already exists
+            if ($customSerial && Certificate::where('serial_number', $customSerial)->exists()) {
+                $importErrors[] = "صف {$rowNum}: رقم الشهادة \"{$customSerial}\" مستخدم مسبقاً";
                 $skipped++;
                 continue;
             }
 
             $cert = Certificate::create([
-                'serial_number' => $serial,
+                'serial_number' => $customSerial ?? ('TEMP-' . uniqid()),
                 'student_id'    => $student->id,
                 'course_id'     => $courseId,
                 'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? $row[$batchIdx] : null,
@@ -707,6 +714,9 @@ class DashboardWebController extends Controller
                 'type'          => 'import',
                 'created_by'    => auth()->id(),
             ]);
+            if (!$customSerial) {
+                $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
+            }
 
             $this->generateAndStoreCertificatePdf($cert);
 
@@ -778,9 +788,8 @@ class DashboardWebController extends Controller
         $req->update(['status' => $request->status]);
 
         if ($request->status === 'approved') {
-            $serial = 'CERT-' . strtoupper(uniqid());
-            $cert   = Certificate::create([
-                'serial_number' => $serial,
+            $cert = Certificate::create([
+                'serial_number' => 'TEMP-' . uniqid(),
                 'student_id'    => $req->user_id,
                 'course_id'     => $req->course_id,
                 'batch_id'      => $req->batch_id,
@@ -790,6 +799,7 @@ class DashboardWebController extends Controller
                 'type'          => 'auto',
                 'created_by'    => $user->id,
             ]);
+            $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
             $this->generateAndStoreCertificatePdf($cert);
         }
 

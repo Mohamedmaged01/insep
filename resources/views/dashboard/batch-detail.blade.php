@@ -287,26 +287,68 @@
 
     {{-- Enroll Student Modal (admin only) --}}
     @if(auth()->user()->role !== 'instructor')
+    @php
+        $availableStudents = $allStudents->filter(fn($s) => !in_array($s->id, $enrolledIds))->map(fn($s) => [
+            'id'      => $s->id,
+            'name_ar' => $s->name_ar ?? $s->name,
+            'name_en' => $s->name_en ?? '',
+            'email'   => $s->email,
+        ])->values()->toJson();
+    @endphp
     <div x-show="showEnrollModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showEnrollModal = false"></div>
-        <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl"
+             x-data="enrollSearchManager()"
+             data-students="{{ htmlspecialchars($availableStudents, ENT_QUOTES) }}">
             <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'إضافة طالب للمجموعة' : 'Add Student to Batch' }}</h2>
             <form method="POST" action="{{ route('dashboard.batches.enroll', $batch->id) }}" class="space-y-4">
                 @csrf
+                <input type="hidden" name="student_id" :value="selectedStudentId">
                 <div>
-                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'اختر الطالب' : 'Select Student' }}</label>
-                    <select name="student_id" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
-                        <option value="">{{ $isAr ? '-- اختر طالباً --' : '-- Select a Student --' }}</option>
-                        @foreach($allStudents as $student)
-                            @if(!in_array($student->id, $enrolledIds))
-                            <option value="{{ $student->id }}">{{ $student->name }} - {{ $student->email }}</option>
-                            @endif
-                        @endforeach
-                    </select>
+                    <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'بحث عن طالب' : 'Search for a Student' }}</label>
+                    <div class="relative" @click.outside="showDropdown = false">
+                        <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+                        <input type="text" x-model="enrollSearch"
+                               placeholder="{{ $isAr ? 'اكتب الاسم أو البريد الإلكتروني...' : 'Type name or email...' }}"
+                               class="w-full border-2 border-gray-200 rounded-xl pr-10 pl-4 py-3 focus:border-navy transition-colors text-sm"
+                               @focus="showDropdown = true"
+                               @input="showDropdown = true; selectedStudentId = null; selectedStudentName = ''"
+                               autocomplete="off">
+                        {{-- Dropdown results --}}
+                        <div x-show="showDropdown" class="absolute top-full left-0 right-0 mt-1 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-xl z-10 max-h-60 overflow-y-auto">
+                            <template x-if="filteredStudents().length === 0">
+                                <p class="text-sm text-gray-400 text-center py-5">{{ $isAr ? 'لا توجد نتائج مطابقة' : 'No matching students found' }}</p>
+                            </template>
+                            <template x-for="s in filteredStudents()" :key="s.id">
+                                <div @mousedown.prevent="selectStudent(s)"
+                                     class="flex items-center gap-3 px-4 py-3 hover:bg-navy/5 cursor-pointer transition-colors border-b border-gray-50 last:border-0">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-navy to-navy-light flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
+                                         x-text="s.name_ar.charAt(0)"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-bold text-navy text-sm" x-text="s.name_ar"></p>
+                                        <p class="text-xs text-gray-400 truncate" x-text="s.name_en ? s.name_en + ' · ' + s.email : s.email" style="font-family:'Roboto',sans-serif"></p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    {{-- Selected student chip --}}
+                    <div x-show="selectedStudentId" class="mt-3 flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="text-sm font-bold text-green-700 flex-1" x-text="selectedStudentName"></span>
+                        <button type="button" @click="clearSelection()" class="text-gray-400 hover:text-red-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
                 </div>
-                <div class="flex gap-3 pt-4">
+                <div class="flex gap-3 pt-2">
                     <button type="button" @click="showEnrollModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
-                    <button type="submit" class="flex-1 bg-navy hover:bg-navy-dark text-white py-3 rounded-xl font-bold transition-colors">{{ $isAr ? 'إضافة' : 'Add' }}</button>
+                    <button type="submit"
+                            :disabled="!selectedStudentId"
+                            :class="selectedStudentId ? 'bg-navy hover:bg-navy-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                            class="flex-1 py-3 rounded-xl font-bold transition-colors">
+                        {{ $isAr ? 'إضافة' : 'Add' }}
+                    </button>
                 </div>
             </form>
         </div>
@@ -415,6 +457,40 @@ function batchDetailManager() {
         openCertModal(data) {
             this.certData = data;
             this.showCertModal = true;
+        }
+    };
+}
+
+function enrollSearchManager() {
+    return {
+        students: [],
+        enrollSearch: '',
+        selectedStudentId: null,
+        selectedStudentName: '',
+        showDropdown: false,
+        init() {
+            try { this.students = JSON.parse(this.$el.dataset.students || '[]'); } catch(e) { this.students = []; }
+        },
+        filteredStudents() {
+            const q = this.enrollSearch.trim().toLowerCase();
+            const list = q
+                ? this.students.filter(s =>
+                    s.name_ar.toLowerCase().includes(q) ||
+                    (s.name_en || '').toLowerCase().includes(q) ||
+                    s.email.toLowerCase().includes(q))
+                : this.students;
+            return list.slice(0, 25);
+        },
+        selectStudent(s) {
+            this.selectedStudentId = s.id;
+            this.selectedStudentName = s.name_ar + (s.name_en ? ' / ' + s.name_en : '');
+            this.enrollSearch = s.name_ar;
+            this.showDropdown = false;
+        },
+        clearSelection() {
+            this.selectedStudentId = null;
+            this.selectedStudentName = '';
+            this.enrollSearch = '';
         }
     };
 }
