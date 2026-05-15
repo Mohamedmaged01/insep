@@ -103,13 +103,23 @@
 </section>
 
 {{-- Promo Video --}}
-@if($course->promo_video)
+@php
+$promoEmbed = null;
+if ($course->promo_video) {
+    $pv = $course->promo_video;
+    if      (preg_match('/youtube\.com\/embed\/([^?&\s]+)/', $pv, $m)) $promoEmbed = "https://www.youtube.com/embed/{$m[1]}";
+    elseif  (preg_match('/[?&]v=([^&\s]+)/', $pv, $m))                  $promoEmbed = "https://www.youtube.com/embed/{$m[1]}";
+    elseif  (preg_match('/youtu\.be\/([^?&\s]+)/', $pv, $m))            $promoEmbed = "https://www.youtube.com/embed/{$m[1]}";
+    elseif  (preg_match('/youtube\.com\/shorts\/([^?&\s]+)/', $pv, $m)) $promoEmbed = "https://www.youtube.com/embed/{$m[1]}";
+}
+@endphp
+@if($promoEmbed)
 <section class="py-12 bg-navy/5">
     <div class="container mx-auto px-4 max-w-3xl text-center">
         <h2 class="text-2xl font-black text-navy mb-6">{{ $isAr ? 'فيديو تعريفي بالدورة' : 'Course Preview' }}</h2>
         <div class="relative rounded-2xl overflow-hidden shadow-2xl" style="padding-top: 56.25%">
             <iframe class="absolute inset-0 w-full h-full"
-                src="{{ $course->promo_video }}"
+                src="{{ $promoEmbed }}"
                 title="{{ $course->title }}"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

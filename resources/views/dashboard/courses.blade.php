@@ -16,7 +16,7 @@
             <p class="text-gray-500 text-sm">{{ $isAr ? 'إجمالي' : 'Total' }} {{ $courses->total() }} {{ $isAr ? 'دورة' : 'courses' }}</p>
         </div>
         @if(auth()->user()->role !== 'instructor')
-        <button @click="showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+        <button @click="addPromoUrl = ''; showAddModal = true" class="bg-red-brand hover:bg-red-brand-dark text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             {{ $isAr ? 'إضافة دورة' : 'Add Course' }}
         </button>
@@ -283,7 +283,15 @@
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'رابط فيديو البرومو (يوتيوب)' : 'Promo Video URL (YouTube)' }}</label>
-                    <input type="url" name="promo_video" placeholder="https://www.youtube.com/embed/..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm" dir="ltr">
+                    <input type="url" name="promo_video" x-model="addPromoUrl"
+                        placeholder="https://www.youtube.com/watch?v=... أو رابط يوتيوب أي صيغة"
+                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm" dir="ltr">
+                    <template x-if="getYoutubeEmbed(addPromoUrl)">
+                        <div class="mt-3 rounded-xl overflow-hidden bg-black" style="aspect-ratio:16/9">
+                            <iframe :src="getYoutubeEmbed(addPromoUrl)" class="w-full h-full" allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                        </div>
+                    </template>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الشعبة التدريبية' : 'Training Section' }}</label>
@@ -388,7 +396,15 @@
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'رابط فيديو البرومو (يوتيوب)' : 'Promo Video URL (YouTube)' }}</label>
-                    <input type="url" name="promo_video" x-model="editItem.promo_video" placeholder="https://www.youtube.com/embed/..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm" dir="ltr">
+                    <input type="url" name="promo_video" x-model="editItem.promo_video"
+                        placeholder="https://www.youtube.com/watch?v=... أو رابط يوتيوب أي صيغة"
+                        class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm" dir="ltr">
+                    <template x-if="getYoutubeEmbed(editItem.promo_video)">
+                        <div class="mt-3 rounded-xl overflow-hidden bg-black" style="aspect-ratio:16/9">
+                            <iframe :src="getYoutubeEmbed(editItem.promo_video)" class="w-full h-full" allowfullscreen
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                        </div>
+                    </template>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الشعبة التدريبية' : 'Training Section' }}</label>
@@ -464,11 +480,29 @@ function coursesManager() {
         tab: 'all',
         showAddModal: false,
         showEditModal: false,
+        addPromoUrl: '',
         editItem: {
             id: null, title: '', description: '', content: '', features: '',
             accreditation: '', job_opportunities: '', promo_video: '',
             category: '', price: 0, currency: 'USD', duration: '', level: '',
             status: 'active', section_id: '', image: '', is_featured: false
+        },
+        getYoutubeEmbed(url) {
+            if (!url || !url.trim()) return null;
+            let match;
+            // Already an embed URL
+            match = url.match(/youtube\.com\/embed\/([^?&\s]+)/);
+            if (match) return 'https://www.youtube.com/embed/' + match[1];
+            // Standard watch URL: ?v=ID
+            match = url.match(/[?&]v=([^&\s]+)/);
+            if (match) return 'https://www.youtube.com/embed/' + match[1];
+            // Short URL: youtu.be/ID
+            match = url.match(/youtu\.be\/([^?&\s]+)/);
+            if (match) return 'https://www.youtube.com/embed/' + match[1];
+            // Shorts URL
+            match = url.match(/youtube\.com\/shorts\/([^?&\s]+)/);
+            if (match) return 'https://www.youtube.com/embed/' + match[1];
+            return null;
         },
         featuredList: @json($featuredCourses->map(fn($c) => ['id' => $c->id, 'title' => $c->title, 'image' => $c->image ?? ''])),
         dragIndex: null,
