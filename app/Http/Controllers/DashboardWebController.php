@@ -663,8 +663,8 @@ class DashboardWebController extends Controller
         $gradeIdx  = array_search('grade',             $headers);
         $codeIdx   = array_search('certificate_code',  $headers);
 
-        if ($emailIdx === false || $courseIdx === false) {
-            return back()->withErrors(['excel_file' => 'الملف يجب أن يحتوي على عمودَي student_email و course_id على الأقل']);
+        if ($codeIdx === false && $emailIdx === false) {
+            return back()->withErrors(['excel_file' => 'الملف يجب أن يحتوي على عمود certificate_code أو student_email على الأقل']);
         }
 
         $imported     = 0;
@@ -695,11 +695,9 @@ class DashboardWebController extends Controller
                 $importErrors[] = "صف {$rowNum}: لم يُعثر على طالب بالقيمة \"{$studentValue}\" — تم الاستيراد بدون ربط حساب";
             }
 
-            $courseId = $row[$courseIdx] ?? null;
-            if (!$courseId || !Course::find((int) $courseId)) {
-                $importErrors[] = "صف {$rowNum}: معرّف الدورة \"{$courseId}\" غير موجود";
-                $skipped++;
-                continue;
+            $courseId = ($courseIdx !== false && !empty($row[$courseIdx])) ? (int) $row[$courseIdx] : null;
+            if ($courseId && !Course::find($courseId)) {
+                $courseId = null;
             }
 
             // Normalise issue_date: accept full date, year only, or empty
@@ -725,8 +723,8 @@ class DashboardWebController extends Controller
                 'serial_number' => $customSerial ?? ('TEMP-' . uniqid()),
                 'student_id'    => $student?->id,
                 'student_name'  => $student ? null : $studentValue,
-                'course_id'     => (int) $courseId,
-                'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? (int) $row[$batchIdx] : null,
+                'course_id'     => $courseId,
+                'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx]) && \App\Models\Batch::find((int) $row[$batchIdx])) ? (int) $row[$batchIdx] : null,
                 'title'         => ($titleIdx !== false && !empty($row[$titleIdx])) ? trim($row[$titleIdx]) : 'شهادة إتمام الدورة',
                 'issue_date'    => $issueDate,
                 'grade'         => ($gradeIdx !== false && !empty($row[$gradeIdx])) ? trim($row[$gradeIdx]) : null,
