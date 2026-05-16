@@ -3,10 +3,11 @@
 @section('title', 'INSEP PRO - ' . ($isAr ? 'التحقق من الشهادات' : 'Certificate Verification'))
 
 @section('content')
+<div x-data="verifyApp()">
 {{-- Hero --}}
 <section class="bg-gradient-to-br from-navy via-navy-light to-navy-dark py-20 relative overflow-hidden">
     <div class="absolute inset-0 hero-pattern opacity-30"></div>
-    <div class="container mx-auto px-4 relative z-10 text-center" x-data="verifyApp()">
+    <div class="container mx-auto px-4 relative z-10 text-center">
         <div class="w-20 h-20 mx-auto mb-6 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 animate-float">
             <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
@@ -16,20 +17,20 @@
         <form @submit.prevent="search()" class="max-w-xl mx-auto">
             <div class="relative">
                 <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-                <input type="text" x-model="query" placeholder="{{ $isAr ? 'أدخل الرقم التسلسلي مثل: INSEP-2025-001234' : 'Enter the serial number e.g. INSEP-2025-001234' }}" class="w-full bg-white rounded-xl pr-12 pl-32 py-4 text-lg shadow-xl" dir="ltr">
+                <input type="text" x-model="query" placeholder="{{ $isAr ? 'أدخل رقم الشهادة مثل: INSEP-2025-001234 أو 100018361' : 'Enter certificate number e.g. INSEP-2025-001234 or 100018361' }}" class="w-full bg-white rounded-xl pr-12 pl-32 py-4 text-lg shadow-xl" dir="ltr">
                 <button type="submit" :disabled="searching" class="absolute left-2 top-1/2 -translate-y-1/2 bg-navy hover:bg-navy-dark text-white px-6 py-2.5 rounded-lg font-bold transition-all disabled:opacity-50">
                     <span x-show="!searching">{{ $isAr ? 'تحقق' : 'Verify' }}</span>
                     <span x-show="searching" x-cloak>{{ $isAr ? 'جاري البحث...' : 'Searching...' }}</span>
                 </button>
             </div>
         </form>
-        <p class="text-white/50 text-sm mt-4">{{ $isAr ? 'جرب: INSEP-2025-001234' : 'Try: INSEP-2025-001234' }}</p>
+        <p class="text-white/50 text-sm mt-4">{{ $isAr ? 'يدعم: INSEP-2025-001234 أو 100018361' : 'Supports: INSEP-2025-001234 or 100018361' }}</p>
     </div>
 </section>
 
 {{-- Results --}}
 <section class="py-16 bg-gray-50">
-    <div class="container mx-auto px-4 max-w-3xl" x-data="verifyApp()">
+    <div class="container mx-auto px-4 max-w-3xl">
         {{-- Found --}}
         <template x-if="result === 'found'">
             <div class="animate-fadeInUp">
@@ -129,6 +130,7 @@
         </template>
     </div>
 </section>
+</div>{{-- end x-data="verifyApp()" --}}
 
 @push('scripts')
 <script>

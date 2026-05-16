@@ -9,19 +9,34 @@ class CertificateController extends Controller
 {
     public function verify($serial)
     {
-        $cert = Certificate::with(['student', 'course'])->where('serial_number', $serial)->first();
+        $q = trim($serial);
+
+        // Exact match first, then LIKE fallback (supports partial codes and both formats)
+        $cert = Certificate::with(['student', 'course'])
+            ->where(fn($query) => $query
+                ->where('serial_number', $q)
+                ->orWhere('serial_number', 'like', '%' . $q . '%')
+            )
+            ->orderByRaw("CASE WHEN serial_number = ? THEN 0 ELSE 1 END", [$q])
+            ->first();
+
         if (!$cert) return response()->json(['found' => false]);
+
+        $student = $cert->student;
+        $studentName = $student
+            ? ($student->name_ar ?? $student->name_en ?? $student->name ?? '')
+            : '';
 
         return response()->json([
             'found' => true,
             'certificate' => [
                 'serialNumber' => $cert->serial_number,
-                'title' => $cert->title,
-                'studentName' => $cert->student?->name,
-                'courseName' => $cert->course?->title,
-                'issueDate' => $cert->issue_date,
-                'grade' => $cert->grade,
-                'status' => $cert->status,
+                'title'        => $cert->title,
+                'studentName'  => $studentName,
+                'courseName'   => $cert->course?->title,
+                'issueDate'    => $cert->issue_date,
+                'grade'        => $cert->grade,
+                'status'       => $cert->status,
             ],
         ]);
     }

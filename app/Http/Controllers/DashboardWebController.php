@@ -674,30 +674,51 @@ class DashboardWebController extends Controller
         foreach (array_slice($rows, 1) as $i => $row) {
             $rowNum = $i + 2;
 
-            if (empty($row[$emailIdx])) {
-                $skipped++;
-                continue;
+            $studentValue = trim($row[$emailIdx] ?? '');
+            if ($studentValue === '') {
+                continue; // silently skip empty rows (e.g. trailing blank rows)
             }
 
-            $student = User::where('email', trim($row[$emailIdx]))->first();
+            // Support both email and name in the student_email column
+            if (str_contains($studentValue, '@')) {
+                $student = User::where('email', $studentValue)->where('role', 'student')->first();
+            } else {
+                $student = User::where('role', 'student')
+                    ->where(fn($q) => $q
+                        ->whereRaw('LOWER(name)    LIKE ?', ['%' . strtolower($studentValue) . '%'])
+                        ->orWhereRaw('LOWER(name_en) LIKE ?', ['%' . strtolower($studentValue) . '%'])
+                        ->orWhereRaw('LOWER(name_ar) LIKE ?', ['%' . strtolower($studentValue) . '%'])
+                    )->first();
+            }
+
             if (!$student) {
-                $importErrors[] = "صف {$rowNum}: البريد \"{$row[$emailIdx]}\" غير مسجّل في النظام";
+                $importErrors[] = "صف {$rowNum}: لم يُعثر على طالب بالقيمة \"{$studentValue}\"";
                 $skipped++;
                 continue;
             }
 
             $courseId = $row[$courseIdx] ?? null;
-            if (!$courseId || !Course::find($courseId)) {
+            if (!$courseId || !Course::find((int) $courseId)) {
                 $importErrors[] = "صف {$rowNum}: معرّف الدورة \"{$courseId}\" غير موجود";
                 $skipped++;
                 continue;
             }
 
-            $customSerial = ($codeIdx !== false && !empty($row[$codeIdx])) ? trim($row[$codeIdx]) : null;
+            // Normalise issue_date: accept full date, year only, or empty
+            $rawDate  = ($dateIdx !== false && !empty($row[$dateIdx])) ? trim($row[$dateIdx]) : null;
+            $issueDate = now()->toDateString();
+            if ($rawDate) {
+                if (preg_match('/^\d{4}$/', $rawDate)) {
+                    $issueDate = $rawDate . '-01-01';      // year only → Jan 1st
+                } elseif (strtotime($rawDate)) {
+                    $issueDate = date('Y-m-d', strtotime($rawDate));
+                }
+            }
 
-            // Skip if a custom serial already exists
+            $customSerial = ($codeIdx !== false && !empty($row[$codeIdx])) ? trim((string) $row[$codeIdx]) : null;
+
             if ($customSerial && Certificate::where('serial_number', $customSerial)->exists()) {
-                $importErrors[] = "صف {$rowNum}: رقم الشهادة \"{$customSerial}\" مستخدم مسبقاً";
+                $importErrors[] = "صف {$rowNum}: رقم الشهادة \"{$customSerial}\" مستخدم مسبقاً — تم التخطي";
                 $skipped++;
                 continue;
             }
@@ -705,15 +726,16 @@ class DashboardWebController extends Controller
             $cert = Certificate::create([
                 'serial_number' => $customSerial ?? ('TEMP-' . uniqid()),
                 'student_id'    => $student->id,
-                'course_id'     => $courseId,
-                'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? $row[$batchIdx] : null,
+                'course_id'     => (int) $courseId,
+                'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? (int) $row[$batchIdx] : null,
                 'title'         => ($titleIdx !== false && !empty($row[$titleIdx])) ? trim($row[$titleIdx]) : 'شهادة إتمام الدورة',
-                'issue_date'    => ($dateIdx  !== false && !empty($row[$dateIdx]))  ? $row[$dateIdx]        : now()->toDateString(),
+                'issue_date'    => $issueDate,
                 'grade'         => ($gradeIdx !== false && !empty($row[$gradeIdx])) ? trim($row[$gradeIdx]) : null,
                 'status'        => 'active',
                 'type'          => 'import',
                 'created_by'    => auth()->id(),
             ]);
+
             if (!$customSerial) {
                 $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
             }
