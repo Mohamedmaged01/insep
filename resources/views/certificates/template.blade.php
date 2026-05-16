@@ -12,6 +12,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    direction: rtl;
+    unicode-bidi: embed;
   }
   .cert {
     width: 100%;
@@ -120,10 +122,10 @@
   <div class="cert-title">{{ $certificate->title ?? 'شهادة إتمام الدورة' }}</div>
   <div class="cert-text">يُشهد بأن المتدرب / المتدربة</div>
   <div class="student-name">
-    {{ $student?->name_en ?? $student?->name_ar ?? $student?->name ?? '—' }}
+    {{ $student?->name ?? $certificate->student_name ?? '—' }}
   </div>
   <div class="cert-text" style="margin-top:10px;">قد أتم/أتمت بنجاح متطلبات الدورة التدريبية</div>
-  <div class="course-name">{{ $course?->title ?? '—' }}</div>
+  <div class="course-name">{{ $course?->title ?? $certificate->title ?? '—' }}</div>
   @if($batch)
   <div class="cert-text" style="font-size:12px;color:#888;">المجموعة: {{ $batch->name }}</div>
   @endif
