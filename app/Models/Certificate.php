@@ -9,7 +9,7 @@ class Certificate extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'serial_number', 'student_id', 'course_id', 'batch_id', 'title',
+        'serial_number', 'student_id', 'student_name', 'course_id', 'batch_id', 'title',
         'issue_date', 'grade', 'status', 'file_url', 'type', 'created_by',
     ];
 

@@ -25,7 +25,7 @@ class CertificateController extends Controller
         $student = $cert->student;
         $studentName = $student
             ? ($student->name_ar ?? $student->name_en ?? $student->name ?? '')
-            : '';
+            : ($cert->student_name ?? '');
 
         return response()->json([
             'found' => true,

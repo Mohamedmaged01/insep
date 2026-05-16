@@ -692,9 +692,7 @@ class DashboardWebController extends Controller
             }
 
             if (!$student) {
-                $importErrors[] = "صف {$rowNum}: لم يُعثر على طالب بالقيمة \"{$studentValue}\"";
-                $skipped++;
-                continue;
+                $importErrors[] = "صف {$rowNum}: لم يُعثر على طالب بالقيمة \"{$studentValue}\" — تم الاستيراد بدون ربط حساب";
             }
 
             $courseId = $row[$courseIdx] ?? null;
@@ -725,7 +723,8 @@ class DashboardWebController extends Controller
 
             $cert = Certificate::create([
                 'serial_number' => $customSerial ?? ('TEMP-' . uniqid()),
-                'student_id'    => $student->id,
+                'student_id'    => $student?->id,
+                'student_name'  => $student ? null : $studentValue,
                 'course_id'     => (int) $courseId,
                 'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? (int) $row[$batchIdx] : null,
                 'title'         => ($titleIdx !== false && !empty($row[$titleIdx])) ? trim($row[$titleIdx]) : 'شهادة إتمام الدورة',
