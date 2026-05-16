@@ -26,7 +26,7 @@
         </a>
         @endif
     </div>
-    @if($role === 'admin')
+    @if(auth()->user()->isAdminOrAbove())
     <div class="flex flex-wrap gap-2">
         <button @click="showImportModal=true" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-emerald-600 text-emerald-700 text-sm font-semibold hover:bg-emerald-50 transition">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/></svg>
@@ -131,7 +131,7 @@
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 {{ $isAr ? 'تنزيل' : 'Download' }}
                             </a>
-                            @if($role === 'admin' && ($cert->status ?? 'active') === 'active')
+                            @if(auth()->user()->isAdminOrAbove() && ($cert->status ?? 'active') === 'active')
                             <form method="POST" action="{{ route('dashboard.certificates.destroy', $cert->id) }}"
                                   onsubmit="return confirm('{{ $isAr ? 'إلغاء هذه الشهادة؟' : 'Revoke this certificate?' }}')">
                                 @csrf @method('DELETE')
@@ -155,7 +155,7 @@
 </div>
 
 {{-- ====== ISSUE CERTIFICATE MODAL ====== --}}
-@if($role === 'admin')
+@if(auth()->user()->isAdminOrAbove())
 <div x-show="showIssueModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
      x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
      x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
