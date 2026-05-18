@@ -105,6 +105,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::patch('/courses/{course}/toggle-featured', [DashboardWebController::class, 'toggleCourseFeatured'])->name('dashboard.courses.toggle-featured');
 
     // Batches CRUD + Detail
+    Route::get('/students/search', [DashboardWebController::class, 'studentSearch'])->name('dashboard.students.search');
     Route::post('/batches', [DashboardWebController::class, 'storeBatch'])->name('dashboard.batches.store');
     Route::put('/batches/{batch}', [DashboardWebController::class, 'updateBatch'])->name('dashboard.batches.update');
     Route::delete('/batches/{batch}', [DashboardWebController::class, 'destroyBatch'])->name('dashboard.batches.destroy');

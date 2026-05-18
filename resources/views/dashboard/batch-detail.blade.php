@@ -287,19 +287,12 @@
 
     {{-- Enroll Student Modal (admin only) --}}
     @if(auth()->user()->role !== 'instructor')
-    @php
-        $availableStudents = $allStudents->filter(fn($s) => !in_array($s->id, $enrolledIds))->map(fn($s) => [
-            'id'      => $s->id,
-            'name_ar' => $s->name_ar ?? $s->name,
-            'name_en' => $s->name_en ?? '',
-            'email'   => $s->email,
-        ])->values()->toJson();
-    @endphp
     <div x-show="showEnrollModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" x-transition>
         <div class="absolute inset-0 bg-black/50" @click="showEnrollModal = false"></div>
         <div class="bg-white rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl"
              x-data="enrollSearchManager()"
-             data-students="{{ htmlspecialchars($availableStudents, ENT_QUOTES) }}">
+             data-batch-id="{{ $batch->id }}"
+             data-search-url="{{ route('dashboard.students.search') }}">
             <h2 class="text-xl font-black text-navy mb-6">{{ $isAr ? 'إضافة طالب للمجموعة' : 'Add Student to Batch' }}</h2>
             <form method="POST" action="{{ route('dashboard.batches.enroll', $batch->id) }}" class="space-y-4">
                 @csrf
@@ -311,23 +304,42 @@
                         <input type="text" x-model="enrollSearch"
                                placeholder="{{ $isAr ? 'اكتب الاسم أو البريد الإلكتروني...' : 'Type name or email...' }}"
                                class="w-full border-2 border-gray-200 rounded-xl pr-10 pl-4 py-3 focus:border-navy transition-colors text-sm"
-                               @focus="showDropdown = true"
-                               @input="showDropdown = true; selectedStudentId = null; selectedStudentName = ''"
+                               @focus="showDropdown = true; if(!students.length) fetchStudents(1)"
+                               @input="onSearchInput()"
                                autocomplete="off">
                         {{-- Dropdown results --}}
-                        <div x-show="showDropdown" class="absolute top-full left-0 right-0 mt-1 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-xl z-10 max-h-60 overflow-y-auto">
-                            <template x-if="filteredStudents().length === 0">
+                        <div x-show="showDropdown" class="absolute top-full left-0 right-0 mt-1 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-xl z-10 max-h-72 overflow-y-auto">
+                            <template x-if="loading">
+                                <p class="text-sm text-gray-400 text-center py-5">{{ $isAr ? 'جاري البحث...' : 'Searching...' }}</p>
+                            </template>
+                            <template x-if="!loading && students.length === 0">
                                 <p class="text-sm text-gray-400 text-center py-5">{{ $isAr ? 'لا توجد نتائج مطابقة' : 'No matching students found' }}</p>
                             </template>
-                            <template x-for="s in filteredStudents()" :key="s.id">
+                            <template x-for="s in students" :key="s.id">
                                 <div @mousedown.prevent="selectStudent(s)"
                                      class="flex items-center gap-3 px-4 py-3 hover:bg-navy/5 cursor-pointer transition-colors border-b border-gray-50 last:border-0">
                                     <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-navy to-navy-light flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
-                                         x-text="s.name_ar.charAt(0)"></div>
+                                         x-text="(s.name_ar || s.name || '?').charAt(0)"></div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="font-bold text-navy text-sm" x-text="s.name_ar"></p>
+                                        <p class="font-bold text-navy text-sm" x-text="s.name_ar || s.name"></p>
                                         <p class="text-xs text-gray-400 truncate" x-text="s.name_en ? s.name_en + ' · ' + s.email : s.email" style="font-family:'Roboto',sans-serif"></p>
                                     </div>
+                                </div>
+                            </template>
+                            {{-- Pagination --}}
+                            <template x-if="!loading && lastPage > 1">
+                                <div class="flex items-center justify-between px-4 py-2 border-t border-gray-100 bg-gray-50">
+                                    <button type="button" @mousedown.prevent="prevPage()"
+                                            :disabled="currentPage === 1"
+                                            class="text-xs font-bold text-navy disabled:text-gray-300 hover:text-navy-dark transition-colors">
+                                        {{ $isAr ? '→ السابق' : '← Prev' }}
+                                    </button>
+                                    <span class="text-xs text-gray-400" x-text="`${currentPage} / ${lastPage}`"></span>
+                                    <button type="button" @mousedown.prevent="nextPage()"
+                                            :disabled="currentPage === lastPage"
+                                            class="text-xs font-bold text-navy disabled:text-gray-300 hover:text-navy-dark transition-colors">
+                                        {{ $isAr ? '← التالي' : 'Next →' }}
+                                    </button>
                                 </div>
                             </template>
                         </div>
@@ -468,29 +480,50 @@ function enrollSearchManager() {
         selectedStudentId: null,
         selectedStudentName: '',
         showDropdown: false,
+        loading: false,
+        currentPage: 1,
+        lastPage: 1,
+        total: 0,
+        searchTimeout: null,
+        batchId: null,
+        searchUrl: null,
         init() {
-            try { this.students = JSON.parse(this.$el.dataset.students || '[]'); } catch(e) { this.students = []; }
+            this.batchId = this.$el.dataset.batchId;
+            this.searchUrl = this.$el.dataset.searchUrl;
         },
-        filteredStudents() {
-            const q = this.enrollSearch.trim().toLowerCase();
-            const list = q
-                ? this.students.filter(s =>
-                    s.name_ar.toLowerCase().includes(q) ||
-                    (s.name_en || '').toLowerCase().includes(q) ||
-                    s.email.toLowerCase().includes(q))
-                : this.students;
-            return list.slice(0, 25);
+        async fetchStudents(page = 1) {
+            this.loading = true;
+            const url = `${this.searchUrl}?q=${encodeURIComponent(this.enrollSearch)}&batch_id=${this.batchId}&page=${page}`;
+            try {
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const data = await res.json();
+                this.students    = data.data;
+                this.currentPage = data.current_page;
+                this.lastPage    = data.last_page;
+                this.total       = data.total;
+            } catch(e) { this.students = []; }
+            this.loading = false;
         },
+        onSearchInput() {
+            this.showDropdown = true;
+            this.selectedStudentId = null;
+            this.selectedStudentName = '';
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(() => this.fetchStudents(1), 300);
+        },
+        prevPage() { if (this.currentPage > 1) this.fetchStudents(this.currentPage - 1); },
+        nextPage() { if (this.currentPage < this.lastPage) this.fetchStudents(this.currentPage + 1); },
         selectStudent(s) {
             this.selectedStudentId = s.id;
-            this.selectedStudentName = s.name_ar + (s.name_en ? ' / ' + s.name_en : '');
-            this.enrollSearch = s.name_ar;
+            this.selectedStudentName = (s.name_ar || s.name) + (s.name_en ? ' / ' + s.name_en : '');
+            this.enrollSearch = s.name_ar || s.name;
             this.showDropdown = false;
         },
         clearSelection() {
             this.selectedStudentId = null;
             this.selectedStudentName = '';
             this.enrollSearch = '';
+            this.students = [];
         }
     };
 }

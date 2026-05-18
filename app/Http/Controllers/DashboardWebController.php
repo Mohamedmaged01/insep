@@ -278,6 +278,38 @@ class DashboardWebController extends Controller
         return view('dashboard.batch-detail', compact('batch', 'resources', 'liveSessions', 'allStudents', 'enrolledIds', 'certificates'));
     }
 
+    public function studentSearch(Request $request)
+    {
+        $q = $request->get('q', '');
+        $batchId = $request->get('batch_id');
+
+        $excludeIds = $batchId
+            ? Enrollment::where('batch_id', $batchId)->pluck('student_id')->toArray()
+            : [];
+
+        $query = User::where('role', 'student')
+            ->whereNotIn('id', $excludeIds)
+            ->select('id', 'name', 'name_ar', 'name_en', 'email');
+
+        if ($q) {
+            $query->where(function ($q2) use ($q) {
+                $q2->where('name', 'like', "%{$q}%")
+                   ->orWhere('name_ar', 'like', "%{$q}%")
+                   ->orWhere('name_en', 'like', "%{$q}%")
+                   ->orWhere('email', 'like', "%{$q}%");
+            });
+        }
+
+        $students = $query->orderBy('name')->paginate(10);
+
+        return response()->json([
+            'data'         => $students->items(),
+            'current_page' => $students->currentPage(),
+            'last_page'    => $students->lastPage(),
+            'total'        => $students->total(),
+        ]);
+    }
+
     public function enrollStudent(Request $request, Batch $batch)
     {
         abort_if(auth()->user()->role === 'instructor', 403);
