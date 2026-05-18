@@ -37,6 +37,7 @@ class CertificateController extends Controller
                 'issueDate'    => $cert->issue_date,
                 'grade'        => $cert->grade,
                 'status'       => $cert->status,
+                'fileUrl'      => $cert->file_url,
             ],
         ]);
     }

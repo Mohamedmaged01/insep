@@ -74,6 +74,16 @@
                                 </div>
                             </template>
                         </div>
+                        {{-- Download button --}}
+                        <template x-if="certData?.fileUrl">
+                            <div class="px-6 pb-6">
+                                <a :href="certData.fileUrl" target="_blank" rel="noopener"
+                                   class="flex items-center justify-center gap-3 w-full bg-navy hover:bg-navy-dark text-white font-bold py-3.5 rounded-xl transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    {{ $isAr ? 'تحميل الشهادة (PDF)' : 'Download Certificate (PDF)' }}
+                                </a>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
