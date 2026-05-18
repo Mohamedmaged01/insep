@@ -17,6 +17,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\LiveSessionController;
+use App\Http\Controllers\CommitteeMemberController;
+use App\Http\Controllers\PublicSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +56,8 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
 */
 Route::get('courses', [CourseController::class, 'index']);
 Route::get('courses/{id}', [CourseController::class, 'show']);
+Route::get('committee-members', [CommitteeMemberController::class, 'index']);
+Route::get('public-settings', [PublicSettingsController::class, 'index']);
 Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::post('courses', [CourseController::class, 'store']);
     Route::put('courses/{id}', [CourseController::class, 'update']);
