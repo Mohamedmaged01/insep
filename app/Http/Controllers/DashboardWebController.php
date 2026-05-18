@@ -300,7 +300,7 @@ class DashboardWebController extends Controller
             });
         }
 
-        $students = $query->orderBy('name')->paginate(10);
+        $students = $query->orderBy('name')->paginate(5);
 
         return response()->json([
             'data'         => $students->items(),

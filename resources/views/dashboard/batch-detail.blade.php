@@ -308,7 +308,7 @@
                                @input="onSearchInput()"
                                autocomplete="off">
                         {{-- Dropdown results --}}
-                        <div x-show="showDropdown" class="absolute top-full left-0 right-0 mt-1 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-xl z-10 max-h-72 overflow-y-auto">
+                        <div x-show="showDropdown" class="absolute top-full left-0 right-0 mt-1 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-xl z-10 max-h-52 overflow-y-auto">
                             <template x-if="loading">
                                 <p class="text-sm text-gray-400 text-center py-5">{{ $isAr ? 'جاري البحث...' : 'Searching...' }}</p>
                             </template>
