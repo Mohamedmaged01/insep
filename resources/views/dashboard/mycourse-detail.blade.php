@@ -93,34 +93,42 @@
             @php
                 $isLink  = in_array($res->type, ['VideoLink', 'YouTube', 'Vimeo', 'ExternalLink']);
                 $isVideo = in_array(strtolower($res->type ?? ''), ['video', 'mp4', 'videolink', 'youtube', 'vimeo']);
+                $isSelfVideo = in_array(strtolower($res->type ?? ''), ['video', 'mp4']) && !$isLink;
             @endphp
-            <div class="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
-                    {{ $isVideo ? 'bg-red-100 text-red-brand' : ($res->type === 'PDF' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600') }}">
-                    @if($isVideo)
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                    @elseif($res->type === 'PDF')
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    @else
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
+                        {{ $isVideo ? 'bg-red-100 text-red-brand' : ($res->type === 'PDF' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600') }}">
+                        @if($isVideo)
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        @elseif($res->type === 'PDF')
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        @else
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        @endif
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-navy text-sm truncate">{{ $res->title }}</p>
+                        <p class="text-xs text-gray-400">{{ $res->type }}{{ $res->size ? ' · ' . $res->size : '' }}</p>
+                    </div>
+                    @if($res->file_url && !$isSelfVideo)
+                    <a href="{{ $res->file_url }}" target="_blank"
+                       class="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-colors flex-shrink-0
+                           {{ $isLink ? 'bg-red-brand text-white hover:bg-red-brand-dark' : 'bg-navy text-white hover:bg-navy-dark' }}">
+                        @if($isLink)
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        {{ $isAr ? 'مشاهدة' : 'Watch' }}
+                        @else
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        {{ $isAr ? 'تحميل' : 'Download' }}
+                        @endif
+                    </a>
                     @endif
                 </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-bold text-navy text-sm truncate">{{ $res->title }}</p>
-                    <p class="text-xs text-gray-400">{{ $res->type }}{{ $res->size ? ' · ' . $res->size : '' }}</p>
+                @if($res->file_url && $isSelfVideo)
+                <div class="mt-3">
+                    @include('partials.secure-video', ['url' => $res->file_url])
                 </div>
-                @if($res->file_url)
-                <a href="{{ $res->file_url }}" target="_blank"
-                   class="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-colors flex-shrink-0
-                       {{ $isLink ? 'bg-red-brand text-white hover:bg-red-brand-dark' : 'bg-navy text-white hover:bg-navy-dark' }}">
-                    @if($isLink)
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                    {{ $isAr ? 'مشاهدة' : 'Watch' }}
-                    @else
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    {{ $isAr ? 'تحميل' : 'Download' }}
-                    @endif
-                </a>
                 @endif
             </div>
             @endforeach

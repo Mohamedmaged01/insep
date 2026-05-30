@@ -133,34 +133,42 @@
             @if($resources->count() > 0)
             <div class="space-y-3">
                 @foreach($resources as $res)
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-navy/10 flex items-center justify-center">
-                            @if(in_array(strtolower($res->type ?? ''), ['video', 'mp4']))
-                                <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                            @else
-                                <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                @php $isSelfVideo = in_array(strtolower($res->type ?? ''), ['video', 'mp4']); @endphp
+                <div class="p-4 bg-gray-50 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-navy/10 flex items-center justify-center">
+                                @if($isSelfVideo)
+                                    <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                @else
+                                    <svg class="w-4 h-4 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                @endif
+                            </div>
+                            <div>
+                                <p class="font-bold text-navy text-sm">{{ $res->title }}</p>
+                                <p class="text-xs text-gray-500">{{ $res->type ?? 'PDF' }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            @if($res->file_url && !$isSelfVideo)
+                            <a href="{{ $res->file_url }}" target="_blank" class="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                {{ $isAr ? 'تحميل' : 'Download' }}
+                            </a>
                             @endif
-                        </div>
-                        <div>
-                            <p class="font-bold text-navy text-sm">{{ $res->title }}</p>
-                            <p class="text-xs text-gray-500">{{ $res->type ?? 'PDF' }}</p>
+                            <form method="POST" action="{{ route('dashboard.resources.destroy', $res->id) }}" onsubmit="return confirm('{{ $isAr ? 'حذف هذا الملف؟' : 'Delete this file?' }}')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="p-1.5 hover:bg-red-50 rounded-lg text-red-400 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                                </button>
+                            </form>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        @if($res->file_url)
-                        <a href="{{ $res->file_url }}" target="_blank" class="text-xs text-blue-500 hover:underline flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            {{ $isAr ? 'تحميل' : 'Download' }}
-                        </a>
-                        @endif
-                        <form method="POST" action="{{ route('dashboard.resources.destroy', $res->id) }}" onsubmit="return confirm('{{ $isAr ? 'حذف هذا الملف؟' : 'Delete this file?' }}')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="p-1.5 hover:bg-red-50 rounded-lg text-red-400 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                            </button>
-                        </form>
+                    @if($res->file_url && $isSelfVideo)
+                    <div class="mt-3">
+                        @include('partials.secure-video', ['url' => $res->file_url])
                     </div>
+                    @endif
                 </div>
                 @endforeach
             </div>

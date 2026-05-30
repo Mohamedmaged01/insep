@@ -228,6 +228,7 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('reports')->group(function
     Route::get('revenue', [ReportController::class, 'revenue']);
     Route::get('attendance', [ReportController::class, 'attendance']);
     Route::get('certificates', [ReportController::class, 'certificates']);
+    Route::get('overview', [ReportController::class, 'overview']);
 });
 
 /*
