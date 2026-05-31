@@ -133,7 +133,12 @@
             @if($resources->count() > 0)
             <div class="space-y-3">
                 @foreach($resources as $res)
-                @php $isSelfVideo = in_array(strtolower($res->type ?? ''), ['video', 'mp4']); @endphp
+                @php
+                    $resUrl = strtolower($res->file_url ?? '');
+                    $isSelfVideo = str_contains($resUrl, 'drive.google.com')
+                        || (bool) preg_match('/\.(mp4|mov|webm|m3u8)(\?|$)/', $resUrl)
+                        || in_array(strtolower($res->type ?? ''), ['video', 'mp4']);
+                @endphp
                 <div class="p-4 bg-gray-50 rounded-xl">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">

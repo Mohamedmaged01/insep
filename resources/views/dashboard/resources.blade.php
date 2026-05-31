@@ -44,7 +44,12 @@
             </div>
             <h3 class="font-bold text-navy mb-1">{{ $res->title }}</h3>
             <p class="text-sm text-gray-500 mb-2">{{ $res->course->title ?? '-' }}</p>
-            @php $isSelfVideo = in_array(strtolower($res->type ?? ''), ['video', 'mp4']); @endphp
+            @php
+                $resUrl = strtolower($res->file_url ?? '');
+                $isSelfVideo = str_contains($resUrl, 'drive.google.com')
+                    || (bool) preg_match('/\.(mp4|mov|webm|m3u8)(\?|$)/', $resUrl)
+                    || in_array(strtolower($res->type ?? ''), ['video', 'mp4']);
+            @endphp
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold px-2 py-1 bg-navy/10 text-navy rounded-lg">{{ $res->type ?? ($isAr ? 'فيديو' : 'Video') }}</span>
                 @if($res->file_url && !$isSelfVideo)

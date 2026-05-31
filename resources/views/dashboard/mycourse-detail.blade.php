@@ -93,7 +93,11 @@
             @php
                 $isLink  = in_array($res->type, ['VideoLink', 'YouTube', 'Vimeo', 'ExternalLink']);
                 $isVideo = in_array(strtolower($res->type ?? ''), ['video', 'mp4', 'videolink', 'youtube', 'vimeo']);
-                $isSelfVideo = in_array(strtolower($res->type ?? ''), ['video', 'mp4']) && !$isLink;
+                $resUrl  = strtolower($res->file_url ?? '');
+                $isDrive = str_contains($resUrl, 'drive.google.com');
+                $isSelfVideo = $isDrive
+                    || (bool) preg_match('/\.(mp4|mov|webm|m3u8)(\?|$)/', $resUrl)
+                    || (in_array(strtolower($res->type ?? ''), ['video', 'mp4']) && !$isLink);
             @endphp
             <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
                 <div class="flex items-center gap-4">
