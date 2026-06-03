@@ -169,14 +169,59 @@
         </div>
         <form method="POST" action="{{ route('dashboard.certificates.store') }}" enctype="multipart/form-data" class="space-y-4">
             @csrf
-            <div>
+            <div x-data="{
+                    open: false,
+                    q: '',
+                    id: '',
+                    label: '',
+                    students: {{ Illuminate\Support\Js::from($students->map(fn($s) => ['id' => $s->id, 'name' => $s->name, 'email' => $s->email])->values()) }},
+                    get results() {
+                        const term = this.q.trim().toLowerCase();
+                        if (!term) return this.students.slice(0, 20);
+                        return this.students.filter(s =>
+                            (s.name || '').toLowerCase().includes(term) ||
+                            (s.email || '').toLowerCase().includes(term) ||
+                            String(s.id).includes(term)
+                        ).slice(0, 20);
+                    },
+                    pick(s) { this.id = s.id; this.label = s.name + ' (' + s.email + ')'; this.q = ''; this.open = false; },
+                    clear() { this.id = ''; this.label = ''; this.q = ''; }
+                 }" class="relative">
                 <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'المتدرب *' : 'Student *' }}</label>
-                <select name="student_id" required class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-                    <option value="">— {{ $isAr ? 'اختر المتدرب' : 'Select Student' }} —</option>
-                    @foreach($students as $s)
-                    <option value="{{ $s->id }}">{{ $s->name }} ({{ $s->email }})</option>
-                    @endforeach
-                </select>
+                <input type="hidden" name="student_id" :value="id">
+
+                {{-- Selected student chip --}}
+                <template x-if="label">
+                    <div class="flex items-center justify-between gap-2 w-full border border-navy/30 bg-navy/5 rounded-xl px-3 py-2 text-sm">
+                        <span class="font-semibold text-navy truncate" x-text="label"></span>
+                        <button type="button" @click="clear()" class="text-gray-400 hover:text-red-500 flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                </template>
+
+                {{-- Search input + dropdown --}}
+                <template x-if="!label">
+                    <div>
+                        <input type="text" x-model="q" @focus="open = true" @click="open = true"
+                            placeholder="{{ $isAr ? 'ابحث بالاسم أو البريد...' : 'Search by name or email...' }}"
+                            autocomplete="off"
+                            class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
+                        <div x-show="open" @click.outside="open = false" x-transition.opacity
+                            class="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto">
+                            <template x-for="s in results" :key="s.id">
+                                <button type="button" @click="pick(s)"
+                                    class="w-full text-start px-3 py-2 text-sm hover:bg-navy/5 border-b border-gray-50 last:border-0">
+                                    <span class="font-semibold text-navy" x-text="s.name"></span>
+                                    <span class="text-gray-400 text-xs block" x-text="s.email"></span>
+                                </button>
+                            </template>
+                            <div x-show="results.length === 0" class="px-3 py-3 text-sm text-gray-400 text-center">
+                                {{ $isAr ? 'لا توجد نتائج' : 'No results' }}
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'الدورة *' : 'Course *' }}</label>

@@ -19,17 +19,21 @@
         oncontextmenu="return false"></iframe>
     {{-- transparent shield over Drive's pop-out/download control (top-right) --}}
     <div class="absolute top-0 right-0" style="width: 130px; height: 56px; background: transparent; z-index: 5"></div>
+    @include('partials.video-watermark')
 </div>
 @else
 {{-- Self-hosted file: native player with download menu/right-click disabled --}}
-<video
-    src="{{ $videoUrl }}"
-    controls
-    controlsList="nodownload noremoteplayback noplaybackrate"
-    disablePictureInPicture
-    oncontextmenu="return false"
-    preload="metadata"
-    class="w-full rounded-xl bg-black"
-    style="max-height: 420px">
-</video>
+<div class="relative w-full rounded-xl overflow-hidden bg-black">
+    <video
+        src="{{ $videoUrl }}"
+        controls
+        controlsList="nodownload noremoteplayback noplaybackrate"
+        disablePictureInPicture
+        oncontextmenu="return false"
+        preload="metadata"
+        class="w-full bg-black"
+        style="max-height: 420px; display: block">
+    </video>
+    @include('partials.video-watermark')
+</div>
 @endif

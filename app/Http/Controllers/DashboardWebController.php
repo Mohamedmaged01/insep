@@ -508,6 +508,11 @@ class DashboardWebController extends Controller
         $user = auth()->user();
         abort_if($user->role === 'student', 403);
 
+        $request->validate([
+            'student_id' => 'required|exists:users,id',
+            'course_id'  => 'required|exists:courses,id',
+        ]);
+
         $fileUrl = null;
 
         if ($request->hasFile('certificate_file')) {
