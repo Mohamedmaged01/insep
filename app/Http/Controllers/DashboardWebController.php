@@ -535,10 +535,6 @@ class DashboardWebController extends Controller
         ]);
         $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
 
-        if (!$fileUrl && $request->generate_pdf) {
-            $this->generateAndStoreCertificatePdf($cert);
-        }
-
         return back()->with('success', 'تم إصدار الشهادة بنجاح');
     }
 
@@ -568,39 +564,13 @@ class DashboardWebController extends Controller
             return redirect($cert->file_url);
         }
 
-        return $this->generateCertificatePdfResponse($cert);
+        // No uploaded file — certificates are no longer generated on the fly.
+        return back()->with('info', 'لا يوجد ملف مرفوع لهذه الشهادة');
     }
 
     private function formatSerial(int $id): string
     {
         return 'INSEP-' . date('Y') . '-' . str_pad($id, 6, '0', STR_PAD_LEFT);
-    }
-
-    private function generateCertificatePdfResponse(Certificate $cert)
-    {
-        $pdf = Pdf::loadView('certificates.template', [
-            'certificate' => $cert,
-            'student'     => $cert->student,
-            'course'      => $cert->course,
-            'batch'       => $cert->batch,
-        ])->setPaper('a4', 'landscape');
-
-        return $pdf->download('certificate-' . $cert->serial_number . '.pdf');
-    }
-
-    private function generateAndStoreCertificatePdf(Certificate $cert)
-    {
-        $cert->load(['student', 'course', 'batch']);
-        $pdf  = Pdf::loadView('certificates.template', [
-            'certificate' => $cert,
-            'student'     => $cert->student,
-            'course'      => $cert->course,
-            'batch'       => $cert->batch,
-        ])->setPaper('a4', 'landscape');
-
-        $filename = 'certificates/' . $cert->serial_number . '.pdf';
-        Storage::disk('public')->put($filename, $pdf->output());
-        $cert->update(['file_url' => Storage::url($filename)]);
     }
 
     public function bulkUploadCertificates(Request $request)
@@ -774,8 +744,6 @@ class DashboardWebController extends Controller
                 $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
             }
 
-            $this->generateAndStoreCertificatePdf($cert);
-
             $imported++;
         }
 
@@ -852,14 +820,13 @@ class DashboardWebController extends Controller
                 'title'         => 'شهادة إتمام الدورة',
                 'issue_date'    => now()->toDateString(),
                 'status'        => 'active',
-                'type'          => 'auto',
+                'type'          => 'import',
                 'created_by'    => $user->id,
             ]);
             $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
-            $this->generateAndStoreCertificatePdf($cert);
         }
 
-        $msg = $request->status === 'approved' ? 'تمت الموافقة وإصدار الشهادة' : 'تم رفض الطلب';
+        $msg = $request->status === 'approved' ? 'تمت الموافقة على الطلب' : 'تم رفض الطلب';
         return back()->with('success', $msg);
     }
 

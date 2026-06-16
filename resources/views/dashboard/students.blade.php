@@ -241,29 +241,12 @@
                     <input name="issue_date" type="date" value="{{ now()->toDateString() }}"
                         class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
                 </div>
-                {{-- File upload / auto-generate toggle --}}
+                {{-- Certificate file upload (PDF/image) --}}
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-2">{{ $isAr ? 'ملف الشهادة' : 'Certificate File' }}</label>
-                    <div class="flex gap-2 mb-3">
-                        <button type="button" @click="certUploadMode='upload'"
-                            :class="certUploadMode==='upload' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600'"
-                            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                            {{ $isAr ? 'رفع PDF' : 'Upload PDF' }}
-                        </button>
-                        <button type="button" @click="certUploadMode='generate'"
-                            :class="certUploadMode==='generate' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600'"
-                            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                            {{ $isAr ? 'توليد تلقائي' : 'Auto Generate' }}
-                        </button>
-                    </div>
-                    <div x-show="certUploadMode==='upload'">
-                        <input name="certificate_file" type="file" accept=".pdf,.jpg,.png"
-                            class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-                    </div>
-                    <div x-show="certUploadMode==='generate'" class="text-xs text-gray-400 py-1">
-                        <input type="hidden" name="generate_pdf" value="1">
-                        {{ $isAr ? 'سيتم توليد شهادة PDF تلقائياً من البيانات المدخلة.' : 'A PDF certificate will be auto-generated from the entered data.' }}
-                    </div>
+                    <label class="block text-xs font-semibold text-gray-500 mb-2">{{ $isAr ? 'ملف الشهادة (PDF)' : 'Certificate File (PDF)' }}</label>
+                    <input name="certificate_file" type="file" accept=".pdf,.jpg,.png"
+                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
+                    <p class="text-xs text-gray-400 mt-1">{{ $isAr ? 'ارفع ملف شهادة جاهز. لم يعد يتم توليد الشهادات تلقائياً.' : 'Upload a ready certificate file. Certificates are no longer auto-generated.' }}</p>
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" @click="showCertModal = false" class="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>

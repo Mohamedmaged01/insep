@@ -32,13 +32,9 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/></svg>
             {{ $isAr ? 'استيراد من Excel' : 'Import from Excel' }}
         </button>
-        <button @click="showBulkModal=true" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-navy text-navy text-sm font-semibold hover:bg-navy/5 transition">
+        <button @click="showBulkModal=true" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-navy text-white text-sm font-semibold hover:bg-navy/90 transition">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
             {{ $isAr ? 'رفع جماعي' : 'Bulk Upload' }}
-        </button>
-        <button @click="showIssueModal=true" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-navy text-white text-sm font-semibold hover:bg-navy/90 transition">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            {{ $isAr ? 'إصدار شهادة' : 'Issue Certificate' }}
         </button>
     </div>
     @endif
@@ -126,11 +122,15 @@
                     </td>
                     <td class="px-5 py-3">
                         <div class="flex items-center gap-2">
+                            @if($cert->file_url)
                             <a href="{{ route('dashboard.certificates.download', $cert->id) }}"
                                class="text-xs text-navy font-semibold hover:underline flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                 {{ $isAr ? 'تنزيل' : 'Download' }}
                             </a>
+                            @else
+                            <span class="text-xs text-gray-300">{{ $isAr ? 'بدون ملف' : 'No file' }}</span>
+                            @endif
                             @if(auth()->user()->isAdminOrAbove() && ($cert->status ?? 'active') === 'active')
                             <form method="POST" action="{{ route('dashboard.certificates.destroy', $cert->id) }}"
                                   onsubmit="return confirm('{{ $isAr ? 'إلغاء هذه الشهادة؟' : 'Revoke this certificate?' }}')">
@@ -154,141 +154,8 @@
     @endif
 </div>
 
-{{-- ====== ISSUE CERTIFICATE MODAL ====== --}}
+{{-- ====== ADMIN MODALS (Import / Bulk Upload) ====== --}}
 @if(auth()->user()->isAdminOrAbove())
-<div x-show="showIssueModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
-     x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-     x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showIssueModal=false"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 z-10 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-5">
-            <h2 class="text-lg font-black text-navy">{{ $isAr ? 'إصدار شهادة جديدة' : 'Issue New Certificate' }}</h2>
-            <button @click="showIssueModal=false" class="text-gray-400 hover:text-gray-600">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-        </div>
-        <form method="POST" action="{{ route('dashboard.certificates.store') }}" enctype="multipart/form-data" class="space-y-4">
-            @csrf
-            <div x-data="{
-                    open: false,
-                    q: '',
-                    id: '',
-                    label: '',
-                    students: {{ Illuminate\Support\Js::from($students->map(fn($s) => ['id' => $s->id, 'name' => $s->name, 'email' => $s->email])->values()) }},
-                    get results() {
-                        const term = this.q.trim().toLowerCase();
-                        if (!term) return this.students.slice(0, 20);
-                        return this.students.filter(s =>
-                            (s.name || '').toLowerCase().includes(term) ||
-                            (s.email || '').toLowerCase().includes(term) ||
-                            String(s.id).includes(term)
-                        ).slice(0, 20);
-                    },
-                    pick(s) { this.id = s.id; this.label = s.name + ' (' + s.email + ')'; this.q = ''; this.open = false; },
-                    clear() { this.id = ''; this.label = ''; this.q = ''; }
-                 }" class="relative">
-                <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'المتدرب *' : 'Student *' }}</label>
-                <input type="hidden" name="student_id" :value="id">
-
-                {{-- Selected student chip --}}
-                <template x-if="label">
-                    <div class="flex items-center justify-between gap-2 w-full border border-navy/30 bg-navy/5 rounded-xl px-3 py-2 text-sm">
-                        <span class="font-semibold text-navy truncate" x-text="label"></span>
-                        <button type="button" @click="clear()" class="text-gray-400 hover:text-red-500 flex-shrink-0">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                </template>
-
-                {{-- Search input + dropdown --}}
-                <template x-if="!label">
-                    <div>
-                        <input type="text" x-model="q" @focus="open = true" @click="open = true"
-                            placeholder="{{ $isAr ? 'ابحث بالاسم أو البريد...' : 'Search by name or email...' }}"
-                            autocomplete="off"
-                            class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-                        <div x-show="open" @click.outside="open = false" x-transition.opacity
-                            class="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto">
-                            <template x-for="s in results" :key="s.id">
-                                <button type="button" @click="pick(s)"
-                                    class="w-full text-start px-3 py-2 text-sm hover:bg-navy/5 border-b border-gray-50 last:border-0">
-                                    <span class="font-semibold text-navy" x-text="s.name"></span>
-                                    <span class="text-gray-400 text-xs block" x-text="s.email"></span>
-                                </button>
-                            </template>
-                            <div x-show="results.length === 0" class="px-3 py-3 text-sm text-gray-400 text-center">
-                                {{ $isAr ? 'لا توجد نتائج' : 'No results' }}
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'الدورة *' : 'Course *' }}</label>
-                <select name="course_id" required class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-                    <option value="">— {{ $isAr ? 'اختر الدورة' : 'Select Course' }} —</option>
-                    @foreach($courses as $c)
-                    <option value="{{ $c->id }}">{{ $c->title }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'المجموعة (اختياري)' : 'Batch (optional)' }}</label>
-                <select name="batch_id" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-                    <option value="">—</option>
-                    @foreach($batches as $b)
-                    <option value="{{ $b->id }}">{{ $b->name }} ({{ $b->course?->title }})</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'عنوان الشهادة' : 'Certificate Title' }}</label>
-                    <input name="title" placeholder="{{ $isAr ? 'شهادة إتمام الدورة' : 'Certificate of Completion' }}"
-                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'التقدير' : 'Grade' }}</label>
-                    <input name="grade" placeholder="{{ $isAr ? 'مثلاً: ممتاز' : 'e.g. Excellent' }}"
-                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-                </div>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-1">{{ $isAr ? 'تاريخ الإصدار' : 'Issue Date' }}</label>
-                <input name="issue_date" type="date" value="{{ now()->toDateString() }}"
-                    class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-            </div>
-            {{-- Upload mode toggle --}}
-            <div>
-                <label class="block text-xs font-semibold text-gray-500 mb-2">{{ $isAr ? 'ملف الشهادة' : 'Certificate File' }}</label>
-                <div class="flex gap-2 mb-3">
-                    <button type="button" @click="uploadMode='upload'"
-                        :class="uploadMode==='upload' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600'"
-                        class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                        {{ $isAr ? 'رفع PDF' : 'Upload PDF' }}
-                    </button>
-                    <button type="button" @click="uploadMode='generate'"
-                        :class="uploadMode==='generate' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-600'"
-                        class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-                        {{ $isAr ? 'توليد تلقائي' : 'Auto Generate' }}
-                    </button>
-                </div>
-                <div x-show="uploadMode==='upload'">
-                    <input name="certificate_file" type="file" accept=".pdf,.jpg,.png"
-                        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-navy">
-                </div>
-                <div x-show="uploadMode==='generate'" class="text-xs text-gray-400 py-2">
-                    <input type="hidden" name="generate_pdf" value="1">
-                    {{ $isAr ? 'سيتم توليد شهادة PDF تلقائياً من البيانات المدخلة.' : 'A PDF certificate will be auto-generated from the entered data.' }}
-                </div>
-            </div>
-            <div class="flex justify-end gap-3 pt-2">
-                <button type="button" @click="showIssueModal=false" class="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
-                <button type="submit" class="px-5 py-2 rounded-xl bg-navy text-white text-sm font-semibold hover:bg-navy/90">{{ $isAr ? 'إصدار' : 'Issue' }}</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 {{-- ====== IMPORT FROM EXCEL MODAL ====== --}}
 <div x-show="showImportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -319,7 +186,7 @@
             <p class="font-semibold text-sm">{{ $isAr ? 'الأعمدة المطلوبة:' : 'Required columns:' }}</p>
             <p><span class="font-mono bg-white px-1 rounded">student_email</span> {{ $isAr ? '— البريد الإلكتروني المسجّل للطالب' : '— registered email of the student' }}</p>
             <p><span class="font-mono bg-white px-1 rounded">course_id</span> {{ $isAr ? '— الرقم التعريفي للدورة' : '— numeric course ID' }}</p>
-            <p class="text-blue-500">{{ $isAr ? 'باقي الأعمدة اختيارية — كل صف ينتج PDF تلقائياً.' : 'Remaining columns are optional — each row auto-generates a PDF.' }}</p>
+            <p class="text-blue-500">{{ $isAr ? 'باقي الأعمدة اختيارية — يتم استيراد كل صف كسجل شهادة قابل للبحث.' : 'Remaining columns are optional — each row is imported as a searchable certificate record.' }}</p>
         </div>
 
         <form method="POST" action="{{ route('dashboard.certificates.import') }}" enctype="multipart/form-data" class="space-y-4">
@@ -331,7 +198,7 @@
             </div>
             <div class="flex justify-end gap-3 pt-2">
                 <button type="button" @click="showImportModal=false" class="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
-                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700">{{ $isAr ? 'استيراد وإنشاء PDF' : 'Import & Generate PDFs' }}</button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700">{{ $isAr ? 'استيراد' : 'Import' }}</button>
             </div>
         </form>
     </div>
@@ -425,11 +292,15 @@
             @endif
             {{-- Actions --}}
             <div class="pt-2 flex gap-2">
+                @if($cert->file_url)
                 <a href="{{ route('dashboard.certificates.download', $cert->id) }}"
                    class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-navy text-white text-xs font-semibold hover:bg-navy/90 transition">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     {{ $isAr ? 'تنزيل' : 'Download' }}
                 </a>
+                @else
+                <span class="flex-1 flex items-center justify-center px-3 py-2 rounded-xl bg-gray-100 text-gray-400 text-xs font-semibold">{{ $isAr ? 'لا يوجد ملف' : 'No file' }}</span>
+                @endif
                 <button onclick="navigator.clipboard.writeText('{{ $cert->serial_number }}')"
                         class="px-3 py-2 rounded-xl border border-gray-200 text-gray-500 text-xs hover:bg-gray-50 transition" title="{{ $isAr ? 'نسخ الرقم' : 'Copy serial' }}">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
