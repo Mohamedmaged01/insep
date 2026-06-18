@@ -129,6 +129,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::post('certificates', [CertificateController::class, 'store']);
+        Route::post('certificates/upload', [CertificateController::class, 'upload']);
         Route::put('certificates/{id}', [CertificateController::class, 'update']);
         Route::delete('certificates/{id}', [CertificateController::class, 'destroy']);
     });

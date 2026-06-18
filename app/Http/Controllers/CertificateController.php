@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Certificate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CertificateController extends Controller
 {
@@ -68,6 +69,38 @@ class CertificateController extends Controller
         }
         $cert = Certificate::create($data);
         return response()->json($cert);
+    }
+
+    /**
+     * Upload a certificate file for a specific student (individual upload).
+     * Accepts multipart form-data with a real file. No PDF is generated.
+     */
+    public function upload(Request $request)
+    {
+        $request->validate([
+            'certificate_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            'student_id'       => 'required|exists:users,id',
+        ]);
+
+        $path    = $request->file('certificate_file')->store('certificates', 'public');
+        $fileUrl = Storage::url($path);
+
+        $cert = Certificate::create([
+            'serial_number' => $request->serial_number
+                ?: 'INSEP-' . time() . '-' . strtoupper(substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 4)),
+            'student_id'    => $request->student_id,
+            'course_id'     => $request->course_id ?: null,
+            'batch_id'      => $request->batch_id ?: null,
+            'title'         => $request->title ?: 'شهادة إتمام الدورة',
+            'issue_date'    => $request->issue_date ?: now()->toDateString(),
+            'grade'         => $request->grade ?: null,
+            'status'        => 'active',
+            'file_url'      => $fileUrl,
+            'type'          => 'manual',
+            'created_by'    => $request->user()->id,
+        ]);
+
+        return response()->json($cert->load(['student', 'course']), 201);
     }
 
     public function update(Request $request, $id)
