@@ -71,6 +71,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('/certificates', [DashboardWebController::class, 'storeCertificate'])->name('dashboard.certificates.store');
     Route::delete('/certificates/{id}', [DashboardWebController::class, 'destroyCertificate'])->name('dashboard.certificates.destroy');
     Route::get('/certificates/{id}/download', [DashboardWebController::class, 'downloadCertificate'])->name('dashboard.certificates.download');
+    Route::post('/certificates/{id}/file', [DashboardWebController::class, 'uploadCertificateFile'])->name('dashboard.certificates.upload-file');
     Route::post('/certificates/bulk', [DashboardWebController::class, 'bulkUploadCertificates'])->name('dashboard.certificates.bulk');
     Route::get('/certificates/template', [DashboardWebController::class, 'downloadCertificateTemplate'])->name('dashboard.certificates.template');
     Route::post('/certificates/import', [DashboardWebController::class, 'importCertificates'])->name('dashboard.certificates.import');

@@ -124,21 +124,50 @@
                         </span>
                     </td>
                     <td class="px-5 py-3">
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5">
+                            {{-- View --}}
                             @if($cert->file_url)
-                            <a href="{{ route('dashboard.certificates.download', $cert->id) }}"
-                               class="text-xs text-navy font-semibold hover:underline flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                {{ $isAr ? 'تنزيل' : 'Download' }}
+                            <a href="{{ $cert->file_url }}" target="_blank" rel="noopener" title="{{ $isAr ? 'عرض' : 'View' }}"
+                               class="p-2 rounded-lg text-navy hover:bg-navy/10 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </a>
                             @else
-                            <span class="text-xs text-gray-300">{{ $isAr ? 'بدون ملف' : 'No file' }}</span>
+                            <span title="{{ $isAr ? 'لا يوجد ملف' : 'No file' }}" class="p-2 rounded-lg text-gray-300 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </span>
                             @endif
-                            @if(auth()->user()->isAdminOrAbove() && ($cert->status ?? 'active') === 'active')
+
+                            {{-- Download --}}
+                            @if($cert->file_url)
+                            <a href="{{ route('dashboard.certificates.download', $cert->id) }}" title="{{ $isAr ? 'تنزيل' : 'Download' }}"
+                               class="p-2 rounded-lg text-navy hover:bg-navy/10 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </a>
+                            @else
+                            <span title="{{ $isAr ? 'لا يوجد ملف' : 'No file' }}" class="p-2 rounded-lg text-gray-300 cursor-not-allowed">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </span>
+                            @endif
+
+                            @if(auth()->user()->isAdminOrAbove())
+                            {{-- Upload / attach file --}}
+                            <form method="POST" action="{{ route('dashboard.certificates.upload-file', $cert->id) }}" enctype="multipart/form-data" class="inline">
+                                @csrf
+                                <label title="{{ $isAr ? 'رفع ملف الشهادة' : 'Upload certificate file' }}"
+                                       class="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer inline-flex">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                    <input type="file" name="certificate_file" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="this.form.submit()">
+                                </label>
+                            </form>
+
+                            {{-- Delete --}}
                             <form method="POST" action="{{ route('dashboard.certificates.destroy', $cert->id) }}"
-                                  onsubmit="return confirm('{{ $isAr ? 'إلغاء هذه الشهادة؟' : 'Revoke this certificate?' }}')">
+                                  onsubmit="return confirm('{{ $isAr ? 'حذف هذه الشهادة نهائياً؟ لا يمكن التراجع.' : 'Permanently delete this certificate? This cannot be undone.' }}')" class="inline">
                                 @csrf @method('DELETE')
-                                <button class="text-xs text-red-500 hover:underline">{{ $isAr ? 'إلغاء' : 'Revoke' }}</button>
+                                <button type="submit" title="{{ $isAr ? 'حذف' : 'Delete' }}"
+                                        class="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
                             </form>
                             @endif
                         </div>
@@ -410,6 +439,11 @@
             {{-- Actions --}}
             <div class="pt-2 flex gap-2">
                 @if($cert->file_url)
+                <a href="{{ $cert->file_url }}" target="_blank" rel="noopener"
+                   class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-navy text-navy text-xs font-semibold hover:bg-navy/5 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    {{ $isAr ? 'عرض' : 'View' }}
+                </a>
                 <a href="{{ route('dashboard.certificates.download', $cert->id) }}"
                    class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-navy text-white text-xs font-semibold hover:bg-navy/90 transition">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>

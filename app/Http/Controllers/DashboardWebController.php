@@ -542,8 +542,33 @@ class DashboardWebController extends Controller
     {
         abort_if(auth()->user()->role !== 'admin', 403);
         $cert = Certificate::findOrFail($id);
-        $cert->update(['status' => 'revoked']);
-        return back()->with('success', 'تم إلغاء الشهادة');
+
+        if ($cert->file_url) {
+            Storage::disk('public')->delete(str_replace('/storage/', '', parse_url($cert->file_url, PHP_URL_PATH)));
+        }
+        $cert->delete();
+
+        return back()->with('success', 'تم حذف الشهادة');
+    }
+
+    public function uploadCertificateFile($id, Request $request)
+    {
+        abort_if(auth()->user()->role === 'student', 403);
+        $request->validate([
+            'certificate_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+        ]);
+
+        $cert = Certificate::findOrFail($id);
+
+        // remove the previous file if any
+        if ($cert->file_url) {
+            Storage::disk('public')->delete(str_replace('/storage/', '', parse_url($cert->file_url, PHP_URL_PATH)));
+        }
+
+        $path = $request->file('certificate_file')->store('certificates', 'public');
+        $cert->update(['file_url' => Storage::url($path), 'type' => 'manual']);
+
+        return back()->with('success', 'تم رفع ملف الشهادة');
     }
 
     public function downloadCertificate($id)

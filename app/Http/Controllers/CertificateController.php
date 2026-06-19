@@ -111,7 +111,34 @@ class CertificateController extends Controller
 
     public function destroy($id)
     {
-        Certificate::destroy($id);
+        $cert = Certificate::find($id);
+        if ($cert) {
+            if ($cert->file_url) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', parse_url($cert->file_url, PHP_URL_PATH)));
+            }
+            $cert->delete();
+        }
         return response()->json(['deleted' => true]);
+    }
+
+    /**
+     * Attach / replace the file on an existing certificate (individual upload to a row).
+     */
+    public function uploadFile($id, Request $request)
+    {
+        $request->validate([
+            'certificate_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+        ]);
+
+        $cert = Certificate::findOrFail($id);
+
+        if ($cert->file_url) {
+            Storage::disk('public')->delete(str_replace('/storage/', '', parse_url($cert->file_url, PHP_URL_PATH)));
+        }
+
+        $path = $request->file('certificate_file')->store('certificates', 'public');
+        $cert->update(['file_url' => Storage::url($path), 'type' => 'manual']);
+
+        return response()->json($cert->load(['student', 'course']));
     }
 }
