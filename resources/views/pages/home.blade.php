@@ -314,8 +314,9 @@ function statsCounter() {
                target="_blank"
                class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp block group" style="animation-delay: {{ $i * 0.15 }}s; animation-fill-mode: forwards">
                 <div class="h-52 relative overflow-hidden">
-                    <img src="{{ $item->image ?? $placeholderImages[$i % 3] }}" alt="{{ $item->title }}"
-                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    <img src="{{ $item->image ? (str_starts_with($item->image, 'http') ? $item->image : asset('storage/' . ltrim($item->image, '/'))) : $placeholderImages[$i % 3] }}" alt="{{ $item->title }}"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                         onerror="this.src='{{ $placeholderImages[$i % 3] }}'">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                     <div class="absolute top-4 right-4 bg-red-brand text-white px-3 py-1 rounded-lg text-xs font-bold">{{ $item->tag ?? ($isAr ? 'أخبار' : 'News') }}</div>
                     <div class="absolute bottom-4 right-4 text-white/80 text-sm flex items-center gap-1">

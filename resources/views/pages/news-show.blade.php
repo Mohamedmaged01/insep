@@ -19,7 +19,34 @@
     <div class="container mx-auto px-4 max-w-3xl">
         @if($news->image)
         <div class="rounded-2xl overflow-hidden mb-10 shadow-lg">
-            <img src="{{ $news->image }}" alt="{{ $news->title }}" class="w-full h-72 object-cover">
+            <img src="{{ str_starts_with($news->image, 'http') ? $news->image : asset('storage/' . ltrim($news->image, '/')) }}" alt="{{ $news->title }}" class="w-full h-72 object-cover">
+        </div>
+        @endif
+
+        {{-- Video (YouTube / Google Drive) embedded inline like the course preview --}}
+        @php
+        $videoEmbed = null;
+        if (!empty($news->video_url)) {
+            $vu = $news->video_url;
+            if      (preg_match('/youtube\.com\/embed\/([^?&\s]+)/', $vu, $m)) $videoEmbed = "https://www.youtube.com/embed/{$m[1]}";
+            elseif  (preg_match('/[?&]v=([^&\s]+)/', $vu, $m))                  $videoEmbed = "https://www.youtube.com/embed/{$m[1]}";
+            elseif  (preg_match('/youtu\.be\/([^?&\s]+)/', $vu, $m))            $videoEmbed = "https://www.youtube.com/embed/{$m[1]}";
+            elseif  (preg_match('/youtube\.com\/shorts\/([^?&\s]+)/', $vu, $m)) $videoEmbed = "https://www.youtube.com/embed/{$m[1]}";
+            elseif  (str_contains(strtolower($vu), 'drive.google.com')) {
+                if      (preg_match('~/d/([a-zA-Z0-9_-]+)~', $vu, $m))     $videoEmbed = "https://drive.google.com/file/d/{$m[1]}/preview";
+                elseif  (preg_match('~[?&]id=([a-zA-Z0-9_-]+)~', $vu, $m)) $videoEmbed = "https://drive.google.com/file/d/{$m[1]}/preview";
+            }
+        }
+        @endphp
+        @if($videoEmbed)
+        <div class="rounded-2xl overflow-hidden mb-10 shadow-lg bg-black relative" style="padding-top: 56.25%">
+            <iframe class="absolute inset-0 w-full h-full"
+                src="{{ $videoEmbed }}"
+                title="{{ $news->title }}"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
         </div>
         @endif
 

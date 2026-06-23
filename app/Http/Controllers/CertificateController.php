@@ -82,12 +82,13 @@ class CertificateController extends Controller
             'student_id'       => 'required|exists:users,id',
         ]);
 
-        $path    = $request->file('certificate_file')->store('certificates', 'public');
+        $file    = $request->file('certificate_file');
+        $path    = $file->store('certificates', 'public');
         $fileUrl = Storage::url($path);
 
         $cert = Certificate::create([
-            'serial_number' => $request->serial_number
-                ?: 'INSEP-' . time() . '-' . strtoupper(substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 4)),
+            // Use the uploaded file's name as the searchable certificate number
+            'serial_number' => $request->serial_number ?: $this->serialFromFile($file),
             'student_id'    => $request->student_id,
             'course_id'     => $request->course_id ?: null,
             'batch_id'      => $request->batch_id ?: null,
@@ -136,9 +137,34 @@ class CertificateController extends Controller
             Storage::disk('public')->delete(str_replace('/storage/', '', parse_url($cert->file_url, PHP_URL_PATH)));
         }
 
-        $path = $request->file('certificate_file')->store('certificates', 'public');
-        $cert->update(['file_url' => Storage::url($path), 'type' => 'manual']);
+        $file = $request->file('certificate_file');
+        $path = $file->store('certificates', 'public');
+        $cert->update([
+            'file_url'      => Storage::url($path),
+            'type'          => 'manual',
+            'serial_number' => $this->serialFromFile($file, $cert->id),
+        ]);
 
         return response()->json($cert->load(['student', 'course']));
+    }
+
+    /**
+     * Derive a unique certificate number from an uploaded file's name
+     * (filename without extension), e.g. "100019081.pdf" -> "100019081".
+     */
+    private function serialFromFile($file, $ignoreId = null): string
+    {
+        $base = trim(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        if ($base === '') {
+            $base = 'INSEP-' . time() . '-' . strtoupper(substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 4));
+        }
+        $serial = $base;
+        $i = 2;
+        while (Certificate::where('serial_number', $serial)
+                ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()) {
+            $serial = $base . '-' . $i++;
+        }
+        return $serial;
     }
 }

@@ -161,6 +161,12 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::put('/committee/{committeeMember}', [DashboardWebController::class, 'updateCommitteeMember'])->middleware('web.role:admin,supervisor')->name('dashboard.committee.update');
     Route::delete('/committee/{committeeMember}', [DashboardWebController::class, 'destroyCommitteeMember'])->middleware('web.role:admin,supervisor')->name('dashboard.committee.destroy');
 
+    // News / Articles — admin + supervisor
+    Route::get('/news', [DashboardWebController::class, 'news'])->middleware('web.role:admin,supervisor')->name('dashboard.news');
+    Route::post('/news', [DashboardWebController::class, 'storeNews'])->middleware('web.role:admin,supervisor')->name('dashboard.news.store');
+    Route::put('/news/{id}', [DashboardWebController::class, 'updateNews'])->middleware('web.role:admin,supervisor')->name('dashboard.news.update');
+    Route::delete('/news/{id}', [DashboardWebController::class, 'destroyNews'])->middleware('web.role:admin,supervisor')->name('dashboard.news.destroy');
+
     // Public course detail
     Route::get('/courses/{id}', [DashboardWebController::class, 'courseDetail'])->name('dashboard.courses.show');
 

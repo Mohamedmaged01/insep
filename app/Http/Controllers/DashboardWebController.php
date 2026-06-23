@@ -514,14 +514,18 @@ class DashboardWebController extends Controller
         ]);
 
         $fileUrl = null;
+        $serial  = null;
 
         if ($request->hasFile('certificate_file')) {
-            $path    = $request->file('certificate_file')->store('certificates', 'public');
+            $file    = $request->file('certificate_file');
+            $path    = $file->store('certificates', 'public');
             $fileUrl = Storage::url($path);
+            // Use the uploaded file's name (e.g. "100019081.pdf") as the searchable certificate number
+            $serial  = $this->serialFromFile($file);
         }
 
         $cert = Certificate::create([
-            'serial_number' => 'TEMP-' . uniqid(),
+            'serial_number' => $serial ?: ('TEMP-' . uniqid()),
             'student_id'    => $request->student_id,
             'course_id'     => $request->course_id,
             'batch_id'      => $request->batch_id ?: null,
@@ -533,9 +537,31 @@ class DashboardWebController extends Controller
             'type'          => $fileUrl ? 'manual' : 'auto',
             'created_by'    => $user->id,
         ]);
-        $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
+        if (!$serial) {
+            $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
+        }
 
         return back()->with('success', 'تم إصدار الشهادة بنجاح');
+    }
+
+    /**
+     * Derive a unique certificate number from an uploaded file's name
+     * (filename without extension), e.g. "100019081.pdf" -> "100019081".
+     */
+    private function serialFromFile($file, $ignoreId = null): string
+    {
+        $base = trim(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        if ($base === '') {
+            $base = 'CERT-' . strtoupper(substr(uniqid(), -6));
+        }
+        $serial = $base;
+        $i = 2;
+        while (Certificate::where('serial_number', $serial)
+                ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()) {
+            $serial = $base . '-' . $i++;
+        }
+        return $serial;
     }
 
     public function destroyCertificate($id)
@@ -565,8 +591,13 @@ class DashboardWebController extends Controller
             Storage::disk('public')->delete(str_replace('/storage/', '', parse_url($cert->file_url, PHP_URL_PATH)));
         }
 
-        $path = $request->file('certificate_file')->store('certificates', 'public');
-        $cert->update(['file_url' => Storage::url($path), 'type' => 'manual']);
+        $file = $request->file('certificate_file');
+        $path = $file->store('certificates', 'public');
+        $cert->update([
+            'file_url'      => Storage::url($path),
+            'type'          => 'manual',
+            'serial_number' => $this->serialFromFile($file, $cert->id),
+        ]);
 
         return back()->with('success', 'تم رفع ملف الشهادة');
     }
@@ -1401,6 +1432,55 @@ class DashboardWebController extends Controller
     {
         $committeeMember->delete();
         return back()->with('success', 'تم حذف العضو بنجاح');
+    }
+
+    // ── News / Articles CRUD ───────────────────────────────────────
+    public function news()
+    {
+        $news = \App\Models\News::orderBy('created_at', 'desc')->get();
+        return view('dashboard.news', compact('news'));
+    }
+
+    private function newsData(Request $request, $current = null): array
+    {
+        $data = $request->only(['title', 'description', 'tag', 'date', 'video_url']);
+        if (empty($data['date'])) {
+            $data['date'] = now()->toDateString();
+        }
+        if ($request->hasFile('image')) {
+            if ($current && $current->image && !str_starts_with($current->image, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($current->image);
+            }
+            $data['image'] = $request->file('image')->store('news', 'public');
+        }
+        return $data;
+    }
+
+    public function storeNews(Request $request)
+    {
+        $request->validate(['title' => 'required|string|max:255']);
+        \App\Models\News::create($this->newsData($request));
+        return back()->with('success', $this->isAr() ? 'تم نشر الخبر بنجاح' : 'News published successfully');
+    }
+
+    public function updateNews(Request $request, $id)
+    {
+        $news = \App\Models\News::findOrFail($id);
+        $request->validate(['title' => 'required|string|max:255']);
+        $news->update($this->newsData($request, $news));
+        return back()->with('success', $this->isAr() ? 'تم تحديث الخبر بنجاح' : 'News updated successfully');
+    }
+
+    public function destroyNews($id)
+    {
+        $news = \App\Models\News::find($id);
+        if ($news) {
+            if ($news->image && !str_starts_with($news->image, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($news->image);
+            }
+            $news->delete();
+        }
+        return back()->with('success', $this->isAr() ? 'تم حذف الخبر' : 'News deleted');
     }
 
     public function destroyCourse(Course $course)

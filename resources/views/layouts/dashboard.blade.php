@@ -39,6 +39,7 @@
         ['key' => 'gamification', 'label' => $isAr ? 'النقاط والشارات'   : 'Points & Badges', 'icon' => 'award',          'route' => 'dashboard.gamification'],
         ['key' => 'settings',     'label' => $isAr ? 'الإعدادات'          : 'Settings',        'icon' => 'settings',       'route' => 'dashboard.settings'],
         ['key' => 'cms',          'label' => $isAr ? 'محتوى الموقع'       : 'Site Content',    'icon' => 'layout',         'route' => 'dashboard.cms'],
+        ['key' => 'news',         'label' => $isAr ? 'الأخبار والمقالات'  : 'News & Articles', 'icon' => 'newspaper',      'route' => 'dashboard.news'],
         ['key' => 'committee',    'label' => $isAr ? 'اللجنة العلمية'     : 'Scientific Comm.','icon' => 'users',          'route' => 'dashboard.committee'],
     ];
 
@@ -55,6 +56,7 @@
         ['key' => 'reports',              'label' => $isAr ? 'التقارير'           : 'Reports',           'icon' => 'bar-chart-3',    'route' => 'dashboard.reports'],
         ['key' => 'gamification',         'label' => $isAr ? 'النقاط والشارات'   : 'Points & Badges',   'icon' => 'award',          'route' => 'dashboard.gamification'],
         ['key' => 'cms',                  'label' => $isAr ? 'محتوى الموقع'       : 'Site Content',      'icon' => 'layout',         'route' => 'dashboard.cms'],
+        ['key' => 'news',                 'label' => $isAr ? 'الأخبار والمقالات'  : 'News & Articles',   'icon' => 'newspaper',      'route' => 'dashboard.news'],
         ['key' => 'committee',            'label' => $isAr ? 'اللجنة العلمية'     : 'Scientific Comm.',  'icon' => 'users',          'route' => 'dashboard.committee'],
         ['key' => 'settings',             'label' => $isAr ? 'الإعدادات'          : 'Settings',          'icon' => 'settings',       'route' => 'dashboard.settings'],
     ];
@@ -251,6 +253,11 @@
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                                     <line x1="3" y1="9" x2="21" y2="9" />
                                     <line x1="9" y1="21" x2="9" y2="9" />
+                                @break
+
+                                @case('newspaper')
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 002 2zm0 0a2 2 0 002-2V8a2 2 0 00-2-2h-2M9 9h6M9 13h6M9 17h3" />
                                 @break
                             @endswitch
                         </svg>
