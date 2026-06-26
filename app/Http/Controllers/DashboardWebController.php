@@ -668,8 +668,13 @@ class DashboardWebController extends Controller
 
             $fileUrl = null;
             if ($fileNameIdx !== false && !empty($row[$fileNameIdx])) {
-                $srcFile = $tempDir . '/' . trim($row[$fileNameIdx]);
-                if (file_exists($srcFile)) {
+                $fileName = trim($row[$fileNameIdx]);
+                $srcFile  = $tempDir . '/' . $fileName;
+                // The ZIP may wrap files in a subfolder; search recursively by name as a fallback
+                if (!is_file($srcFile)) {
+                    $srcFile = $this->findFileInDir($tempDir, basename($fileName));
+                }
+                if ($srcFile && is_file($srcFile)) {
                     $destPath = 'certificates/' . $tempRef . '_' . basename($srcFile);
                     Storage::disk('public')->put($destPath, file_get_contents($srcFile));
                     $fileUrl  = Storage::url($destPath);
@@ -694,10 +699,38 @@ class DashboardWebController extends Controller
             $imported++;
         }
 
-        array_map('unlink', glob($tempDir . '/*'));
-        rmdir($tempDir);
+        $this->deleteDir($tempDir);
 
         return back()->with('success', "تم استيراد {$imported} شهادة بنجاح");
+    }
+
+    /** Find a file by name anywhere under $dir (the ZIP may nest files in subfolders). */
+    private function findFileInDir(string $dir, string $name): ?string
+    {
+        if (!is_dir($dir)) return null;
+        $it = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+        );
+        foreach ($it as $f) {
+            if ($f->isFile() && strcasecmp($f->getFilename(), $name) === 0) {
+                return $f->getPathname();
+            }
+        }
+        return null;
+    }
+
+    /** Recursively delete a directory and all its contents (files and subfolders). */
+    private function deleteDir(string $dir): void
+    {
+        if (!is_dir($dir)) return;
+        $it = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($it as $f) {
+            $f->isDir() ? @rmdir($f->getPathname()) : @unlink($f->getPathname());
+        }
+        @rmdir($dir);
     }
 
     // ── Certificate Excel import (no ZIP required) ──────────────────
