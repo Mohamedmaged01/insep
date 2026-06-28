@@ -657,19 +657,32 @@ class DashboardWebController extends Controller
         }
 
         $imported = 0;
-        foreach (array_slice($rows, 1) as $row) {
-            if (empty($row[$emailIdx])) continue;
+        $skipped  = 0;
+        foreach (array_slice($rows, 1) as $i => $row) {
+            // A safe cell reader: returns null when the header column is missing
+            $cell = fn($idx) => ($idx !== false && isset($row[$idx]) && trim((string) $row[$idx]) !== '')
+                ? trim((string) $row[$idx]) : null;
 
-            $student  = User::where('email', trim($row[$emailIdx]))->first();
-            if (!$student) continue;
+            $email = $cell($emailIdx);
+            if (!$email) { continue; } // blank line — ignore silently
 
-            $customSerial = ($codeIdx !== false && !empty($row[$codeIdx])) ? trim($row[$codeIdx]) : null;
+            $student = User::where('email', $email)->first();
+            if (!$student) { $skipped++; continue; }
+
+            // Only set course/batch if they actually exist, otherwise leave null (no FK error)
+            $courseId = $cell($courseIdx);
+            $courseId = ($courseId && Course::whereKey($courseId)->exists()) ? $courseId : null;
+
+            $batchId = $cell($batchIdx);
+            $batchId = ($batchId && Batch::whereKey($batchId)->exists()) ? $batchId : null;
+
+            $customSerial = $cell($codeIdx);
             $tempRef      = uniqid();
 
             $fileUrl = null;
-            if ($fileNameIdx !== false && !empty($row[$fileNameIdx])) {
-                $fileName = trim($row[$fileNameIdx]);
-                $srcFile  = $tempDir . '/' . $fileName;
+            $fileName = $cell($fileNameIdx);
+            if ($fileName) {
+                $srcFile = $tempDir . '/' . $fileName;
                 // The ZIP may wrap files in a subfolder; search recursively by name as a fallback
                 if (!is_file($srcFile)) {
                     $srcFile = $this->findFileInDir($tempDir, basename($fileName));
@@ -681,27 +694,36 @@ class DashboardWebController extends Controller
                 }
             }
 
-            $cert = Certificate::create([
-                'serial_number' => $customSerial ?? ('TEMP-' . $tempRef),
-                'student_id'    => $student->id,
-                'course_id'     => $row[$courseIdx] ?? null,
-                'batch_id'      => ($batchIdx !== false && !empty($row[$batchIdx])) ? $row[$batchIdx] : null,
-                'title'         => 'شهادة إتمام الدورة',
-                'issue_date'    => now()->toDateString(),
-                'status'        => 'active',
-                'file_url'      => $fileUrl,
-                'type'          => 'bulk',
-                'created_by'    => auth()->id(),
-            ]);
-            if (!$customSerial) {
-                $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
+            try {
+                $cert = Certificate::create([
+                    'serial_number' => $customSerial ?: ('TEMP-' . $tempRef),
+                    'student_id'    => $student->id,
+                    'course_id'     => $courseId,
+                    'batch_id'      => $batchId,
+                    'title'         => 'شهادة إتمام الدورة',
+                    'issue_date'    => now()->toDateString(),
+                    'status'        => 'active',
+                    'file_url'      => $fileUrl,
+                    'type'          => 'bulk',
+                    'created_by'    => auth()->id(),
+                ]);
+                if (!$customSerial) {
+                    $cert->update(['serial_number' => $this->formatSerial($cert->id)]);
+                }
+                $imported++;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Bulk certificate row failed', ['row' => $i + 2, 'email' => $email, 'error' => $e->getMessage()]);
+                $skipped++;
             }
-            $imported++;
         }
 
         $this->deleteDir($tempDir);
 
-        return back()->with('success', "تم استيراد {$imported} شهادة بنجاح");
+        $msg = $this->isAr()
+            ? "تم استيراد {$imported} شهادة" . ($skipped ? " — تم تجاهل {$skipped} صف (بريد غير موجود أو بيانات خاطئة)" : '')
+            : "Imported {$imported} certificate(s)" . ($skipped ? " — skipped {$skipped} row(s) (unknown email or bad data)" : '');
+
+        return back()->with('success', $msg);
     }
 
     /** Find a file by name anywhere under $dir (the ZIP may nest files in subfolders). */
