@@ -88,6 +88,23 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="px-3 py-1 rounded-lg text-xs font-bold {{ $enr->status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">{{ $enr->status === 'active' ? ($isAr ? 'نشط' : 'Active') : $enr->status }}</span>
+                        {{-- Upload certificate (create new, or replace file if one exists) --}}
+                        @if(auth()->user()->role !== 'instructor')
+                        <form method="POST"
+                              action="{{ $cert ? route('dashboard.certificates.upload-file', $cert->id) : route('dashboard.certificates.store') }}"
+                              enctype="multipart/form-data" class="inline">
+                            @csrf
+                            @unless($cert)
+                                <input type="hidden" name="student_id" value="{{ $enr->student_id }}">
+                                <input type="hidden" name="course_id" value="{{ $batch->course_id }}">
+                                <input type="hidden" name="batch_id" value="{{ $batch->id }}">
+                            @endunless
+                            <label class="p-1.5 rounded-lg hover:bg-navy/5 text-navy transition-colors cursor-pointer inline-flex" title="{{ $cert ? ($isAr ? 'استبدال ملف الشهادة' : 'Replace Certificate File') : ($isAr ? 'رفع الشهادة' : 'Upload Certificate') }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+                                <input type="file" name="certificate_file" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="this.form.submit()">
+                            </label>
+                        </form>
+                        @endif
                         {{-- Certificate button --}}
                         <button
                             @click="openCertModal({
