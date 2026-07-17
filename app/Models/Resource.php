@@ -3,14 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasTranslations;
 
 class Resource extends Model
 {
+    use HasTranslations;
+
     public $timestamps = false;
+
+    protected array $translatable = ['title'];
 
     protected $fillable = [
         'title', 'type', 'file_url', 'size', 'instructor_id',
         'course_id', 'batch_id', 'downloads',
+        'title_ar', 'title_en',
     ];
 
     protected $casts = [

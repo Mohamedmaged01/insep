@@ -28,8 +28,8 @@
             <div class="relative h-44 bg-gray-100">
                 @if($item->image)
                 <img src="{{ str_starts_with($item->image, 'http') ? $item->image : asset('storage/' . ltrim($item->image, '/')) }}"
-                     alt="{{ $item->title }}" class="w-full h-full object-cover"
-                     onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($item->title) }}&background=1B2B4B&color=fff&size=400&bold=true'">
+                     alt="{{ $item->tr('title') }}" class="w-full h-full object-cover"
+                     onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($item->tr('title')) }}&background=1B2B4B&color=fff&size=400&bold=true'">
                 @else
                 <div class="w-full h-full flex items-center justify-center text-gray-300">
                     <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 002 2zm0 0a2 2 0 002-2V8a2 2 0 00-2-2h-2M9 9h6M9 13h6M9 17h3"/></svg>
@@ -46,9 +46,9 @@
                 @endif
             </div>
             <div class="p-5 flex flex-col flex-1">
-                <h3 class="font-black text-navy text-base mb-2 line-clamp-2">{{ $item->title }}</h3>
-                @if($item->description)
-                <p class="text-gray-500 text-sm leading-relaxed mb-3 line-clamp-3">{{ $item->description }}</p>
+                <h3 class="font-black text-navy text-base mb-2 line-clamp-2">{{ $item->tr('title') }}</h3>
+                @if($item->tr('description'))
+                <p class="text-gray-500 text-sm leading-relaxed mb-3 line-clamp-3">{{ $item->tr('description') }}</p>
                 @endif
                 <p class="text-gray-400 text-xs mb-4">{{ $item->date ?? optional($item->created_at)->format('Y-m-d') }}</p>
                 <div class="flex gap-2 mt-auto pt-4 border-t border-gray-100">
@@ -97,12 +97,14 @@
 
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'عنوان المقال' : 'Title' }} *</label>
-                    <input type="text" name="title" x-model="form.title" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="title_ar" x-model="form.title_ar" dir="rtl" placeholder="{{ $isAr ? 'العنوان بالعربية' : 'Title (Arabic)' }}" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="title_en" x-model="form.title_en" dir="ltr" placeholder="Title (English)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
 
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'محتوى المقال' : 'Content' }}</label>
-                    <textarea name="description" x-model="form.description" rows="5" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="description_ar" x-model="form.description_ar" dir="rtl" rows="5" placeholder="{{ $isAr ? 'المحتوى بالعربية' : 'Content (Arabic)' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="description_en" x-model="form.description_en" dir="ltr" rows="5" placeholder="Content (English)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
 
                 <div>
@@ -140,18 +142,20 @@ function newsManager() {
     return {
         showModal: false,
         editing: false,
-        form: { id: null, title: '', description: '', video_url: '', tag: '', date: '', image: '' },
+        form: { id: null, title_ar: '', title_en: '', description_ar: '', description_en: '', video_url: '', tag: '', date: '', image: '' },
         openCreate() {
             this.editing = false;
-            this.form = { id: null, title: '', description: '', video_url: '', tag: '', date: '', image: '' };
+            this.form = { id: null, title_ar: '', title_en: '', description_ar: '', description_en: '', video_url: '', tag: '', date: '', image: '' };
             this.showModal = true;
         },
         openEdit(item) {
             this.editing = true;
             this.form = {
                 id: item.id,
-                title: item.title || '',
-                description: item.description || '',
+                title_ar: item.title_ar || item.title || '',
+                title_en: item.title_en || '',
+                description_ar: item.description_ar || item.description || '',
+                description_en: item.description_en || '',
                 video_url: item.video_url || '',
                 tag: item.tag || '',
                 date: item.date || '',

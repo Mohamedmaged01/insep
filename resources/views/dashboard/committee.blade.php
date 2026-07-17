@@ -27,26 +27,26 @@
         <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center text-center shadow-sm">
             @if($member->image)
             <img src="{{ str_starts_with($member->image, 'http') ? $member->image : asset('storage/' . ltrim($member->image, '/')) }}"
-                 alt="{{ $member->name }}"
+                 alt="{{ $member->tr('name') }}"
                  class="w-24 h-24 rounded-full object-cover mb-4 border-4 border-navy/10"
-                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($member->name) }}&background=1B2B4B&color=fff&size=96'">
+                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($member->tr('name')) }}&background=1B2B4B&color=fff&size=96'">
             @else
             <div class="w-24 h-24 rounded-full bg-navy flex items-center justify-center mb-4 text-white text-2xl font-black">
-                {{ mb_substr($member->name, 0, 1) }}
+                {{ mb_substr($member->tr('name'), 0, 1) }}
             </div>
             @endif
-            <h3 class="font-black text-navy text-lg mb-1">{{ $member->name }}</h3>
-            @if($member->title)
-            <p class="text-red-brand font-bold text-sm mb-1">{{ $member->title }}</p>
+            <h3 class="font-black text-navy text-lg mb-1">{{ $member->tr('name') }}</h3>
+            @if($member->tr('title'))
+            <p class="text-red-brand font-bold text-sm mb-1">{{ $member->tr('title') }}</p>
             @endif
-            @if($member->specialization)
-            <p class="text-gray-500 text-xs mb-3">{{ $member->specialization }}</p>
+            @if($member->tr('specialization'))
+            <p class="text-gray-500 text-xs mb-3">{{ $member->tr('specialization') }}</p>
             @endif
-            @if($member->bio)
-            <p class="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">{{ $member->bio }}</p>
+            @if($member->tr('bio'))
+            <p class="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">{{ $member->tr('bio') }}</p>
             @endif
             <div class="flex gap-2 mt-auto pt-4 border-t border-gray-100 w-full justify-center">
-                <button @click="openEdit({{ $member->id }}, {{ json_encode($member->name) }}, {{ json_encode($member->title ?? '') }}, {{ json_encode($member->specialization ?? '') }}, {{ json_encode($member->bio ?? '') }}, {{ json_encode($member->image ?? '') }}, {{ $member->order }})"
+                <button @click="openEdit(@js($member))"
                     class="px-4 py-2 bg-yellow-50 text-yellow-600 rounded-xl text-xs font-bold hover:bg-yellow-100 transition-colors">
                     {{ $isAr ? 'تعديل' : 'Edit' }}
                 </button>
@@ -79,19 +79,23 @@
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الاسم الكامل' : 'Full Name' }} *</label>
-                    <input type="text" name="name" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="name_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="name_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المنصب / اللقب' : 'Title / Position' }}</label>
-                    <input type="text" name="title" placeholder="{{ $isAr ? 'مثال: أستاذ دكتور' : 'e.g. Professor' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="title_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="title_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'التخصص' : 'Specialization' }}</label>
-                    <input type="text" name="specialization" placeholder="{{ $isAr ? 'مثال: علم وظائف الأعضاء الرياضي' : 'e.g. Sports Physiology' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="specialization_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="specialization_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'نبذة مختصرة' : 'Short Bio' }}</label>
-                    <textarea name="bio" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="bio_ar" dir="rtl" rows="3" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="bio_en" dir="ltr" rows="3" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'ترتيب الظهور' : 'Display Order' }}</label>
@@ -121,19 +125,23 @@
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الاسم الكامل' : 'Full Name' }} *</label>
-                    <input type="text" name="name" x-model="editItem.name" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="name_ar" x-model="editItem.name_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="name_en" x-model="editItem.name_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المنصب / اللقب' : 'Title / Position' }}</label>
-                    <input type="text" name="title" x-model="editItem.title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="title_ar" x-model="editItem.title_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="title_en" x-model="editItem.title_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'التخصص' : 'Specialization' }}</label>
-                    <input type="text" name="specialization" x-model="editItem.specialization" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="specialization_ar" x-model="editItem.specialization_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <input type="text" name="specialization_en" x-model="editItem.specialization_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'نبذة مختصرة' : 'Short Bio' }}</label>
-                    <textarea name="bio" x-model="editItem.bio" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="bio_ar" x-model="editItem.bio_ar" dir="rtl" rows="3" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="bio_en" x-model="editItem.bio_en" dir="ltr" rows="3" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'ترتيب الظهور' : 'Display Order' }}</label>
@@ -154,9 +162,16 @@ function committeeManager() {
     return {
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, name: '', title: '', specialization: '', bio: '', image: '', order: 0 },
-        openEdit(id, name, title, specialization, bio, image, order) {
-            this.editItem = { id, name, title, specialization, bio, image: image || '', order: order || 0 };
+        editItem: { id: null, name_ar: '', name_en: '', title_ar: '', title_en: '', specialization_ar: '', specialization_en: '', bio_ar: '', bio_en: '', image: '', order: 0 },
+        openEdit(m) {
+            this.editItem = {
+                id: m.id,
+                name_ar: m.name_ar || m.name || '', name_en: m.name_en || '',
+                title_ar: m.title_ar || m.title || '', title_en: m.title_en || '',
+                specialization_ar: m.specialization_ar || m.specialization || '', specialization_en: m.specialization_en || '',
+                bio_ar: m.bio_ar || m.bio || '', bio_en: m.bio_en || '',
+                image: m.image || '', order: m.order || 0
+            };
             this.showEditModal = true;
         }
     };

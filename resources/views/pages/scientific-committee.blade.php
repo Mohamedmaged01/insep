@@ -30,29 +30,29 @@
                 <div class="p-6">
                     @if($member->image)
                     <img src="{{ str_starts_with($member->image, 'http') ? $member->image : asset('storage/' . ltrim($member->image, '/')) }}"
-                         alt="{{ $member->name }}"
+                         alt="{{ $member->tr('name') }}"
                          class="w-28 h-28 rounded-full object-cover mx-auto mb-4 border-4 border-white shadow-lg -mt-10 relative z-10"
-                         onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($member->name) }}&background=1B2B4B&color=fff&size=112'">
+                         onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($member->tr('name')) }}&background=1B2B4B&color=fff&size=112'">
                     @else
                     <div class="w-28 h-28 rounded-full bg-gradient-to-br from-navy to-navy-light flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg -mt-10 relative z-10 text-white text-3xl font-black">
-                        {{ mb_substr($member->name, 0, 1) }}
+                        {{ mb_substr($member->tr('name'), 0, 1) }}
                     </div>
                     @endif
 
-                    <h3 class="font-black text-navy text-lg mb-1 leading-snug">{{ $member->name }}</h3>
+                    <h3 class="font-black text-navy text-lg mb-1 leading-snug">{{ $member->tr('name') }}</h3>
 
-                    @if($member->title)
-                    <p class="text-red-brand font-bold text-sm mb-1">{{ $member->title }}</p>
+                    @if($member->tr('title'))
+                    <p class="text-red-brand font-bold text-sm mb-1">{{ $member->tr('title') }}</p>
                     @endif
 
-                    @if($member->specialization)
+                    @if($member->tr('specialization'))
                     <div class="inline-block bg-navy/5 text-navy px-3 py-1 rounded-full text-xs font-semibold mb-3">
-                        {{ $member->specialization }}
+                        {{ $member->tr('specialization') }}
                     </div>
                     @endif
 
-                    @if($member->bio)
-                    <p class="text-gray-500 text-sm leading-relaxed line-clamp-4">{{ $member->bio }}</p>
+                    @if($member->tr('bio'))
+                    <p class="text-gray-500 text-sm leading-relaxed line-clamp-4">{{ $member->tr('bio') }}</p>
                     @endif
                 </div>
             </div>

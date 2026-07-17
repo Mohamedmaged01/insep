@@ -16,12 +16,18 @@ class NewsController extends Controller
     private function payload(Request $request): array
     {
         $data = array_filter([
-            'title'       => $request->input('title'),
-            'description' => $request->input('description', $request->input('body', $request->input('content'))),
-            'tag'         => $request->input('tag'),
-            'date'        => $request->input('date'),
-            'video_url'   => $request->input('video_url'),
+            'tag'       => $request->input('tag'),
+            'date'      => $request->input('date'),
+            'video_url' => $request->input('video_url'),
         ], fn($v) => $v !== null);
+
+        // Bilingual title/description (+ legacy alias support: body/content → description)
+        $input = $request->all();
+        $input['description'] = $input['description'] ?? $input['body'] ?? $input['content'] ?? null;
+        $data = array_merge($data, array_filter(
+            (new News)->fillTranslatable($input),
+            fn($v) => $v !== null
+        ));
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('news', 'public');

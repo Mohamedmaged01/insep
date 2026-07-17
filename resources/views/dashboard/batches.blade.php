@@ -43,7 +43,7 @@
                     @forelse($batches as $i => $batch)
                     <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $i + 1 }}</td>
-                        <td class="px-6 py-4 font-bold text-navy text-sm">{{ $batch->name }}</td>
+                        <td class="px-6 py-4 font-bold text-navy text-sm">{{ $batch->tr('name') }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $batch->course->title ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $batch->instructor->name ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $batch->start_date ?? '-' }}</td>
@@ -93,7 +93,7 @@
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
                                 @if(auth()->user()->role !== 'instructor')
-                                <button @click="openEdit({{ $batch->id }}, '{{ addslashes($batch->name) }}', {{ $batch->course_id }}, {{ $batch->instructor_id }}, '{{ $batch->start_date ?? '' }}', '{{ $batch->end_date ?? '' }}', {{ $batch->max_students }}, '{{ $batch->status ?? 'active' }}')"
+                                <button @click="openEdit(@js($batch))"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -130,7 +130,8 @@
                 @csrf
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'اسم المجموعة' : 'Batch Name' }}</label>
-                    <input type="text" name="name" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="name_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="name_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الدورة' : 'Course' }}</label>
@@ -189,7 +190,8 @@
                 @csrf @method('PUT')
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'اسم المجموعة' : 'Batch Name' }}</label>
-                    <input type="text" name="name" x-model="editItem.name" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="name_ar" x-model="editItem.name_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="name_en" x-model="editItem.name_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الدورة' : 'Course' }}</label>
@@ -243,9 +245,14 @@ function batchesManager() {
     return {
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, name: '', course_id: '', instructor_id: '', start_date: '', end_date: '', max_students: 30, status: 'active' },
-        openEdit(id, name, course_id, instructor_id, start_date, end_date, max_students, status) {
-            this.editItem = { id, name, course_id, instructor_id, start_date, end_date, max_students, status };
+        editItem: { id: null, name_ar: '', name_en: '', course_id: '', instructor_id: '', start_date: '', end_date: '', max_students: 30, status: 'active' },
+        openEdit(b) {
+            this.editItem = {
+                id: b.id, name_ar: b.name_ar || b.name || '', name_en: b.name_en || '',
+                course_id: b.course_id || '', instructor_id: b.instructor_id || '',
+                start_date: b.start_date || '', end_date: b.end_date || '',
+                max_students: b.max_students || 30, status: b.status || 'active'
+            };
             this.showEditModal = true;
         }
     };

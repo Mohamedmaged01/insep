@@ -5,14 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Resource;
 use App\Models\LiveSession;
+use App\Models\Concerns\HasTranslations;
 
 class Batch extends Model
 {
+    use HasTranslations;
+
     public $timestamps = false;
+
+    protected array $translatable = ['name'];
 
     protected $fillable = [
         'name', 'course_id', 'instructor_id', 'start_date',
         'end_date', 'status', 'max_students',
+        'name_ar', 'name_en',
     ];
 
     protected $casts = [

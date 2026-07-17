@@ -73,7 +73,7 @@
                 <tbody>
                     @forelse($courses as $i => $course)
                     <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
-                        x-show="!search || '{{ addslashes($course->title) }} {{ $course->category }}'.toLowerCase().includes(search.toLowerCase())">
+                        x-show="!search || '{{ addslashes($course->tr('title')) }} {{ $course->category }}'.toLowerCase().includes(search.toLowerCase())">
                         <td class="px-6 py-4 text-sm text-gray-500">{{ $i + 1 }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
@@ -85,7 +85,7 @@
                                     <svg class="w-5 h-5 text-navy/30" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                                 </div>
                                 @endif
-                                <span class="font-bold text-navy text-sm">{{ $course->title }}</span>
+                                <span class="font-bold text-navy text-sm">{{ $course->tr('title') }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">{{ $course->section->name_ar ?? '-' }}</td>
@@ -119,7 +119,7 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
                                 @if(auth()->user()->role !== 'instructor')
-                                <button @click="openEdit({{ $course->id }}, {{ json_encode($course->title) }}, {{ json_encode($course->description ?? '') }}, {{ json_encode($course->category ?? '') }}, {{ $course->price ?? 0 }}, {{ json_encode($course->currency ?? 'USD') }}, {{ json_encode($course->duration ?? '') }}, {{ json_encode($course->level ?? '') }}, {{ json_encode($course->status ?? 'active') }}, {{ $course->section_id ?? 'null' }}, {{ json_encode($course->image ?? '') }}, {{ json_encode($course->content ?? '') }}, {{ json_encode($course->features ?? '') }}, {{ json_encode($course->accreditation ?? '') }}, {{ json_encode($course->job_opportunities ?? '') }}, {{ json_encode($course->promo_video ?? '') }}, {{ $course->is_featured ? 1 : 0 }})"
+                                <button @click="openEdit(@js($course))"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -259,27 +259,33 @@
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'عنوان الدورة' : 'Course Title' }}</label>
-                    <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_ar" dir="rtl" placeholder="{{ $isAr ? 'العنوان بالعربية' : 'Title (Arabic)' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_en" dir="ltr" placeholder="Title (English)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف المختصر' : 'Short Description' }}</label>
-                    <textarea name="description" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <textarea name="description_ar" dir="rtl" rows="2" placeholder="{{ $isAr ? 'الوصف بالعربية' : 'Description (Arabic)' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <textarea name="description_en" dir="ltr" rows="2" placeholder="Description (English)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'محتوى الدورة (وحدات وموضوعات)' : 'Course Content (modules & topics)' }}</label>
-                    <textarea name="content" rows="4" placeholder="{{ $isAr ? 'مثال: الوحدة الأولى: المقدمة\nالوحدة الثانية: التطبيق العملي' : 'e.g. Module 1: Introduction\nModule 2: Practical Application' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="content_ar" dir="rtl" rows="4" placeholder="{{ $isAr ? 'المحتوى بالعربية' : 'Content (Arabic)' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="content_en" dir="ltr" rows="4" placeholder="Content (English)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'مميزات الدورة (سطر لكل ميزة)' : 'Course Features (one per line)' }}</label>
-                    <textarea name="features" rows="3" placeholder="{{ $isAr ? 'مثال: شهادة معتمدة دولياً\nمواد تدريبية متكاملة' : 'e.g. Internationally accredited certificate\nComprehensive training materials' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="features_ar" dir="rtl" rows="3" placeholder="{{ $isAr ? 'المميزات بالعربية' : 'Features (Arabic)' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="features_en" dir="ltr" rows="3" placeholder="Features (English)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الاعتماد والجهة المانحة' : 'Accreditation & Issuing Body' }}</label>
-                    <textarea name="accreditation" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="accreditation_ar" dir="rtl" rows="2" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="accreditation_en" dir="ltr" rows="2" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'فرص العمل (سطر لكل فرصة)' : 'Job Opportunities (one per line)' }}</label>
-                    <textarea name="job_opportunities" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="job_opportunities_ar" dir="rtl" rows="3" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="job_opportunities_en" dir="ltr" rows="3" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'رابط فيديو البرومو (يوتيوب)' : 'Promo Video URL (YouTube)' }}</label>
@@ -334,7 +340,8 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المدة' : 'Duration' }}</label>
-                        <input type="text" name="duration" placeholder="{{ $isAr ? 'مثال: 30 ساعة' : 'e.g. 30 hours' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <input type="text" name="duration_ar" dir="rtl" placeholder="{{ $isAr ? 'مثال: 30 ساعة' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <input type="text" name="duration_en" dir="ltr" placeholder="e.g. 30 hours" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                     </div>
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحالة' : 'Status' }}</label>
@@ -372,27 +379,33 @@
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'عنوان الدورة' : 'Course Title' }}</label>
-                    <input type="text" name="title" x-model="editItem.title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_ar" x-model="editItem.title_ar" dir="rtl" placeholder="{{ $isAr ? 'العنوان بالعربية' : 'Title (Arabic)' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_en" x-model="editItem.title_en" dir="ltr" placeholder="Title (English)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف المختصر' : 'Short Description' }}</label>
-                    <textarea name="description" x-model="editItem.description" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <textarea name="description_ar" x-model="editItem.description_ar" dir="rtl" rows="2" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <textarea name="description_en" x-model="editItem.description_en" dir="ltr" rows="2" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'محتوى الدورة (وحدات وموضوعات)' : 'Course Content (modules & topics)' }}</label>
-                    <textarea name="content" x-model="editItem.content" rows="4" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="content_ar" x-model="editItem.content_ar" dir="rtl" rows="4" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="content_en" x-model="editItem.content_en" dir="ltr" rows="4" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'مميزات الدورة (سطر لكل ميزة)' : 'Course Features (one per line)' }}</label>
-                    <textarea name="features" x-model="editItem.features" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="features_ar" x-model="editItem.features_ar" dir="rtl" rows="3" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="features_en" x-model="editItem.features_en" dir="ltr" rows="3" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الاعتماد والجهة المانحة' : 'Accreditation & Issuing Body' }}</label>
-                    <textarea name="accreditation" x-model="editItem.accreditation" rows="2" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="accreditation_ar" x-model="editItem.accreditation_ar" dir="rtl" rows="2" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="accreditation_en" x-model="editItem.accreditation_en" dir="ltr" rows="2" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'فرص العمل (سطر لكل فرصة)' : 'Job Opportunities (one per line)' }}</label>
-                    <textarea name="job_opportunities" x-model="editItem.job_opportunities" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="job_opportunities_ar" x-model="editItem.job_opportunities_ar" dir="rtl" rows="3" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm"></textarea>
+                    <textarea name="job_opportunities_en" x-model="editItem.job_opportunities_en" dir="ltr" rows="3" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors text-sm mt-2"></textarea>
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'رابط فيديو البرومو (يوتيوب)' : 'Promo Video URL (YouTube)' }}</label>
@@ -449,7 +462,8 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المدة' : 'Duration' }}</label>
-                        <input type="text" name="duration" x-model="editItem.duration" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <input type="text" name="duration_ar" x-model="editItem.duration_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                        <input type="text" name="duration_en" x-model="editItem.duration_en" dir="ltr" placeholder="e.g. 30 hours" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                     </div>
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الحالة' : 'Status' }}</label>
@@ -527,14 +541,20 @@ function coursesManager() {
             });
             form.submit();
         },
-        openEdit(id, title, description, category, price, currency, duration, level, status, section_id, image, content, features, accreditation, job_opportunities, promo_video, is_featured) {
+        openEdit(c) {
             this.editItem = {
-                id, title, description, category, price,
-                currency: currency || 'USD', duration, level, status,
-                section_id: section_id || '', image: image || '',
-                content: content || '', features: features || '',
-                accreditation: accreditation || '', job_opportunities: job_opportunities || '',
-                promo_video: promo_video || '', is_featured: !!is_featured
+                id: c.id,
+                title_ar: c.title_ar || c.title || '', title_en: c.title_en || '',
+                description_ar: c.description_ar || c.description || '', description_en: c.description_en || '',
+                content_ar: c.content_ar || c.content || '', content_en: c.content_en || '',
+                features_ar: c.features_ar || c.features || '', features_en: c.features_en || '',
+                accreditation_ar: c.accreditation_ar || c.accreditation || '', accreditation_en: c.accreditation_en || '',
+                job_opportunities_ar: c.job_opportunities_ar || c.job_opportunities || '', job_opportunities_en: c.job_opportunities_en || '',
+                duration_ar: c.duration_ar || c.duration || '', duration_en: c.duration_en || '',
+                category: c.category || '', price: c.price || 0, currency: c.currency || 'USD',
+                level: c.level || '', status: c.status || 'active',
+                section_id: c.section_id || '', image: c.image || '',
+                promo_video: c.promo_video || '', is_featured: !!c.is_featured
             };
             this.showEditModal = true;
         }

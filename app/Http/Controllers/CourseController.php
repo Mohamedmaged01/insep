@@ -45,7 +45,9 @@ class CourseController extends Controller
 
     public function update(Request $request, $id)
     {
-        Course::where('id', $id)->update($request->all());
+        $course = Course::find($id);
+        if (!$course) return response()->json(['message' => 'الدورة غير موجودة'], 404);
+        $course->update($request->all());
         return $this->show($id);
     }
 

@@ -3,15 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasTranslations;
 
 class Course extends Model
 {
+    use HasTranslations;
+
     public $timestamps = false;
+
+    protected array $translatable = [
+        'title', 'description', 'content', 'features', 'accreditation', 'job_opportunities', 'duration',
+    ];
 
     protected $fillable = [
         'title', 'description', 'content', 'features', 'accreditation', 'job_opportunities',
         'category', 'price', 'currency', 'duration', 'level', 'image', 'promo_video',
         'status', 'is_featured', 'home_order', 'rating', 'student_count', 'section_id',
+        // bilingual variants
+        'title_ar', 'title_en', 'description_ar', 'description_en', 'content_ar', 'content_en',
+        'features_ar', 'features_en', 'accreditation_ar', 'accreditation_en',
+        'job_opportunities_ar', 'job_opportunities_en', 'duration_ar', 'duration_en',
     ];
 
     protected $casts = [

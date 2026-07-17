@@ -21,8 +21,8 @@
         </div>
         @endif
         <div>
-            <h1 class="text-2xl font-black text-navy">{{ $batch->name }}</h1>
-            <p class="text-gray-500 text-sm">{{ $batch->course->title ?? '-' }} &bull; {{ $batch->instructor->name ?? '-' }}</p>
+            <h1 class="text-2xl font-black text-navy">{{ $batch->tr('name') }}</h1>
+            <p class="text-gray-500 text-sm">{{ $batch->course?->tr('title') ?: '-' }} &bull; {{ $batch->instructor->name ?? '-' }}</p>
         </div>
         <div class="mr-auto">
             <span class="px-3 py-1.5 rounded-xl text-xs font-bold {{ $batch->status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
@@ -167,7 +167,7 @@
                                 @endif
                             </div>
                             <div>
-                                <p class="font-bold text-navy text-sm">{{ $res->title }}</p>
+                                <p class="font-bold text-navy text-sm">{{ $res->tr('title') }}</p>
                                 <p class="text-xs text-gray-500">{{ $res->type ?? 'PDF' }}</p>
                             </div>
                         </div>
@@ -213,7 +213,7 @@
                 @foreach($liveSessions as $sess)
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div>
-                        <p class="font-bold text-navy text-sm">{{ $sess->title }}</p>
+                        <p class="font-bold text-navy text-sm">{{ $sess->tr('title') }}</p>
                         <p class="text-xs text-gray-500" style="font-family:'Roboto',sans-serif">{{ $sess->scheduled_at ?? '-' }}</p>
                     </div>
                     <div class="flex items-center gap-3">
@@ -272,7 +272,8 @@
                 <input type="hidden" name="course_id" value="{{ $batch->course_id }}">
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'العنوان' : 'Title' }}</label>
-                    <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'نوع المحتوى' : 'Content Type' }}</label>
@@ -459,7 +460,8 @@
                 <input type="hidden" name="batch_id" value="{{ $batch->id }}">
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'عنوان الجلسة' : 'Session Title' }}</label>
-                    <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'رابط البث' : 'Session Link' }}</label>

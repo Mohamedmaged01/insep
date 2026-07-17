@@ -3,14 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasTranslations;
 
 class LiveSession extends Model
 {
+    use HasTranslations;
+
     public $timestamps = false;
+
+    protected array $translatable = ['title'];
 
     protected $fillable = [
         'title', 'live_url', 'batch_id', 'instructor_id',
         'scheduled_at', 'status',
+        'title_ar', 'title_en',
     ];
 
     protected $casts = [

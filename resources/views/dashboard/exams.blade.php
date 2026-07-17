@@ -71,7 +71,7 @@
                 <tbody>
                     @forelse($exams as $exam)
                     <tr class="border-b border-gray-50 hover:bg-gray-50/50">
-                        <td class="px-6 py-4 font-bold text-navy text-sm">{{ $exam->title }}</td>
+                        <td class="px-6 py-4 font-bold text-navy text-sm">{{ $exam->tr('title') }}</td>
                         <td class="px-6 py-4 text-sm text-gray-600">
                             @if($exam->batch)
                             <a href="{{ route('dashboard.exams') }}?batch={{ $exam->batch_id }}" class="font-bold text-navy hover:underline">{{ $exam->batch->name }}</a>
@@ -102,7 +102,7 @@
                         @if(auth()->user()->role !== 'student')
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2">
-                                <button @click="openEdit({{ $exam->id }}, '{{ addslashes($exam->title) }}', {{ $exam->batch_id ?? 'null' }}, {{ $exam->course_id }}, '{{ $exam->type }}', {{ $exam->questions }}, '{{ $exam->duration ?? '' }}', {{ $exam->attempts }}, '{{ $exam->status }}', '{{ addslashes($exam->exam_link ?? '') }}')"
+                                <button @click="openEdit(@js($exam))"
                                     class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
@@ -140,7 +140,8 @@
                 <input type="hidden" name="batch_id_default" value="{{ $activeBatch?->id ?? '' }}">
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'عنوان الاختبار' : 'Exam Title' }}</label>
-                    <input type="text" name="title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المجموعة' : 'Batch' }}</label>
@@ -214,7 +215,8 @@
                 @csrf @method('PUT')
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'عنوان الاختبار' : 'Exam Title' }}</label>
-                    <input type="text" name="title" x-model="editItem.title" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_ar" x-model="editItem.title_ar" dir="rtl" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors" required>
+                    <input type="text" name="title_en" x-model="editItem.title_en" dir="ltr" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2">
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'المجموعة' : 'Batch' }}</label>
@@ -286,9 +288,14 @@ function examsManager() {
     return {
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, title: '', exam_link: '', batch_id: '', course_id: '', type: 'quiz', questions: 30, duration: '', attempts: 1, status: 'active' },
-        openEdit(id, title, batch_id, course_id, type, questions, duration, attempts, status, exam_link) {
-            this.editItem = { id, title, exam_link: exam_link || '', batch_id: batch_id || '', course_id, type, questions, duration, attempts, status };
+        editItem: { id: null, title_ar: '', title_en: '', exam_link: '', batch_id: '', course_id: '', type: 'quiz', questions: 30, duration: '', attempts: 1, status: 'active' },
+        openEdit(e) {
+            this.editItem = {
+                id: e.id, title_ar: e.title_ar || e.title || '', title_en: e.title_en || '',
+                exam_link: e.exam_link || '', batch_id: e.batch_id || '', course_id: e.course_id || '',
+                type: e.type || 'quiz', questions: e.questions || 30, duration: e.duration || '',
+                attempts: e.attempts || 1, status: e.status || 'active'
+            };
             this.showEditModal = true;
         }
     };

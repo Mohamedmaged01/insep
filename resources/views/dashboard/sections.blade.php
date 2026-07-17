@@ -35,7 +35,7 @@
                     </svg>
                 </div>
                 <div class="flex items-center gap-1">
-                    <button @click="openEdit({{ $section->id }}, '{{ addslashes($section->name_ar) }}', '{{ addslashes($section->name_en) }}', '{{ addslashes($section->description ?? '') }}')"
+                    <button @click="openEdit(@js($section))"
                         class="p-2 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-500" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
@@ -49,8 +49,8 @@
             </div>
             <h3 class="font-black text-navy text-base mb-0.5">{{ $section->name_ar }}</h3>
             <p class="text-gray-400 text-xs mb-2" style="font-family:'Roboto',sans-serif">{{ $section->name_en }}</p>
-            @if($section->description)
-            <p class="text-gray-500 text-sm line-clamp-2 mb-3">{{ $section->description }}</p>
+            @if($section->tr('description'))
+            <p class="text-gray-500 text-sm line-clamp-2 mb-3">{{ $section->tr('description') }}</p>
             @endif
             <div class="flex items-center gap-2 pt-3 border-t border-gray-50">
                 <span class="text-xs text-gray-400">{{ $section->courses_count ?? 0 }} {{ $isAr ? 'دورة' : 'courses' }}</span>
@@ -91,7 +91,8 @@
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف' : 'Description' }}</label>
-                    <textarea name="description" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <textarea name="description_ar" dir="rtl" rows="3" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <textarea name="description_en" dir="ltr" rows="3" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2"></textarea>
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showAddModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
@@ -118,7 +119,8 @@
                 </div>
                 <div>
                     <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'الوصف' : 'Description' }}</label>
-                    <textarea name="description" x-model="editItem.description" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <textarea name="description_ar" x-model="editItem.description_ar" dir="rtl" rows="3" placeholder="{{ $isAr ? 'بالعربية' : 'Arabic' }}" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors"></textarea>
+                    <textarea name="description_en" x-model="editItem.description_en" dir="ltr" rows="3" placeholder="English" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors mt-2"></textarea>
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" @click="showEditModal = false" class="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors">{{ $isAr ? 'إلغاء' : 'Cancel' }}</button>
@@ -135,9 +137,12 @@ function sectionsManager() {
     return {
         showAddModal: false,
         showEditModal: false,
-        editItem: { id: null, name_ar: '', name_en: '', description: '' },
-        openEdit(id, name_ar, name_en, description) {
-            this.editItem = { id, name_ar, name_en, description };
+        editItem: { id: null, name_ar: '', name_en: '', description_ar: '', description_en: '' },
+        openEdit(s) {
+            this.editItem = {
+                id: s.id, name_ar: s.name_ar || '', name_en: s.name_en || '',
+                description_ar: s.description_ar || s.description || '', description_en: s.description_en || ''
+            };
             this.showEditModal = true;
         }
     };

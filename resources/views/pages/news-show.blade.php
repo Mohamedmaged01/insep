@@ -1,13 +1,13 @@
 @extends('layouts.app')
 @php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
-@section('title', ($news->title ?? ($isAr ? 'خبر' : 'News')) . ' - INSEP PRO')
+@section('title', ($news->tr('title') ?? ($isAr ? 'خبر' : 'News')) . ' - INSEP PRO')
 
 @section('content')
 {{-- Hero --}}
 <section class="bg-navy py-16">
     <div class="container mx-auto px-4 text-center">
         <span class="inline-block bg-red-brand text-white px-4 py-1.5 rounded-full text-sm font-bold mb-4">{{ $news->tag ?? ($isAr ? 'أخبار' : 'News') }}</span>
-        <h1 class="text-3xl md:text-4xl font-black text-white mb-4 max-w-3xl mx-auto leading-snug">{{ $news->title }}</h1>
+        <h1 class="text-3xl md:text-4xl font-black text-white mb-4 max-w-3xl mx-auto leading-snug">{{ $news->tr('title') }}</h1>
         @if($news->date ?? $news->created_at)
         <p class="text-white/50 text-sm">{{ $news->date ?? \Carbon\Carbon::parse($news->created_at)->format('Y-m-d') }}</p>
         @endif
@@ -19,7 +19,7 @@
     <div class="container mx-auto px-4 max-w-3xl">
         @if($news->image)
         <div class="rounded-2xl overflow-hidden mb-10 shadow-lg">
-            <img src="{{ str_starts_with($news->image, 'http') ? $news->image : asset('storage/' . ltrim($news->image, '/')) }}" alt="{{ $news->title }}" class="w-full h-72 object-cover">
+            <img src="{{ str_starts_with($news->image, 'http') ? $news->image : asset('storage/' . ltrim($news->image, '/')) }}" alt="{{ $news->tr('title') }}" class="w-full h-72 object-cover">
         </div>
         @endif
 
@@ -42,7 +42,7 @@
         <div class="rounded-2xl overflow-hidden mb-10 shadow-lg bg-black relative" style="padding-top: 56.25%">
             <iframe class="absolute inset-0 w-full h-full"
                 src="{{ $videoEmbed }}"
-                title="{{ $news->title }}"
+                title="{{ $news->tr('title') }}"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen>
@@ -52,7 +52,7 @@
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12">
             <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
-                {!! nl2br(e($news->description ?? '')) !!}
+                {!! nl2br(e($news->tr('description'))) !!}
             </div>
         </div>
 

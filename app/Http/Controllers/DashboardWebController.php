@@ -224,9 +224,11 @@ class DashboardWebController extends Controller
     public function storeSection(Request $request)
     {
         Section::create([
-            'name_ar'     => $request->name_ar,
-            'name_en'     => $request->name_en,
-            'description' => $request->description,
+            'name_ar'        => $request->name_ar,
+            'name_en'        => $request->name_en,
+            'description'    => $request->description_ar ?: $request->description,
+            'description_ar' => $request->description_ar ?: $request->description,
+            'description_en' => $request->description_en,
         ]);
         return back()->with('success', 'تم إضافة الشعبة بنجاح');
     }
@@ -234,9 +236,11 @@ class DashboardWebController extends Controller
     public function updateSection(Request $request, Section $section)
     {
         $section->update([
-            'name_ar'     => $request->name_ar,
-            'name_en'     => $request->name_en,
-            'description' => $request->description,
+            'name_ar'        => $request->name_ar,
+            'name_en'        => $request->name_en,
+            'description'    => $request->description_ar ?: $request->description,
+            'description_ar' => $request->description_ar ?: $request->description,
+            'description_en' => $request->description_en,
         ]);
         return back()->with('success', 'تم تحديث الشعبة بنجاح');
     }
@@ -1417,23 +1421,17 @@ class DashboardWebController extends Controller
     // ── Courses CRUD ───────────────────────────────────────────────
     public function storeCourse(Request $request)
     {
-        $data = [
-            'title'             => $request->title,
-            'description'       => $request->description,
-            'content'           => $request->content,
-            'features'          => $request->features,
-            'accreditation'     => $request->accreditation,
-            'job_opportunities' => $request->job_opportunities,
+        $course = new Course;
+        $data = array_merge([
             'category'          => $request->category,
             'price'             => min((float)($request->price ?? 0), 9999999999999.99),
             'currency'          => $request->currency ?? 'USD',
-            'duration'          => $request->duration,
             'level'             => $request->level,
             'status'            => $request->status ?? 'active',
             'is_featured'       => $request->boolean('is_featured'),
             'promo_video'       => $request->promo_video,
             'section_id'        => $request->section_id ?: null,
-        ];
+        ], $course->fillTranslatable($request->all()));
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('courses', 'public');
         }
@@ -1443,11 +1441,10 @@ class DashboardWebController extends Controller
 
     public function updateCourse(Request $request, Course $course)
     {
-        $data = $request->only([
-            'title', 'description', 'content', 'features', 'accreditation',
-            'job_opportunities', 'category', 'price', 'currency', 'duration',
-            'level', 'status', 'promo_video', 'section_id',
-        ]);
+        $data = array_merge(
+            $request->only(['category', 'price', 'currency', 'level', 'status', 'promo_video', 'section_id']),
+            $course->fillTranslatable($request->all())
+        );
         $data['is_featured'] = $request->boolean('is_featured');
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('courses', 'public');
@@ -1465,7 +1462,10 @@ class DashboardWebController extends Controller
 
     public function storeCommitteeMember(Request $request)
     {
-        $data = $request->only(['name', 'title', 'specialization', 'bio', 'order']);
+        $data = array_merge(
+            $request->only(['order']),
+            (new CommitteeMember)->fillTranslatable($request->all())
+        );
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('committee', 'public');
         }
@@ -1475,7 +1475,10 @@ class DashboardWebController extends Controller
 
     public function updateCommitteeMember(Request $request, CommitteeMember $committeeMember)
     {
-        $data = $request->only(['name', 'title', 'specialization', 'bio', 'order']);
+        $data = array_merge(
+            $request->only(['order']),
+            $committeeMember->fillTranslatable($request->all())
+        );
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('committee', 'public');
         }
@@ -1498,10 +1501,11 @@ class DashboardWebController extends Controller
 
     private function newsData(Request $request, $current = null): array
     {
-        $data = $request->only(['title', 'description', 'tag', 'date', 'video_url']);
+        $data = $request->only(['tag', 'date', 'video_url']);
         if (empty($data['date'])) {
             $data['date'] = now()->toDateString();
         }
+        $data = array_merge($data, ($current ?? new \App\Models\News)->fillTranslatable($request->all()));
         if ($request->hasFile('image')) {
             if ($current && $current->image && !str_starts_with($current->image, 'http')) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($current->image);
@@ -1563,21 +1567,23 @@ class DashboardWebController extends Controller
     public function storeBatch(Request $request)
     {
         abort_if(auth()->user()->role === 'instructor', 403);
-        Batch::create([
-            'name'          => $request->name,
+        Batch::create(array_merge([
             'course_id'     => $request->course_id,
             'instructor_id' => $request->instructor_id,
             'start_date'    => $request->start_date,
             'end_date'      => $request->end_date,
             'max_students'  => $request->max_students ?? 30,
             'status'        => $request->status ?? 'active',
-        ]);
+        ], (new Batch)->fillTranslatable($request->all())));
         return back()->with('success', 'تم إضافة المجموعة بنجاح');
     }
 
     public function updateBatch(Request $request, Batch $batch)
     {
-        $batch->update($request->only(['name', 'course_id', 'instructor_id', 'start_date', 'end_date', 'max_students', 'status']));
+        $batch->update(array_merge(
+            $request->only(['course_id', 'instructor_id', 'start_date', 'end_date', 'max_students', 'status']),
+            $batch->fillTranslatable($request->all())
+        ));
         return back()->with('success', 'تم تحديث المجموعة بنجاح');
     }
 
@@ -1602,14 +1608,13 @@ class DashboardWebController extends Controller
             $path = $request->file('file')->store('resources', 'public');
             $fileUrl = Storage::url($path);
         }
-        Resource::create([
-            'title'         => $request->title,
+        Resource::create(array_merge([
             'type'          => $request->type ?? 'PDF',
             'file_url'      => $fileUrl,
             'course_id'     => $request->course_id ?: null,
             'batch_id'      => $request->batch_id ?: null,
             'instructor_id' => auth()->id(),
-        ]);
+        ], (new Resource)->fillTranslatable($request->all())));
         return back()->with('success', 'تم إضافة المحتوى بنجاح');
     }
 
@@ -1624,7 +1629,10 @@ class DashboardWebController extends Controller
                 403
             );
         }
-        $resource->update($request->only(['title', 'type', 'file_url', 'course_id', 'batch_id']));
+        $resource->update(array_merge(
+            $request->only(['type', 'file_url', 'course_id', 'batch_id']),
+            $resource->fillTranslatable($request->all())
+        ));
         return back()->with('success', 'تم تحديث المحتوى بنجاح');
     }
 
@@ -1753,8 +1761,7 @@ class DashboardWebController extends Controller
             $courseId = Batch::find($batchId)?->course_id;
         }
 
-        Exam::create([
-            'title'     => $request->title,
+        Exam::create(array_merge([
             'course_id' => $courseId,
             'batch_id'  => $batchId,
             'type'      => $request->type ?? 'quiz',
@@ -1763,7 +1770,7 @@ class DashboardWebController extends Controller
             'attempts'  => $request->attempts ?? 1,
             'status'    => $request->status ?? 'active',
             'exam_link' => $request->exam_link ?: null,
-        ]);
+        ], (new Exam)->fillTranslatable($request->all())));
         return back()->with('success', 'تم إضافة الاختبار بنجاح');
     }
 
@@ -1774,7 +1781,10 @@ class DashboardWebController extends Controller
             abort_if($exam->batch_id && !Batch::where('id', $exam->batch_id)->where('instructor_id', $user->id)->exists(), 403);
         }
 
-        $data = $request->only(['title', 'batch_id', 'course_id', 'type', 'questions', 'duration', 'attempts', 'status', 'exam_link']);
+        $data = array_merge(
+            $request->only(['batch_id', 'course_id', 'type', 'questions', 'duration', 'attempts', 'status', 'exam_link']),
+            $exam->fillTranslatable($request->all())
+        );
         if (!empty($data['batch_id']) && empty($data['course_id'])) {
             $data['course_id'] = Batch::find($data['batch_id'])?->course_id;
         }
@@ -1798,14 +1808,13 @@ class DashboardWebController extends Controller
                 403
             );
         }
-        LiveSession::create([
-            'title'         => $request->title,
+        LiveSession::create(array_merge([
             'live_url'      => $request->live_url,
             'batch_id'      => $request->batch_id,
             'instructor_id' => auth()->id(),
             'scheduled_at'  => $request->scheduled_at,
             'status'        => $request->status ?? 'scheduled',
-        ]);
+        ], (new LiveSession)->fillTranslatable($request->all())));
         return back()->with('success', 'تم إضافة جلسة البث بنجاح');
     }
 

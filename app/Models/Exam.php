@@ -3,14 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasTranslations;
 
 class Exam extends Model
 {
+    use HasTranslations;
+
     public $timestamps = false;
+
+    protected array $translatable = ['title'];
 
     protected $fillable = [
         'title', 'course_id', 'batch_id', 'type', 'questions', 'duration',
         'attempts', 'status', 'avg_score', 'exam_link',
+        'title_ar', 'title_en',
     ];
 
     protected $casts = [

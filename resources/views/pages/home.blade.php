@@ -111,13 +111,13 @@
             @forelse($courses as $i => $course)
             <div class="bg-white rounded-2xl overflow-hidden card-hover border border-gray-100 opacity-0 animate-fadeInUp" style="animation-delay: {{ $i * 0.1 }}s; animation-fill-mode: forwards">
                 <div class="relative h-48 overflow-hidden">
-                    <img src="{{ $course->image ? (str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . ltrim($course->image, '/'))) : 'https://ui-avatars.com/api/?name=' . urlencode($course->title) . '&background=1B2B4B&color=fff&size=400&bold=true' }}" alt="{{ $course->title }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($course->title) }}&background=1B2B4B&color=fff&size=400&bold=true'">
+                    <img src="{{ $course->image ? (str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . ltrim($course->image, '/'))) : 'https://ui-avatars.com/api/?name=' . urlencode($course->tr('title')) . '&background=1B2B4B&color=fff&size=400&bold=true' }}" alt="{{ $course->tr('title') }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($course->tr('title')) }}&background=1B2B4B&color=fff&size=400&bold=true'">
                     <div class="absolute top-4 right-4 bg-navy/80 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->category }}</div>
                     <div class="absolute top-4 left-4 bg-red-brand/90 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm">{{ $course->level }}</div>
                 </div>
                 <div class="p-6">
                     <a href="{{ route('course.detail', $course->id) }}">
-                        <h3 class="text-lg font-bold text-navy mb-2 line-clamp-2 hover:text-red-brand transition-colors">{{ $course->title }}</h3>
+                        <h3 class="text-lg font-bold text-navy mb-2 line-clamp-2 hover:text-red-brand transition-colors">{{ $course->tr('title') }}</h3>
                     </a>
                     <p class="text-xs text-gray-400 mb-3 flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5 text-red-brand flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
@@ -126,7 +126,7 @@
                     <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
                         <span class="flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            {{ $course->duration ?? '-' }}
+                            {{ $course->tr('duration') ?: '-' }}
                         </span>
                         <span class="flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
@@ -325,8 +325,8 @@ function statsCounter() {
                     </div>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-lg font-bold text-navy mb-3 group-hover:text-red-brand transition-colors line-clamp-2">{{ $item->title }}</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">{{ $item->description ?? '' }}</p>
+                    <h3 class="text-lg font-bold text-navy mb-3 group-hover:text-red-brand transition-colors line-clamp-2">{{ $item instanceof \App\Models\News ? $item->tr('title') : $item->title }}</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">{{ $item instanceof \App\Models\News ? $item->tr('description') : ($item->description ?? '') }}</p>
                     <span class="text-red-brand font-bold text-sm flex items-center gap-1">{{ $isAr ? 'اقرأ المزيد' : 'Read More' }} <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7"/></svg></span>
                 </div>
             </a>

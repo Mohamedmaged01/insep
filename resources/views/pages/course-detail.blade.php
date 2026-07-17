@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @php $lang = app()->getLocale(); $isAr = $lang === 'ar'; @endphp
-@section('title', 'INSEP PRO - ' . $course->title)
+@section('title', 'INSEP PRO - ' . $course->tr('title'))
 
 @section('content')
 {{-- Hero --}}
@@ -12,7 +12,7 @@
             <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             <a href="{{ route('courses') }}" class="hover:text-white transition-colors">{{ $isAr ? 'البرامج' : 'Courses' }}</a>
             <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            <span class="text-white/90">{{ Str::limit($course->title, 40) }}</span>
+            <span class="text-white/90">{{ Str::limit($course->tr('title'), 40) }}</span>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
             <div class="lg:col-span-2">
@@ -27,13 +27,13 @@
                     </span>
                     @endif
                 </div>
-                <h1 class="text-3xl md:text-4xl font-black text-white mb-4">{{ $course->title }}</h1>
-                <p class="text-white/70 text-lg mb-6">{{ $course->description }}</p>
+                <h1 class="text-3xl md:text-4xl font-black text-white mb-4">{{ $course->tr('title') }}</h1>
+                <p class="text-white/70 text-lg mb-6">{{ $course->tr('description') }}</p>
                 <div class="flex flex-wrap gap-5 text-white/80 text-sm">
-                    @if($course->duration)
+                    @if($course->tr('duration'))
                     <span class="flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        {{ $course->duration }}
+                        {{ $course->tr('duration') }}
                     </span>
                     @endif
                     @if($course->level)
@@ -52,7 +52,7 @@
             <div class="bg-white rounded-2xl p-6 shadow-2xl">
                 @if($course->image)
                 <img src="{{ str_starts_with($course->image, 'http') ? $course->image : asset('storage/' . ltrim($course->image, '/')) }}"
-                     alt="{{ $course->title }}" class="w-full h-40 object-cover rounded-xl mb-5"
+                     alt="{{ $course->tr('title') }}" class="w-full h-40 object-cover rounded-xl mb-5"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
                 <div class="w-full h-40 bg-gradient-to-br from-navy to-navy-light rounded-xl mb-5 items-center justify-center" style="display:none">
                     <svg class="w-12 h-12 text-white/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -74,8 +74,8 @@
                    class="block w-full border-2 border-navy text-navy text-center py-3 rounded-xl font-bold transition-all duration-300 hover:bg-navy hover:text-white text-sm">
                     {{ $isAr ? 'تواصل معنا' : 'Contact Us' }}
                 </a>
-                @if($course->features)
-                @php $featList = array_filter(array_map('trim', explode("\n", $course->features))); @endphp
+                @if($course->tr('features'))
+                @php $featList = array_filter(array_map('trim', explode("\n", $course->tr('features')))); @endphp
                 <ul class="mt-5 space-y-2 text-sm text-gray-500">
                     @foreach(array_slice($featList, 0, 5) as $feat)
                     <li class="flex items-center gap-2">
@@ -120,7 +120,7 @@ if ($course->promo_video) {
         <div class="relative rounded-2xl overflow-hidden shadow-2xl" style="padding-top: 56.25%">
             <iframe class="absolute inset-0 w-full h-full"
                 src="{{ $promoEmbed }}"
-                title="{{ $course->title }}"
+                title="{{ $course->tr('title') }}"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen>
@@ -137,8 +137,8 @@ if ($course->promo_video) {
             <div class="lg:col-span-2 space-y-10">
 
                 {{-- Features / What you'll learn --}}
-                @if($course->features)
-                @php $feats = array_filter(array_map('trim', explode("\n", $course->features))); @endphp
+                @if($course->tr('features'))
+                @php $feats = array_filter(array_map('trim', explode("\n", $course->tr('features')))); @endphp
                 <div>
                     <h2 class="text-2xl font-black text-navy mb-6">{{ $isAr ? 'مميزات الدورة' : 'Course Features' }}</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -179,9 +179,9 @@ if ($course->promo_video) {
                 @endif
 
                 {{-- Content / Curriculum --}}
-                @if($course->content)
+                @if($course->tr('content'))
                 @php
-                    $lines = array_filter(array_map('trim', explode("\n", $course->content)));
+                    $lines = array_filter(array_map('trim', explode("\n", $course->tr('content'))));
                 @endphp
                 <div>
                     <h2 class="text-2xl font-black text-navy mb-6">{{ $isAr ? 'محتوى الدورة التدريبية' : 'Course Curriculum' }}</h2>
@@ -197,21 +197,21 @@ if ($course->promo_video) {
                 @endif
 
                 {{-- Accreditation --}}
-                @if($course->accreditation)
+                @if($course->tr('accreditation'))
                 <div>
                     <h2 class="text-2xl font-black text-navy mb-6">{{ $isAr ? 'الاعتماد والشهادة' : 'Accreditation & Certificate' }}</h2>
                     <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex gap-4 items-start">
                         <div class="w-12 h-12 rounded-xl bg-navy flex items-center justify-center flex-shrink-0">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
                         </div>
-                        <div class="text-gray-700 leading-relaxed whitespace-pre-line text-sm">{{ $course->accreditation }}</div>
+                        <div class="text-gray-700 leading-relaxed whitespace-pre-line text-sm">{{ $course->tr('accreditation') }}</div>
                     </div>
                 </div>
                 @endif
 
                 {{-- Job Opportunities --}}
-                @if($course->job_opportunities)
-                @php $jobs = array_filter(array_map('trim', explode("\n", $course->job_opportunities))); @endphp
+                @if($course->tr('job_opportunities'))
+                @php $jobs = array_filter(array_map('trim', explode("\n", $course->tr('job_opportunities')))); @endphp
                 <div>
                     <h2 class="text-2xl font-black text-navy mb-6">{{ $isAr ? 'فرص العمل المتاحة' : 'Career Opportunities' }}</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -232,10 +232,10 @@ if ($course->promo_video) {
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 sticky top-24">
                     <h3 class="font-bold text-navy mb-4">{{ $isAr ? 'تفاصيل الدورة' : 'Course Details' }}</h3>
                     <ul class="space-y-3 text-sm">
-                        @if($course->duration)
+                        @if($course->tr('duration'))
                         <li class="flex items-center justify-between">
                             <span class="text-gray-500">{{ $isAr ? 'المدة' : 'Duration' }}</span>
-                            <span class="font-semibold text-navy">{{ $course->duration }}</span>
+                            <span class="font-semibold text-navy">{{ $course->tr('duration') }}</span>
                         </li>
                         @endif
                         @if($course->level)
