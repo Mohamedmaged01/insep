@@ -116,6 +116,15 @@
                     <p class="text-xs text-gray-400 mt-1">{{ $isAr ? 'سيُعرض الفيديو داخل صفحة المقال في الموقع.' : 'The video will play inside the article page on the site.' }}</p>
                 </div>
 
+                <div>
+                    <label class="text-sm font-bold text-navy mb-2 block flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-red-brand" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        {{ $isAr ? 'رابط نموذج التسجيل (Google Form)' : 'Registration Form Link (Google Form)' }}
+                    </label>
+                    <input type="url" name="form_url" x-model="form.form_url" dir="ltr" placeholder="https://docs.google.com/forms/..." class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-navy transition-colors">
+                    <p class="text-xs text-gray-400 mt-1">{{ $isAr ? 'سيظهر زر «سجل الآن» في صفحة المقال يفتح هذا النموذج.' : 'A "Register Now" button will appear on the article page linking to this form.' }}</p>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-bold text-navy mb-2 block">{{ $isAr ? 'التصنيف' : 'Tag' }}</label>
@@ -142,10 +151,10 @@ function newsManager() {
     return {
         showModal: false,
         editing: false,
-        form: { id: null, title_ar: '', title_en: '', description_ar: '', description_en: '', video_url: '', tag: '', date: '', image: '' },
+        form: { id: null, title_ar: '', title_en: '', description_ar: '', description_en: '', video_url: '', form_url: '', tag: '', date: '', image: '' },
         openCreate() {
             this.editing = false;
-            this.form = { id: null, title_ar: '', title_en: '', description_ar: '', description_en: '', video_url: '', tag: '', date: '', image: '' };
+            this.form = { id: null, title_ar: '', title_en: '', description_ar: '', description_en: '', video_url: '', form_url: '', tag: '', date: '', image: '' };
             this.showModal = true;
         },
         openEdit(item) {
@@ -157,6 +166,7 @@ function newsManager() {
                 description_ar: item.description_ar || item.description || '',
                 description_en: item.description_en || '',
                 video_url: item.video_url || '',
+                form_url: item.form_url || '',
                 tag: item.tag || '',
                 date: item.date || '',
                 image: item.image || '',

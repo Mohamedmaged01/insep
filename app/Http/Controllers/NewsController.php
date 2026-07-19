@@ -19,6 +19,7 @@ class NewsController extends Controller
             'tag'       => $request->input('tag'),
             'date'      => $request->input('date'),
             'video_url' => $request->input('video_url'),
+            'form_url'  => $request->input('form_url'),
         ], fn($v) => $v !== null);
 
         // Bilingual title/description (+ legacy alias support: body/content → description)

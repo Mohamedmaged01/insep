@@ -54,6 +54,19 @@
             <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
                 {!! nl2br(e($news->tr('description'))) !!}
             </div>
+
+            {{-- Registration form call-to-action --}}
+            @if($news->form_url)
+            <div class="mt-10 pt-8 border-t border-gray-100 text-center">
+                <p class="text-navy font-bold text-lg mb-4">{{ $isAr ? 'سجّل الآن للمشاركة' : 'Register Now to Participate' }}</p>
+                <a href="{{ $news->form_url }}" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-2 bg-red-brand hover:bg-red-brand-dark text-white px-10 py-4 rounded-xl font-black text-lg shadow-lg shadow-red-brand/30 transition-all duration-300 hover:-translate-y-0.5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {{ $isAr ? 'سجل الآن' : 'Register Now' }}
+                </a>
+                <p class="text-gray-400 text-xs mt-3">{{ $isAr ? 'سيتم فتح نموذج التسجيل في نافذة جديدة' : 'The registration form opens in a new tab' }}</p>
+            </div>
+            @endif
         </div>
 
         <div class="mt-8 text-center">

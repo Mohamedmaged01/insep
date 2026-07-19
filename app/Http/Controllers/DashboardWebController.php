@@ -1501,7 +1501,7 @@ class DashboardWebController extends Controller
 
     private function newsData(Request $request, $current = null): array
     {
-        $data = $request->only(['tag', 'date', 'video_url']);
+        $data = $request->only(['tag', 'date', 'video_url', 'form_url']);
         if (empty($data['date'])) {
             $data['date'] = now()->toDateString();
         }

@@ -16,7 +16,7 @@ class News extends Model
     protected array $translatable = ['title', 'description'];
 
     protected $fillable = [
-        'title', 'description', 'tag', 'date', 'image', 'video_url',
+        'title', 'description', 'tag', 'date', 'image', 'video_url', 'form_url',
         'title_ar', 'title_en', 'description_ar', 'description_en',
     ];
 }
