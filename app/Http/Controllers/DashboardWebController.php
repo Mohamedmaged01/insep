@@ -1517,7 +1517,11 @@ class DashboardWebController extends Controller
 
     public function storeNews(Request $request)
     {
-        $request->validate(['title' => 'required|string|max:255']);
+        // Accept the Arabic title (new bilingual form) or the legacy single title.
+        $request->validate([
+            'title_ar' => 'required_without:title|nullable|string|max:255',
+            'title'    => 'required_without:title_ar|nullable|string|max:255',
+        ]);
         \App\Models\News::create($this->newsData($request));
         return back()->with('success', $this->isAr() ? 'تم نشر الخبر بنجاح' : 'News published successfully');
     }
@@ -1525,7 +1529,10 @@ class DashboardWebController extends Controller
     public function updateNews(Request $request, $id)
     {
         $news = \App\Models\News::findOrFail($id);
-        $request->validate(['title' => 'required|string|max:255']);
+        $request->validate([
+            'title_ar' => 'required_without:title|nullable|string|max:255',
+            'title'    => 'required_without:title_ar|nullable|string|max:255',
+        ]);
         $news->update($this->newsData($request, $news));
         return back()->with('success', $this->isAr() ? 'تم تحديث الخبر بنجاح' : 'News updated successfully');
     }
