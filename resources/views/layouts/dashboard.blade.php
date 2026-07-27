@@ -311,15 +311,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
-                    <div class="relative hidden sm:block">
+                    <form method="GET" action="{{ route('dashboard.search') }}" class="relative hidden sm:block">
                         <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none"
                             stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <circle cx="11" cy="11" r="8" />
                             <path stroke-linecap="round" d="M21 21l-4.35-4.35" />
                         </svg>
-                        <input type="text" placeholder="{{ $isAr ? 'بحث...' : 'Search...' }}"
+                        <input type="text" name="q" value="{{ request()->routeIs('dashboard.search') ? request('q') : '' }}"
+                            placeholder="{{ $isAr ? 'بحث عام في المنصة...' : 'Search the platform...' }}"
                             class="bg-gray-50 border border-gray-200 rounded-xl pr-10 pl-4 py-2 text-sm w-64 focus:border-navy">
-                    </div>
+                    </form>
                 </div>
                 <div class="flex items-center gap-4">
                     {{-- Language Toggle --}}

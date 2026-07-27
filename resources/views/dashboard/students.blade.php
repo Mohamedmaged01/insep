@@ -25,7 +25,7 @@
     <div class="bg-white rounded-2xl p-4 mb-6 border border-gray-100">
         <div class="relative flex-1">
             <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" x-model="search" placeholder="{{ $isAr ? 'بحث عن طالب...' : 'Search for a student...' }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl pr-10 pl-4 py-2.5 text-sm">
+            <form method="GET"><input type="text" name="q" value="{{ request('q') }}" placeholder="{{ $isAr ? 'بحث بالاسم أو البريد أو الهاتف... واضغط Enter' : 'Search name / email / phone... press Enter' }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl pr-10 pl-4 py-2.5 text-sm"></form>
         </div>
     </div>
 

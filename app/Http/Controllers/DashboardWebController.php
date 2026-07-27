@@ -70,10 +70,20 @@ class DashboardWebController extends Controller
     }
 
     // ── General Users Management (admin / super_admin) ──────────────
-    public function usersManagement()
+    public function usersManagement(Request $request)
     {
         $actor = auth()->user();
-        $users = User::orderBy('created_at', 'desc')->paginate(20);
+        $q = trim((string) $request->get('q', ''));
+        $users = User::query()
+            ->when($q !== '', fn($query) => $query->where(fn($w) => $w
+                ->where('name', 'like', "%$q%")
+                ->orWhere('name_ar', 'like', "%$q%")
+                ->orWhere('name_en', 'like', "%$q%")
+                ->orWhere('email', 'like', "%$q%")
+                ->orWhere('phone', 'like', "%$q%")))
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->withQueryString();
         $roles = $actor->isSuperAdmin()
             ? User::ROLES
             : collect(User::ROLES)->except('super_admin')->all();
@@ -172,32 +182,58 @@ class DashboardWebController extends Controller
         return back()->with('success', 'تم حذف المستخدم بنجاح');
     }
 
-    public function students()
+    public function students(Request $request)
     {
+        $q = trim((string) $request->get('q', ''));
         $students = User::where('role', 'student')
+            ->when($q !== '', fn($query) => $query->where(fn($w) => $w
+                ->where('name', 'like', "%$q%")
+                ->orWhere('name_ar', 'like', "%$q%")
+                ->orWhere('name_en', 'like', "%$q%")
+                ->orWhere('email', 'like', "%$q%")
+                ->orWhere('phone', 'like', "%$q%")))
             ->with(['enrollments' => fn($q) => $q->with(['course:id,title', 'batch:id,name'])])
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
         $courses = Course::orderBy('title')->get(['id', 'title']);
         $batches = Batch::with('course:id,title')->orderBy('id', 'desc')->get(['id', 'name', 'course_id']);
         return view('dashboard.students', compact('students', 'courses', 'batches'));
     }
 
-    public function instructors()
+    public function instructors(Request $request)
     {
-        $instructors = User::where('role', 'instructor')->orderBy('created_at', 'desc')->paginate(20);
+        $q = trim((string) $request->get('q', ''));
+        $instructors = User::where('role', 'instructor')
+            ->when($q !== '', fn($query) => $query->where(fn($w) => $w
+                ->where('name', 'like', "%$q%")
+                ->orWhere('name_ar', 'like', "%$q%")
+                ->orWhere('name_en', 'like', "%$q%")
+                ->orWhere('email', 'like', "%$q%")
+                ->orWhere('phone', 'like', "%$q%")
+                ->orWhere('specialty', 'like', "%$q%")))
+            ->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->withQueryString();
         return view('dashboard.instructors', compact('instructors'));
     }
 
-    public function courses()
+    public function courses(Request $request)
     {
         $user = auth()->user();
+        $q = trim((string) $request->get('q', ''));
+        $courseQuery = Course::with('section')->withCount('enrollments')
+            ->when($q !== '', fn($query) => $query->where(fn($w) => $w
+                ->where('title', 'like', "%$q%")
+                ->orWhere('title_ar', 'like', "%$q%")
+                ->orWhere('title_en', 'like', "%$q%")
+                ->orWhere('category', 'like', "%$q%")))
+            ->orderBy('created_at', 'desc');
         if ($user->role === 'instructor') {
             $courseIds = Batch::where('instructor_id', $user->id)->pluck('course_id')->unique();
-            $courses = Course::with('section')->withCount('enrollments')->whereIn('id', $courseIds)->orderBy('created_at', 'desc')->paginate(15);
-        } else {
-            $courses = Course::with('section')->withCount('enrollments')->orderBy('created_at', 'desc')->paginate(15);
+            $courseQuery->whereIn('id', $courseIds);
         }
+        $courses = $courseQuery->paginate(15)->withQueryString();
         $sections = Section::orderBy('id', 'desc')->get();
         $featuredCourses    = Course::where('is_featured', true)->orderBy('home_order', 'asc')->orderBy('created_at', 'desc')->get(['id', 'title', 'image', 'home_order']);
         $nonFeaturedCourses = Course::where('is_featured', false)->orderBy('created_at', 'desc')->get(['id', 'title', 'image']);
@@ -215,9 +251,19 @@ class DashboardWebController extends Controller
     }
 
     // ── Sections CRUD ──────────────────────────────────────────────
-    public function sections()
+    public function sections(Request $request)
     {
-        $sections = Section::withCount('courses')->orderBy('id', 'desc')->paginate(20);
+        $q = trim((string) $request->get('q', ''));
+        $sections = Section::withCount('courses')
+            ->when($q !== '', fn($query) => $query->where(fn($w) => $w
+                ->where('name_ar', 'like', "%$q%")
+                ->orWhere('name_en', 'like', "%$q%")
+                ->orWhere('description', 'like', "%$q%")
+                ->orWhere('description_ar', 'like', "%$q%")
+                ->orWhere('description_en', 'like', "%$q%")))
+            ->orderBy('id', 'desc')
+            ->paginate(20)
+            ->withQueryString();
         return view('dashboard.sections', compact('sections'));
     }
 
@@ -251,14 +297,23 @@ class DashboardWebController extends Controller
         return back()->with('success', 'تم حذف الشعبة بنجاح');
     }
 
-    public function batches()
+    public function batches(Request $request)
     {
         $user = auth()->user();
+        $q = trim((string) $request->get('q', ''));
         $query = Batch::with(['course', 'instructor'])->orderBy('id', 'desc');
         if ($user->role === 'instructor') {
             $query->where('instructor_id', $user->id);
         }
-        $batches = $query->paginate(15);
+        $query->when($q !== '', fn($qq) => $qq->where(fn($w) => $w
+            ->where('name', 'like', "%$q%")
+            ->orWhere('name_ar', 'like', "%$q%")
+            ->orWhere('name_en', 'like', "%$q%")
+            ->orWhereHas('course', fn($c) => $c->where('title', 'like', "%$q%")
+                ->orWhere('title_ar', 'like', "%$q%")->orWhere('title_en', 'like', "%$q%"))
+            ->orWhereHas('instructor', fn($i) => $i->where('name', 'like', "%$q%")
+                ->orWhere('name_ar', 'like', "%$q%")->orWhere('name_en', 'like', "%$q%"))));
+        $batches = $query->paginate(15)->withQueryString();
         $courses = Course::all();
         $instructors = User::where('role', 'instructor')->get();
         return view('dashboard.batches', compact('batches', 'courses', 'instructors'));
@@ -500,7 +555,7 @@ class DashboardWebController extends Controller
         ->when($from,   fn($q) => $q->where('created_at', '>=', $from))
         ->when($to,     fn($q) => $q->where('created_at', '<=', $to . ' 23:59:59'));
 
-        $certificates = $query->orderBy('created_at', 'desc')->paginate(20);
+        $certificates = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
 
         return view('dashboard.certificates', compact(
             'certificates', 'batches', 'students', 'courses', 'pendingRequests'
@@ -1246,6 +1301,64 @@ class DashboardWebController extends Controller
             session(['locale' => $lang]);
         }
         return redirect()->back();
+    }
+
+    /**
+     * Global platform search — aggregates matches across users, courses,
+     * batches, certificates and news. Staff-only entities are gated by role.
+     */
+    public function globalSearch(Request $request)
+    {
+        $q       = trim((string) $request->get('q', ''));
+        $user    = auth()->user();
+        $isStaff = in_array($user->role, ['admin', 'super_admin', 'supervisor', 'finance', 'support']);
+
+        $results = [
+            'users'        => collect(),
+            'courses'      => collect(),
+            'batches'      => collect(),
+            'certificates' => collect(),
+            'news'         => collect(),
+        ];
+
+        if ($q !== '') {
+            $like = "%$q%";
+
+            $results['courses'] = Course::where(fn($w) => $w
+                ->where('title', 'like', $like)
+                ->orWhere('title_ar', 'like', $like)
+                ->orWhere('title_en', 'like', $like)
+                ->orWhere('category', 'like', $like))->limit(8)->get();
+
+            $results['news'] = \App\Models\News::where(fn($w) => $w
+                ->where('title', 'like', $like)
+                ->orWhere('title_ar', 'like', $like)
+                ->orWhere('title_en', 'like', $like))->limit(8)->get();
+
+            if ($isStaff) {
+                $results['users'] = User::where(fn($w) => $w
+                    ->where('name', 'like', $like)
+                    ->orWhere('name_ar', 'like', $like)
+                    ->orWhere('name_en', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('phone', 'like', $like))->limit(8)->get();
+
+                $results['batches'] = Batch::with('course')->where(fn($w) => $w
+                    ->where('name', 'like', $like)
+                    ->orWhere('name_ar', 'like', $like)
+                    ->orWhere('name_en', 'like', $like))->limit(8)->get();
+
+                $results['certificates'] = Certificate::with('student')->where(fn($w) => $w
+                    ->where('serial_number', 'like', $like)
+                    ->orWhereHas('student', fn($s) => $s
+                        ->where('name', 'like', $like)
+                        ->orWhere('name_ar', 'like', $like)
+                        ->orWhere('name_en', 'like', $like)
+                        ->orWhere('email', 'like', $like)))->limit(8)->get();
+            }
+        }
+
+        return view('dashboard.search-results', compact('q', 'results', 'isStaff'));
     }
 
     // ── Installments CRUD ──────────────────────────────────────────

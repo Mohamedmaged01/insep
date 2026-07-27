@@ -50,6 +50,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     // Language switch
     Route::get('/locale/{lang}', [DashboardWebController::class, 'switchLocale'])->name('dashboard.locale');
+    Route::get('/search', [DashboardWebController::class, 'globalSearch'])->name('dashboard.search');
 
     // Main sections (GET)
     Route::get('/users', [DashboardWebController::class, 'usersManagement'])->middleware('web.role:admin')->name('dashboard.users');

@@ -21,6 +21,14 @@
         </button>
     </div>
 
+    {{-- Search --}}
+    <form method="GET" class="relative mb-6">
+        <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ $isAr ? 'بحث باسم الشعبة (عربي/إنجليزي)... واضغط Enter' : 'Search section name (Arabic/English)... press Enter' }}"
+               class="w-full bg-gray-50 border border-gray-200 rounded-xl pr-10 pl-4 py-2.5 text-sm focus:border-navy focus:bg-white transition-colors">
+        @if(request('q'))<a href="{{ url()->current() }}" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500" title="{{ $isAr ? 'مسح' : 'Clear' }}">✕</a>@endif
+    </form>
+
     {{-- Cards Grid --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($sections as $section)
