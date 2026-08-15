@@ -53,6 +53,11 @@ class Course extends Model
         return $this->hasMany(Exam::class);
     }
 
+    public function lessons()
+    {
+        return $this->hasMany(Lesson::class)->orderBy('order')->orderBy('id');
+    }
+
     public function certificates()
     {
         return $this->hasMany(Certificate::class);

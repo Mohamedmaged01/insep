@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Certificate;
+use App\Models\Course;
+use App\Models\Lesson;
+use App\Models\LessonProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -59,6 +62,52 @@ class CertificateController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get()
         );
+    }
+
+    /**
+     * Claim the certificate for a course the authenticated student has completed
+     * (all lessons done). Returns the existing certificate if already issued.
+     */
+    public function claim(Request $request)
+    {
+        $request->validate(['course_id' => 'required|integer']);
+
+        $user     = $request->user();
+        $courseId = (int) $request->course_id;
+
+        $total = Lesson::where('course_id', $courseId)->count();
+        $done  = LessonProgress::where('user_id', $user->id)
+            ->where('course_id', $courseId)
+            ->whereNotNull('completed_at')
+            ->count();
+
+        if ($total === 0 || $done < $total) {
+            return response()->json(['message' => 'لم تُكمل الدورة بعد'], 422);
+        }
+
+        $existing = Certificate::with(['student', 'course'])
+            ->where('student_id', $user->id)
+            ->where('course_id', $courseId)
+            ->first();
+        if ($existing) return response()->json($existing);
+
+        $course      = Course::find($courseId);
+        $studentName = $user->name_ar ?? $user->name_en ?? $user->name ?? '';
+
+        $cert = Certificate::create([
+            'serial_number' => 'INSEP-' . time() . '-' . strtoupper(substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 4)),
+            'student_id'    => $user->id,
+            'student_name'  => $studentName,
+            'course_id'     => $courseId,
+            'title'         => $course?->title ?? 'شهادة إتمام الدورة',
+            'issue_date'    => now()->toDateString(),
+            'grade'         => 'ناجح',
+            'status'        => 'active',
+            'type'          => 'auto',
+            'created_by'    => $user->id,
+        ]);
+
+        return response()->json($cert->load(['student', 'course']), 201);
     }
 
     public function store(Request $request)

@@ -19,6 +19,8 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\LiveSessionController;
 use App\Http\Controllers\CommitteeMemberController;
 use App\Http\Controllers\PublicSettingsController;
+use App\Http\Controllers\LessonController;
+use App\Http\Controllers\ProgressController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,6 +64,24 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::post('courses', [CourseController::class, 'store']);
     Route::put('courses/{id}', [CourseController::class, 'update']);
     Route::delete('courses/{id}', [CourseController::class, 'destroy']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Lessons & progress (LMS — auth required)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:api')->group(function () {
+    Route::get('courses/{id}/lessons', [LessonController::class, 'curriculum']);
+    Route::get('lessons/{id}', [LessonController::class, 'show']);
+    Route::get('progress/course/{id}', [ProgressController::class, 'course']);
+    Route::post('progress/lesson/{id}', [ProgressController::class, 'markLesson']);
+
+    Route::middleware('role:admin')->group(function () {
+        Route::post('courses/{id}/lessons', [LessonController::class, 'store']);
+        Route::put('lessons/{id}', [LessonController::class, 'update']);
+        Route::delete('lessons/{id}', [LessonController::class, 'destroy']);
+    });
 });
 
 /*
@@ -126,6 +146,7 @@ Route::middleware('auth:api')->group(function () {
 Route::get('certificates/verify/{serial}', [CertificateController::class, 'verify']);
 Route::middleware('auth:api')->group(function () {
     Route::get('certificates', [CertificateController::class, 'index']);
+    Route::post('certificates/claim', [CertificateController::class, 'claim']);
 
     Route::middleware('role:admin')->group(function () {
         Route::post('certificates', [CertificateController::class, 'store']);
