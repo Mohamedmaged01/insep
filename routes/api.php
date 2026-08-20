@@ -48,6 +48,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
     Route::get('users/{id}', [UserController::class, 'show']);
     Route::post('users', [UserController::class, 'store']);
     Route::put('users/{id}', [UserController::class, 'update']);
+    Route::post('users/{id}/reset-password', [UserController::class, 'resetPassword']);
     Route::delete('users/{id}', [UserController::class, 'destroy']);
 });
 

@@ -61,4 +61,30 @@ class UserController extends Controller
         $user->delete();
         return response()->json($userData);
     }
+
+    /**
+     * Set a user's password. Admin & super-admin only; an admin may not change
+     * a super-admin's password, and the system owner account is protected.
+     */
+    public function resetPassword(Request $request, $id)
+    {
+        $actor = $request->user();
+        if (!$actor || !$actor->isAdminOrAbove()) {
+            return response()->json(['message' => 'ليس لديك صلاحية'], 403);
+        }
+
+        $user = User::find($id);
+        if (!$user) return response()->json(['message' => 'المستخدم غير موجود'], 404);
+
+        if ($user->email === env('OWNER_EMAIL', '')) {
+            return response()->json(['message' => 'هذا الحساب محمي'], 403);
+        }
+        if ($user->isSuperAdmin() && !$actor->isSuperAdmin()) {
+            return response()->json(['message' => 'ليس لديك صلاحية لتغيير كلمة مرور هذا الحساب'], 403);
+        }
+
+        $request->validate(['password' => 'required|min:6']);
+        $user->update(['password' => Hash::make($request->password)]);
+        return response()->json(['message' => 'تم تغيير كلمة المرور بنجاح']);
+    }
 }
