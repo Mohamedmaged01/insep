@@ -95,13 +95,9 @@ class DashboardWebController extends Controller
     public function resetUserPassword(Request $request, User $user)
     {
         $actor = auth()->user();
-        abort_if(!$actor->isAdminOrAbove(), 403);
 
-        if ($user->email === env('OWNER_EMAIL', '')) {
-            return back()->with('error', 'هذا الحساب محمي ولا يمكن تغيير كلمة مروره');
-        }
-        // An admin may not change a super-admin's password
-        if ($user->isSuperAdmin() && !$actor->isSuperAdmin()) {
+        // Admin & super-admin may only change passwords for accounts below them.
+        if (!$actor->canResetPasswordFor($user)) {
             return back()->with('error', 'ليس لديك صلاحية لتغيير كلمة مرور هذا الحساب');
         }
 

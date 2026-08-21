@@ -51,6 +51,31 @@ class User extends Authenticatable implements JWTSubject
     public function hasRole(string ...$roles): bool { return in_array($this->role, $roles); }
     public function isAdminOrAbove(): bool { return in_array($this->role, ['admin', 'super_admin']); }
 
+    // Role hierarchy — higher rank can manage strictly-lower ranks ("everyone below").
+    const ROLE_RANK = [
+        'super_admin' => 100,
+        'admin'       => 80,
+        'supervisor'  => 60,
+        'finance'     => 40,
+        'support'     => 40,
+        'instructor'  => 40,
+        'student'     => 20,
+    ];
+
+    public function roleRank(): int { return self::ROLE_RANK[$this->role] ?? 0; }
+
+    /**
+     * Whether this user may change $target's password: must be admin-or-above,
+     * $target must be strictly lower in the hierarchy, and never the protected
+     * system-owner account.
+     */
+    public function canResetPasswordFor(User $target): bool
+    {
+        if ($target->email === env('OWNER_EMAIL', '')) return false;
+        if (!$this->isAdminOrAbove()) return false;
+        return $this->roleRank() > $target->roleRank();
+    }
+
     // Role label (Arabic)
     public function roleLabelAr(): string { return self::ROLES[$this->role] ?? $this->role; }
 

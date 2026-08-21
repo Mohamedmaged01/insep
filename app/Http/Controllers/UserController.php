@@ -69,17 +69,11 @@ class UserController extends Controller
     public function resetPassword(Request $request, $id)
     {
         $actor = $request->user();
-        if (!$actor || !$actor->isAdminOrAbove()) {
-            return response()->json(['message' => 'ليس لديك صلاحية'], 403);
-        }
-
-        $user = User::find($id);
+        $user  = User::find($id);
         if (!$user) return response()->json(['message' => 'المستخدم غير موجود'], 404);
 
-        if ($user->email === env('OWNER_EMAIL', '')) {
-            return response()->json(['message' => 'هذا الحساب محمي'], 403);
-        }
-        if ($user->isSuperAdmin() && !$actor->isSuperAdmin()) {
+        // Admin & super-admin may only change passwords for accounts below them.
+        if (!$actor || !$actor->canResetPasswordFor($user)) {
             return response()->json(['message' => 'ليس لديك صلاحية لتغيير كلمة مرور هذا الحساب'], 403);
         }
 

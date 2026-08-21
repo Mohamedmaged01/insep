@@ -141,7 +141,7 @@
                                     class="p-1.5 hover:bg-navy/10 rounded-lg transition-colors text-navy" title="{{ $isAr ? 'تعديل' : 'Edit' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </button>
-                                @if(auth()->user()->isAdminOrAbove())
+                                @if(auth()->user()->canResetPasswordFor($u))
                                 <button @click="resetUser = { id: {{ $u->id }}, name: '{{ addslashes($u->name) }}' }"
                                     class="p-1.5 hover:bg-yellow-50 rounded-lg transition-colors text-yellow-600" title="{{ $isAr ? 'تغيير كلمة المرور' : 'Reset Password' }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
