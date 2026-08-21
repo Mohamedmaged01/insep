@@ -57,4 +57,33 @@
         </form>
     </div>
 </div>
+
+{{-- Database Backup — super-admin only --}}
+@if($user->role === 'super_admin')
+<div class="mt-6 bg-white rounded-2xl p-8 border border-gray-100">
+    <div class="flex items-start gap-4">
+        <div class="w-12 h-12 rounded-xl bg-navy/10 flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-navy" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+            </svg>
+        </div>
+        <div class="flex-1">
+            <h3 class="text-lg font-bold text-navy">نسخة احتياطية من قاعدة البيانات</h3>
+            <p class="text-sm text-gray-500 mt-1 leading-relaxed">
+                تنزيل نسخة كاملة من قاعدة البيانات كملف <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs" dir="ltr">.sql</code>
+                يمكن استيراده لاحقاً عبر phpMyAdmin. يشمل الملف كل البيانات وكلمات المرور المشفّرة —
+                احفظه في مكان آمن.
+            </p>
+            <a href="{{ route('dashboard.backup') }}"
+               class="inline-flex items-center gap-2 mt-4 bg-navy hover:bg-navy-dark text-white px-6 py-3 rounded-xl font-bold transition-all hover:shadow-xl">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-4-4m4 4l4-4"/>
+                </svg>
+                تنزيل نسخة احتياطية الآن
+            </a>
+        </div>
+    </div>
+</div>
+@endif
 @endsection

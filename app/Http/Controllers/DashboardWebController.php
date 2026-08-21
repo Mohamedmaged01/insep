@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Course;
 use App\Models\Batch;
@@ -1294,6 +1295,99 @@ class DashboardWebController extends Controller
     public function settings()
     {
         return view('dashboard.settings');
+    }
+
+    /**
+     * Download a full SQL backup of the database. Super-admin only.
+     *
+     * Uses a pure-PHP dump (no mysqldump binary needed — works on shared/Plesk
+     * hosting where exec() is disabled). Tables are streamed one at a time and
+     * rows are chunked by primary key so large tables don't exhaust memory.
+     */
+    public function backupDatabase(Request $request)
+    {
+        abort_unless(optional($request->user())->isSuperAdmin(), 403, 'هذه الميزة متاحة للسوبر أدمن فقط');
+
+        @set_time_limit(0);
+        @ini_set('memory_limit', '512M');
+
+        $database = DB::getDatabaseName();
+        $pdo      = DB::getPdo();
+        $filename = 'insep-backup-' . $database . '-' . now()->format('Y-m-d_His') . '.sql';
+
+        // Base tables only (skip views).
+        $tables = collect(DB::select('SHOW FULL TABLES WHERE Table_type = "BASE TABLE"'))
+            ->map(fn ($row) => array_values((array) $row)[0])
+            ->all();
+
+        return response()->streamDownload(function () use ($tables, $pdo) {
+            $out = function (string $sql) {
+                echo $sql;
+                if (ob_get_level() > 0) { @ob_flush(); }
+                @flush();
+            };
+
+            $out("-- INSEP database backup\n");
+            $out('-- Generated: ' . now()->toDateTimeString() . "\n\n");
+            $out("SET NAMES utf8mb4;\n");
+            $out("SET FOREIGN_KEY_CHECKS=0;\n");
+            $out("SET SQL_MODE='NO_AUTO_VALUE_ON_ZERO';\n\n");
+
+            foreach ($tables as $table) {
+                // Structure
+                $create = DB::selectOne("SHOW CREATE TABLE `{$table}`");
+                $createSql = $create->{'Create Table'} ?? ($create->{'Create View'} ?? null);
+                if (!$createSql) { continue; }
+
+                $out("-- ----------------------------\n");
+                $out("-- Table: `{$table}`\n");
+                $out("-- ----------------------------\n");
+                $out("DROP TABLE IF EXISTS `{$table}`;\n");
+                $out($createSql . ";\n\n");
+
+                // Data — chunk by primary key when available, else stream a cursor.
+                $pkRow = DB::selectOne("SHOW KEYS FROM `{$table}` WHERE Key_name = 'PRIMARY'");
+                $pk    = $pkRow->Column_name ?? null;
+
+                $writeRows = function ($rows) use ($out, $pdo, $table) {
+                    $values = [];
+                    foreach ($rows as $row) {
+                        $cells = [];
+                        foreach ((array) $row as $value) {
+                            $cells[] = is_null($value) ? 'NULL' : $pdo->quote((string) $value);
+                        }
+                        $values[] = '(' . implode(',', $cells) . ')';
+                    }
+                    if (empty($values)) { return; }
+                    $cols = collect(array_keys((array) $rows[0]))
+                        ->map(fn ($c) => "`{$c}`")->implode(',');
+                    // Split into statements of up to 200 rows.
+                    foreach (array_chunk($values, 200) as $group) {
+                        $out("INSERT INTO `{$table}` ({$cols}) VALUES\n" . implode(",\n", $group) . ";\n");
+                    }
+                };
+
+                if ($pk) {
+                    DB::table($table)->orderBy($pk)->chunk(1000, function ($rows) use ($writeRows) {
+                        $writeRows($rows->all());
+                    });
+                } else {
+                    $buffer = [];
+                    foreach (DB::table($table)->cursor() as $row) {
+                        $buffer[] = $row;
+                        if (count($buffer) >= 1000) { $writeRows($buffer); $buffer = []; }
+                    }
+                    if ($buffer) { $writeRows($buffer); }
+                }
+                $out("\n");
+            }
+
+            $out("SET FOREIGN_KEY_CHECKS=1;\n");
+        }, $filename, [
+            'Content-Type'        => 'application/sql; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate',
+        ]);
     }
 
     public function switchLocale(string $lang)
