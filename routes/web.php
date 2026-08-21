@@ -152,8 +152,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     // Settings
     Route::post('/settings', [DashboardWebController::class, 'updateSettings'])->name('dashboard.settings.update');
 
-    // Database backup — super-admin only
-    Route::get('/backup', [DashboardWebController::class, 'backupDatabase'])->middleware('web.role:super_admin')->name('dashboard.backup');
+    // Database backup — admin + super-admin
+    Route::get('/backup', [DashboardWebController::class, 'backupDatabase'])->middleware('web.role:admin')->name('dashboard.backup');
 
     // CMS — admin + supervisor
     Route::get('/cms', [CmsController::class, 'index'])->middleware('web.role:admin,supervisor')->name('dashboard.cms');

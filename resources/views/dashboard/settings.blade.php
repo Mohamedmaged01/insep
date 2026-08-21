@@ -58,8 +58,8 @@
     </div>
 </div>
 
-{{-- Database Backup — super-admin only --}}
-@if($user->role === 'super_admin')
+{{-- Database Backup — admin + super-admin --}}
+@if($user->isAdminOrAbove())
 <div class="mt-6 bg-white rounded-2xl p-8 border border-gray-100">
     <div class="flex items-start gap-4">
         <div class="w-12 h-12 rounded-xl bg-navy/10 flex items-center justify-center flex-shrink-0">

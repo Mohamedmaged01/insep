@@ -1306,7 +1306,7 @@ class DashboardWebController extends Controller
      */
     public function backupDatabase(Request $request)
     {
-        abort_unless(optional($request->user())->isSuperAdmin(), 403, 'هذه الميزة متاحة للسوبر أدمن فقط');
+        abort_unless(optional($request->user())->isAdminOrAbove(), 403, 'هذه الميزة متاحة للمدير والسوبر أدمن فقط');
 
         @set_time_limit(0);
         @ini_set('memory_limit', '512M');
