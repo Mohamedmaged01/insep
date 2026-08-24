@@ -114,7 +114,7 @@
                         <input type="checkbox" name="remember" class="w-4 h-4 rounded border-gray-300 text-navy accent-[#1B2A4A]">
                         <span class="text-sm text-gray-600">{{ $isAr ? 'تذكرني' : 'Remember me' }}</span>
                     </label>
-                    <a href="#" class="text-sm text-red-brand hover:underline font-medium">{{ $isAr ? 'نسيت كلمة المرور؟' : 'Forgot password?' }}</a>
+                    <a href="{{ route('password.request') }}" class="text-sm text-red-brand hover:underline font-medium">{{ $isAr ? 'نسيت كلمة المرور؟' : 'Forgot password?' }}</a>
                 </div>
                 <button type="submit" class="w-full bg-navy hover:bg-navy-dark text-white py-4 rounded-xl font-bold text-lg transition-all duration-300 hover:shadow-xl hover:shadow-navy/20">
                     {{ $isAr ? 'تسجيل الدخول' : 'Sign In' }}

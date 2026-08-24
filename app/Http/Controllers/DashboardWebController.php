@@ -75,6 +75,7 @@ class DashboardWebController extends Controller
     {
         $actor = auth()->user();
         $q = trim((string) $request->get('q', ''));
+        $role = (string) $request->get('role', '');
         $users = User::query()
             ->when($q !== '', fn($query) => $query->where(fn($w) => $w
                 ->where('name', 'like', "%$q%")
@@ -82,6 +83,7 @@ class DashboardWebController extends Controller
                 ->orWhere('name_en', 'like', "%$q%")
                 ->orWhere('email', 'like', "%$q%")
                 ->orWhere('phone', 'like', "%$q%")))
+            ->when($role !== '' && array_key_exists($role, User::ROLES), fn($query) => $query->where('role', $role))
             ->orderBy('created_at', 'desc')
             ->paginate(20)
             ->withQueryString();
@@ -90,7 +92,8 @@ class DashboardWebController extends Controller
             : collect(User::ROLES)->except('super_admin')->all();
         $roleCounts  = User::selectRaw('role, count(*) as cnt')->groupBy('role')->pluck('cnt', 'role');
         $ownerEmail  = env('OWNER_EMAIL', '');
-        return view('dashboard.users', compact('users', 'roles', 'roleCounts', 'ownerEmail'));
+        $activeRole  = array_key_exists($role, User::ROLES) ? $role : '';
+        return view('dashboard.users', compact('users', 'roles', 'roleCounts', 'ownerEmail', 'activeRole'));
     }
 
     public function resetUserPassword(Request $request, User $user)

@@ -44,27 +44,47 @@
         $isSuperAdmin = auth()->user()->isSuperAdmin();
     @endphp
 
-    {{-- Stats bar --}}
+    @php $activeRole = $activeRole ?? ''; @endphp
+
+    {{-- Stats bar — click a role to filter the list --}}
     <div class="grid grid-cols-4 md:grid-cols-7 gap-3 mb-6">
         @foreach($roleBadges as $roleKey => $info)
         @if($roleKey !== 'super_admin' || $isSuperAdmin)
-        <div class="bg-white rounded-xl p-4 border border-gray-100 text-center shadow-sm">
+        <a href="{{ route('dashboard.users', array_merge(request()->only('q'), ['role' => $roleKey])) }}"
+           class="bg-white rounded-xl p-4 border text-center shadow-sm transition-all hover:border-navy hover:shadow-md
+                  {{ $activeRole === $roleKey ? 'border-navy ring-2 ring-navy/40' : 'border-gray-100' }}"
+           title="{{ $isAr ? 'عرض حسابات: ' : 'Show: ' }}{{ $info['label'] }}">
             <div class="text-2xl font-black text-navy">{{ $roleCounts[$roleKey] ?? 0 }}</div>
             <div class="text-xs font-medium text-gray-500 mt-1">{{ $info['label'] }}</div>
-        </div>
+        </a>
         @endif
         @endforeach
     </div>
 
-    {{-- Search --}}
-    <form method="GET" class="relative mb-4">
-        <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
-        <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ $isAr ? 'بحث بالاسم (عربي/إنجليزي) أو البريد الإلكتروني... واضغط Enter' : 'Search by name (Arabic/English) or email... press Enter' }}"
-               class="w-full bg-gray-50 border border-gray-200 rounded-xl pr-10 pl-24 py-2.5 text-sm focus:border-navy focus:bg-white transition-colors">
-        <button type="submit" class="absolute left-1.5 top-1/2 -translate-y-1/2 bg-navy text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-navy-dark transition-colors">{{ $isAr ? 'بحث' : 'Search' }}</button>
-        @if(request('q'))
-        <a href="{{ url()->current() }}" class="absolute left-16 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500" title="{{ $isAr ? 'مسح' : 'Clear' }}">✕</a>
-        @endif
+    {{-- Search + role filter --}}
+    <form method="GET" class="flex flex-col sm:flex-row gap-3 mb-4">
+        <div class="relative flex-1">
+            <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ $isAr ? 'بحث بالاسم (عربي/إنجليزي) أو البريد الإلكتروني... واضغط Enter' : 'Search by name (Arabic/English) or email... press Enter' }}"
+                   class="w-full bg-gray-50 border border-gray-200 rounded-xl pr-10 pl-4 py-2.5 text-sm focus:border-navy focus:bg-white transition-colors">
+        </div>
+        <select name="role" onchange="this.form.submit()"
+                class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-navy focus:bg-white transition-colors sm:w-56">
+            <option value="">{{ $isAr ? 'كل الصلاحيات' : 'All roles' }}</option>
+            @foreach($roleBadges as $roleKey => $info)
+            @if($roleKey !== 'super_admin' || $isSuperAdmin)
+            <option value="{{ $roleKey }}" {{ $activeRole === $roleKey ? 'selected' : '' }}>{{ $info['label'] }}</option>
+            @endif
+            @endforeach
+        </select>
+        <div class="flex gap-2">
+            <button type="submit" class="bg-navy text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-navy-dark transition-colors whitespace-nowrap">{{ $isAr ? 'بحث' : 'Search' }}</button>
+            @if(request('q') || $activeRole)
+            <a href="{{ route('dashboard.users') }}" class="flex items-center gap-1.5 bg-gray-100 text-gray-600 text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-gray-200 transition-colors whitespace-nowrap" title="{{ $isAr ? 'عرض الكل' : 'Show all' }}">
+                <span>✕</span>{{ $isAr ? 'عرض الكل' : 'Show all' }}
+            </a>
+            @endif
+        </div>
     </form>
 
     {{-- Table --}}

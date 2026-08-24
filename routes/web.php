@@ -40,6 +40,12 @@ Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout');
 Route::get('/setup', [WebAuthController::class, 'showSetup'])->name('setup');
 Route::post('/setup', [WebAuthController::class, 'processSetup']);
 
+// Forgot / Reset password (self-service). Route names are used by the reset-link email.
+Route::get('/forgot-password',  [WebAuthController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password', [WebAuthController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [WebAuthController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password',  [WebAuthController::class, 'resetPassword'])->name('password.update');
+
 /*
 |--------------------------------------------------------------------------
 | Dashboard (Auth required)
